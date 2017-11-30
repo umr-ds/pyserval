@@ -1,5 +1,5 @@
 # Serval-REST issues
 
 ## Keychain
-* DID max length 31 characters (not documented)
-* Name max (not documented)
+* DID truncates to 31 bytes
+* Name truncates to 63 bytes (may break utf-8)
