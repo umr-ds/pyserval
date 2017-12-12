@@ -27,7 +27,7 @@ class ServalIdentity:
         name (str): Human-readable name for this identity (optional)
 
     Note:
-        Both 'sid' and 'identity' ar public keys and may be shared
+        Both 'sid' and 'identity' are public keys and may be shared
         Both 'did' and 'name' should be set via the 'set'-method
     """
     def __init__(self, _keyring, sid, identity, did=None, name=None):
