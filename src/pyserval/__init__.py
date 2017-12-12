@@ -3,6 +3,6 @@ __all__ = ["client", "util", "connection", "keyring", "rhizome", "meshms", "mesh
 
 __title__ = 'pyserval'
 __version__ = '0.1'
-__author__ = 'Jonas Höchst & Markus Sommer'
+__author__ = u'Jonas Höchst & Markus Sommer'
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2017 Jonas Höchst & Markus Sommer'
+__copyright__ = u'Copyright 2017 Jonas Höchst & Markus Sommer'
