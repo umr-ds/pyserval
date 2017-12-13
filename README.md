@@ -27,4 +27,9 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
 
 ## Running tests
 
-Clone project, go to root directory and run `pytest`
+1. Clone Project
+2. Install project to python-path
+    - You might want to use a virtualenv
+    - You might also want to do an editable install with `pip install -e .`
+3. Install testing dependencies with `pip install .[test]`
+4. In the project root run `pytest`

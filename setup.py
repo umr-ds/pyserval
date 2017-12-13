@@ -6,6 +6,22 @@ def readme():
         return f.read()
 
 
+dependencies = [
+    'requests',
+]
+
+
+test_dependencies = [
+    'pytest',
+    'hypothesis'
+]
+
+
+extras = {
+    'test': test_dependencies,
+}
+
+
 setup(name='pyserval',
       version='0.1.1',
       description='Python client for serval-dns REST interface',
@@ -24,12 +40,8 @@ setup(name='pyserval',
       license='MIT',
       packages=['pyserval'],
       package_dir={'': 'src'},
-      install_requires=[
-          'requests',
-      ],
-      tests_require=[
-          'pytest',
-          'hypothesis'
-      ],
+      install_requires=dependencies,
+      tests_require=test_dependencies,
+      extras_require=extras,
       include_package_data=True,
       zip_safe=True)
