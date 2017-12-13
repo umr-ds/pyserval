@@ -23,7 +23,7 @@ extras = {
 
 
 setup(name='pyserval',
-      version='0.1.1',
+      version='0.1.2',
       description='Python client for serval-dns REST interface',
       long_description=readme(),
       classifiers=[

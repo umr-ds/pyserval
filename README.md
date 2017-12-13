@@ -23,7 +23,7 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
 
 ## Installation
 
-`pip install https://github.com/umr-ds/pyserval/archive/v0.1.1.tar.gz`
+`pip install https://github.com/umr-ds/pyserval/archive/v0.1.2.tar.gz`
 
 ## Running tests
 
