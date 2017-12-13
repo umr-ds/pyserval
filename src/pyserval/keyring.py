@@ -6,8 +6,14 @@ pyserval.keyring
 This module contains the means to interact with the serval keyring
 """
 
+import sys
 from pyserval.util import unmarshall
 from pyserval.connection import RestfulConnection
+
+# python3 does not have the basestring type, since it does not have the unicode type
+# if we are running under python3, we just test for str
+if sys.version_info >= (3, 0, 0):
+    basestring = str
 
 
 class ServalIdentity:
@@ -32,9 +38,9 @@ class ServalIdentity:
     """
     def __init__(self, _keyring, sid, identity, did=None, name=None):
         assert isinstance(_keyring, Keyring), "_keyring must be a Keyring"
-        assert isinstance(sid, str), "sid must be a string"
-        assert (did is None or isinstance(did, str)), "did must be a string"
-        assert (name is None or isinstance(name, str)), "name must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
+        assert (did is None or isinstance(did, basestring)), "did must be a string"
+        assert (name is None or isinstance(name, basestring)), "name must be a string"
 
         self._keyring = _keyring
         self.sid = sid
@@ -81,8 +87,8 @@ class ServalIdentity:
         Raises:
             NoSuchIdentityException: If this identity is no longer available
         """
-        assert isinstance(did, str), "did must be a string"
-        assert isinstance(name, str), "name must be a string"
+        assert isinstance(did, basestring), "did must be a string"
+        assert isinstance(name, basestring), "name must be a string"
 
         # make sure that we have the current state
         self.refresh()
@@ -142,8 +148,8 @@ class Keyring:
         Returns:
              ServalIdentity: Object of the modified identity
         """
-        assert isinstance(sid, str), "sid must be a string"
-        assert isinstance(operation, str), "operation must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
+        assert isinstance(operation, basestring), "operation must be a string"
         assert isinstance(params, dict), "params must be a dictionary"
 
         result = self._connection.get("/restful/keyring/{}/{}".format(sid, operation), params=params)
@@ -178,7 +184,7 @@ class Keyring:
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
         """
-        assert isinstance(sid, str), "sid must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
 
         identities = self.get_identities()
         for identity in identities:
@@ -222,7 +228,7 @@ class Keyring:
         Returns:
             ServalIdentity: Object of the newly created identity
         """
-        assert isinstance(pin, str), "pin must be a string"
+        assert isinstance(pin, basestring), "pin must be a string"
 
         params = {}
         if pin:
@@ -246,7 +252,7 @@ class Keyring:
         Returns:
             ServalIdentity: Object of the deleted identity if successful
         """
-        assert isinstance(sid, str), "sid must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
 
         return self._modify(sid=sid, operation="remove", params={})
 
@@ -265,7 +271,7 @@ class Keyring:
         Returns:
             ServalIdentity: Object of the locked identity if successful
         """
-        assert isinstance(sid, str), "sid must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
 
         return self._modify(sid=sid, operation="lock", params={})
 
@@ -292,13 +298,13 @@ class Keyring:
         Returns:
              ServalIdentity: Object of the updated identity if successful
         """
-        assert isinstance(sid, str), "sid must be a string"
-        assert isinstance(did, str), "did must be a string"
-        assert isinstance(name, str), "name must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
+        assert isinstance(did, basestring), "did must be a string"
+        assert isinstance(name, basestring), "name must be a string"
 
         assert (len(did) > 4 or len(did) == 0), "did should be at least 5 digits"
-        assert len(bytes(did, "utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
-        assert len(bytes(name, "utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
+        assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
+        assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
         if did:

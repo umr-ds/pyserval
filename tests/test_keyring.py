@@ -8,7 +8,7 @@ from pyserval.keyring import ServalIdentity
 
 names = text(
     characters(blacklist_categories=('Cc', 'Cs')), min_size=1
-).map(lambda s: s.strip()).filter(lambda s: len(bytes(s, "utf-8")) < 64)
+).map(lambda s: s.strip()).filter(lambda s: len(s.encode("utf-8")) < 64)
 
 dids = text(
     sampled_from(['1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '0', '*']), min_size=5, max_size=31
