@@ -25,7 +25,9 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
 
 `pip install https://github.com/umr-ds/pyserval/archive/v0.1.2.tar.gz`
 
-## Running tests
+## Running the tests
+
+The tests require you to have `servald` from [serval-dna](https://github.com/servalproject/serval-dna) installed and available in your `PATH`. In order to have a consistent testing enviroment, a directory `/tmp/pyserval-tests/` to be used as the `SERVALINSTANCE_PATH`.
 
 1. Clone Project
 2. Install project to python-path

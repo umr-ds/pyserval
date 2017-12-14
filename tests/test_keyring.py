@@ -1,4 +1,8 @@
 import random
+import pytest
+import os
+import shutil
+import subprocess
 
 from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers
@@ -21,11 +25,30 @@ pins = text(
 new_keys = integers(min_value=3, max_value=10)
 
 
-keyring = ServalClient("localhost", port=4110, user="pum", passwd="pum123").keyring
+@pytest.fixture(scope="module")
+def serval_init():
+    # setip
+    # create temp-directory
+    os.mkdir("/tmp/pyserval-tests/")
+    # copy config
+    shutil.copy("data/serval.conf", "/tmp/pyserval-tests")
+    # set SERVALINSTANCE_PATH
+    os.putenv("SERVALINSTANCE_PATH", "/tmp/pyserval-tests/")
+    # start servald
+    subprocess.call(["servald", "start"])
+
+    yield ServalClient("localhost", port=4110, user="pum", passwd="pum123")
+
+    #teardown
+    # stop servald
+    subprocess.call(["servald", "stop"])
+    # delete temp-directory
+    shutil.rmtree("/tmp/pyserval-tests/")
 
 
-@given(pins)
-def test_add(pin):
+@given(pin=pins)
+def test_add(serval_init, pin):
+    keyring = serval_init.keyring
     n = len(keyring.get_identities())
     new_identity = keyring.add(pin)
     identities = keyring.get_identities()
@@ -35,9 +58,10 @@ def test_add(pin):
     assert keyring.get_identity(new_identity.sid) == new_identity
 
 
-@given(dids, names)
-def test_set(did, name):
+@given(did=dids, name=names)
+def test_set(serval_init, did, name):
     # setup
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     sid = random.choice(identities).sid
 
@@ -52,7 +76,8 @@ def test_set(did, name):
     assert identity.name == name
 
 
-def test_get_identities():
+def test_get_identities(serval_init):
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     assert isinstance(identities, list)
 
@@ -61,14 +86,16 @@ def test_get_identities():
         assert isinstance(identity, ServalIdentity)
 
 
-def test_get_identity():
+def test_get_identity(serval_init):
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     for identity in identities:
         check_identity = keyring.get_identity(identity.sid)
         assert check_identity == identity
 
 
-def test_remove():
+def test_remove(serval_init):
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     n = len(identities)
     while n > 0:
@@ -83,13 +110,15 @@ def test_remove():
         n = len(identities)
 
 
-@given(new_keys)
-def test_get_or_create(n):
+@given(n=new_keys)
+def test_get_or_create(serval_init, n):
+    keyring = serval_init.keyring
     identites = keyring.get_or_create(n)
     assert len(identites) == n
 
 
-def test_lock():
+def test_lock(serval_init):
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     n = len(identities)
     while n > 0:
