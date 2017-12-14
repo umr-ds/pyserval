@@ -13,7 +13,8 @@ dependencies = [
 
 test_dependencies = [
     'pytest',
-    'hypothesis'
+    'hypothesis',
+    'pytest-cov'
 ]
 
 

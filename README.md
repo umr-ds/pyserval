@@ -19,7 +19,7 @@ This code should run ob both Python 2.7 and 3.4+
 
 The only external dependency is [requests](https://github.com/requests/requests)
 
-In order to run the tests, you will need [hypothesis](https://github.com/HypothesisWorks/hypothesis-python) and [pytest](https://github.com/pytest-dev/pytest)
+In order to run the tests, you will need [hypothesis](https://github.com/HypothesisWorks/hypothesis-python) and [pytest](https://github.com/pytest-dev/pytest), as well as [pytest-cov](https://github.com/pytest-dev/pytest-cov) for coverage-reports.
 
 ## Installation
 
@@ -32,4 +32,4 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
     - You might want to use a virtualenv
     - You might also want to do an editable install with `pip install -e .`
 3. Install testing dependencies with `pip install .[test]`
-4. In the project root run `pytest`
+4. In the project root run `pytest --cov=pyserval`
