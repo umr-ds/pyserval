@@ -126,7 +126,8 @@ class MeshMS:
             sid (str): SID of a serval identity
 
         Returns:
-            List[Conversation]: List of all the conversations that the specified identity is taking part in
+            List[Conversation]: List of all the conversations
+                                that the specified identity is taking part in
         """
         result = self._connection.get("/restful/meshms/{}/conversationlist.json".format(sid)).json()
         conversations = unmarshall(json_table=result, object_class=Conversation)
@@ -146,7 +147,10 @@ class MeshMS:
             List[Message]: List of all the messages sent between the two identitites
         """
         # TODO: Is this one- or two-way?
-        result = self._connection.get("/restful/meshms/{}/{}/messagelist.json".format(sender, recipient)).json()
+        result = self._connection.get(
+            "/restful/meshms/{}/{}/messagelist.json".format(sender, recipient)
+        ).json()
+
         messages = unmarshall(json_table=result, object_class=Message)
         return messages
 
@@ -165,6 +169,14 @@ class MeshMS:
             message_type (str): MIME-type of the message (default: text/plain)
             charset (str): Character encoding (default: utf-8)
         """
-        multipart = [("message", ("message1", message, "{};charset={}".format(message_type, charset)))]
+        multipart = [
+            (
+                "message",
+                ("message1", message, "{};charset={}".format(message_type, charset))
+            )
+        ]
 
-        self._connection.post("/restful/meshms/{}/{}/sendmessage".format(sender, recipient), files=multipart)
+        self._connection.post(
+            "/restful/meshms/{}/{}/sendmessage".format(sender, recipient),
+            files=multipart
+        )

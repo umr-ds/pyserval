@@ -1,8 +1,10 @@
-import random
-import pytest
+"""Tests for pyserval.keyring"""
 import os
+import random
 import shutil
 import subprocess
+
+import pytest
 
 from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers
@@ -27,7 +29,11 @@ new_keys = integers(min_value=3, max_value=10)
 
 @pytest.fixture(scope="module")
 def serval_init():
-    # setip
+    """Test setup/teardown fixture, gets executed once for the module
+
+    Initialises serval and creates connection-object
+    """
+    # setup
     # create temp-directory
     os.mkdir("/tmp/pyserval-tests/")
     # copy config

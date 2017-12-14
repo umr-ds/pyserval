@@ -14,7 +14,8 @@ class Manifest:
 
     Args:
         id (str): Bundle ID - generated from Bundle Secret for new bundles
-        version (int): Version of the bundle - a bundle with a higher version will replace its old versions
+        version (int): Version of the bundle - a bundle with a higher version will replace
+                       its old versions
                        May be specified manually, otherwise will be UNIX-timestamp of update
         filsize (int): Size (in bytes) of payload
         service (str): Name of service to be published under
@@ -35,7 +36,8 @@ class Manifest:
 
     Attributes:
         id (str): Bundle ID - generated from Bundle Secret for new bundles
-        version (int): Version of the bundle - a bundle with a higher version will replace its old versions
+        version (int): Version of the bundle - a bundle with a higher version will replace
+                       its old versions
                        May be specified manually, otherwise will be UNIX-timestamp of update
         filsize (int): Size (in bytes) of payload
         service (str): Name of service to be published under
@@ -153,10 +155,12 @@ class Bundle:
         bundle_secret (str): Secret key used for bundle-signing
 
     Note:
-        If bundle_author is not set, then the bundle will be anonymous. In this case, the bundle_secret has to be
-        saved, or else it will be impossible to update the bundle later.
-        If bundle_author is set, then the bundle_secret will be encrypted by the identity's public key and stored
-        in the 'bk' field. This allows the secret to be recovered if the identity's private key is accessible.
+        If bundle_author is not set, then the bundle will be anonymous. In this case,
+        the bundle_secret has to be saved, or else it will be impossible to update the bundle later.
+        If bundle_author is set,
+        then the bundle_secret will be encrypted by the identity's public key
+        and stored in the 'bk' field.
+        This allows the secret to be recovered if the identity's private key is accessible.
 
     Attributes:
         manifest (Manifest): Manifest for the bundle (may be partial)
@@ -242,7 +246,10 @@ class Rhizome:
         for data in bundle_data:
             manifest = Manifest()
             # take only those values from data which belong into the manifest
-            manifest_data = {key: value for (key, value) in data.items() if key in manifest.__dict__.keys()}
+            manifest_data = {
+                key: value for (key, value) in data.items() if key in manifest.__dict__.keys()
+            }
+
             manifest.__dict__.update(**manifest_data)
 
             new_bundle = Bundle(self,
@@ -305,8 +312,11 @@ class Rhizome:
             str: Decrypted payload of the bundle
 
         Note:
-            If the payload is encrypted and the decryption key is known, the plaintext will be returned.
+            If the payload is encrypted and the decryption key is known,
+            the plaintext will be returned.
+
             If the payload is unencrypted, the plaintext will be returned
+
             If the payload is encrypted and the decryption key is unknown, the call will fail
         """
         decrypted = self._connection.get("/restful/rhizome/{}/decrypted.bin".format(bid)).text
@@ -356,7 +366,12 @@ class Rhizome:
         for (key, value) in dir(manifest):
             manifest_header += "{}={}\n".format(key, value)
 
-        params.append(("manifest", ("manifest1", manifest_header, "rhizome/manifest;format=\"text+binarysig\"")))
+        params.append(
+            (
+                "manifest",
+                ("manifest1", manifest_header, "rhizome/manifest;format=\"text+binarysig\"")
+            )
+        )
 
         params.append(("payload", ("file1", payload)))
 
@@ -379,12 +394,14 @@ class Rhizome:
         Args:
             manifest (Manifest): Manifest with new values; may be partial
             bundle_id (str): The Bundle ID of an existing bundle to update; 64 hexadecimal digits.
-                             If a bundle with this id exists and its secret is known or inferrable (see bundle_author),
+                             If a bundle with this id exists
+                             and its secret is known or inferrable (see bundle_author),
                              the bundle will be updated.
             bundle_author (str): SID of a local identity.
-                                 Supplying it will store an encrypted version of the bundle-secret in the 'BK' header
-            bundle_secret (str): Secret key to sign the bundle. May be inferred BK is set and there is a matching,
-                                 unlocked identity
+                                 Supplying it will store an encrypted version of the bundle-secret
+                                 in the 'BK' header
+            bundle_secret (str): Secret key to sign the bundle. May be inferred BK is set
+                                 and there is a matching, unlocked identity
             payload (Any): Optional new payload for the bundle
 
         Returns:
@@ -431,12 +448,13 @@ class Rhizome:
         Args:
             manifest (Manifest): Manifest with new values; may be partial
             bundle_id (str): The Bundle ID of an existing bundle to update; 64 hexadecimal digits.
-                             If a bundle with this id exists and its secret is known or inferrable (see bundle_author),
-                             the bundle will be updated.
+                             If a bundle with this id exists and its secret is known or
+                             inferrable (see bundle_author), the bundle will be updated.
             bundle_author (str): SID of a local identity.
-                                 Supplying it will store an encrypted version of the bundle-secret in the 'BK' header
-            bundle_secret (str): Secret key to sign the bundle. May be inferred BK is set and there is a matching,
-                                 unlocked identity
+                                 Supplying it will store an encrypted version of the bundle-secret
+                                 in the 'BK' header
+            bundle_secret (str): Secret key to sign the bundle. May be inferred BK is set
+                                 and there is a matching, unlocked identity
             payload (Any): Optional new payload for the bundle
 
         Returns:

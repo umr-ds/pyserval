@@ -7,6 +7,7 @@ This module contains the means to interact with the serval keyring
 """
 
 import sys
+
 from pyserval.util import unmarshall
 from pyserval.connection import RestfulConnection
 
@@ -49,7 +50,11 @@ class ServalIdentity:
         self.identity = identity
 
     def __repr__(self):
-        return "ServalIdentity(sid={}, did=\"{}\", name=\"{}\")".format(self.sid, self.did, self.name)
+        return "ServalIdentity(sid={}, did=\"{}\", name=\"{}\")".format(
+            self.sid,
+            self.did,
+            self.name
+        )
 
     def __str__(self):
         if self.name:
@@ -81,7 +86,8 @@ class ServalIdentity:
         """Sets the DID and/or name of this identity
 
         Args:
-            did (str): Sets the DID (phone number); must be a string of five or more digits from the set 123456789#0*
+            did (str): Sets the DID (phone number);
+                       must be a string of five or more digits from the set 123456789#0*
             name (str): Sets the name; must be non-empty
 
         Raises:
@@ -114,7 +120,7 @@ class ServalIdentity:
 
     def lock(self):
         """Locks this identity
-        
+
         Raises:
              NoSuchIdentityException: If this identity is no longer available
         """
@@ -128,7 +134,8 @@ class Keyring:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
     def __init__(self, connection):
-        assert isinstance(connection, RestfulConnection), "connection must be a RestfulConnection (from pyserval.connection)"
+        assert isinstance(connection, RestfulConnection), \
+            "connection must be a RestfulConnection (from pyserval.connection)"
 
         self._connection = connection
 
@@ -152,7 +159,11 @@ class Keyring:
         assert isinstance(operation, basestring), "operation must be a string"
         assert isinstance(params, dict), "params must be a dictionary"
 
-        result = self._connection.get("/restful/keyring/{}/{}".format(sid, operation), params=params)
+        result = self._connection.get(
+            "/restful/keyring/{}/{}".format(sid, operation),
+            params=params
+        )
+
         if result.status_code == 404:
             raise NoSuchIdentityException(sid)
 
@@ -169,7 +180,10 @@ class Keyring:
             List[ServalIdentity]: All currently unlocked identities
         """
         identities_json = self._connection.get("/restful/keyring/identities.json").json()
-        identities = unmarshall(json_table=identities_json, object_class=ServalIdentity, _keyring=self)
+        identities = unmarshall(
+            json_table=identities_json,
+            object_class=ServalIdentity,
+            _keyring=self)
         return identities
 
     def get_identity(self, sid):
@@ -221,7 +235,9 @@ class Keyring:
 
         Args:
             pin (str): If set the new identity will be protected by that passphrase,
-                       and the passphrase will be cached by Serval DNA so that the new identity is unlocked
+                       and the passphrase will be cached by Serval DNA
+                       so that the new identity is unlocked
+
                        May not include non-printable characters
                        NOTE:Even though 'pin' would imply numbers-only, it can be a arbitrary sting
 
@@ -302,7 +318,7 @@ class Keyring:
         assert isinstance(did, basestring), "did must be a string"
         assert isinstance(name, basestring), "name must be a string"
 
-        assert (len(did) > 4 or len(did) == 0), "did should be at least 5 digits"
+        assert (len(did) > 4 or not len), "did should be at least 5 digits"
         assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
         assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 

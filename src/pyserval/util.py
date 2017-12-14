@@ -72,7 +72,8 @@ def boolify(value):
 
 def autocast(value):
     """Tries to automatically cast a string into another type
-    Rhizome HTTP replies for manifests are always strings, but the underlying type might be different
+    Rhizome HTTP replies for manifests are always strings,
+    but the underlying type might be different
 
     Args:
         value (str): String which might represent a value of another type
@@ -104,7 +105,8 @@ def unmarshall(json_table, object_class, **kwargs):
         }
 
     Returns:
-        object_class: Instance of the specified class initialised with the data from json_table and kwargs
+        object_class: Instance of the specified class
+                      initialised with the data from json_table and kwargs
     """
     json_data = decode_json_table(json_table)
     objects = []

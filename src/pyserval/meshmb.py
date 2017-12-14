@@ -104,7 +104,8 @@ class Feed:
         """Follow this feed
 
         Args:
-            identity (str): Signing ID of an (unlocked) identity in the keyring which should follow this feed
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+                            which should follow this feed
         """
         self._meshmb.follow_feed(identity=identity, feedid=self.id)
 
@@ -112,7 +113,8 @@ class Feed:
         """Unfollow this feed
 
         Args:
-            identity (str): Signing ID of an (unlocked) identity in the keyring which should unfollow this feed
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+                            which should unfollow this feed
         """
         self._meshmb.unfollow_feed(identity=identity, feedid=self.id)
 
@@ -146,7 +148,12 @@ class MeshMB:
             message_type (str): MIME-type of the message (default: text/plain)
             charset (str): Character encoding (default: utf-8)
         """
-        multipart = [("message", ("message1", message, "{};charset={}".format(message_type, charset)))]
+        multipart = [
+            (
+                "message",
+                ("message1", message, "{};charset={}".format(message_type, charset))
+            )
+        ]
         self._connection.post("/restful/meshmb/{}/sendmessage".format(identity), files=multipart)
 
     def get_messages(self, feedid):
@@ -172,7 +179,8 @@ class MeshMB:
             POST /restful/meshmb/ID/follow/FEEDID
 
         Args:
-            identity (str): Signing ID of an (unlocked) identity in the keyring which should follow the feed
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+                            which should follow the feed
             feedid (str): Feed ID
         """
         self._connection.post("/restful/meshmb/{}/follow/{}".format(identity, feedid))
@@ -184,7 +192,8 @@ class MeshMB:
             POST /restful/meshmb/ID/ignore/FEEDID
 
         Args:
-            identity (str): Signing ID of an (unlocked) identity in the keyring which should unfollow the feed
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+                            which should unfollow the feed
             feedid (str): Feed ID
         """
         self._connection.post("/restful/meshmb/{}/ignore/{}".format(identity, feedid))
