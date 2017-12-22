@@ -6,7 +6,15 @@ pyserval.rhizome
 This module contains the means to interact with rhizome, the serval distributed file-store
 """
 
+import sys
+
 from pyserval.util import decode_json_table, autocast
+
+
+# python3 does not have the basestring type, since it does not have the unicode type
+# if we are running under python3, we just test for str
+if sys.version_info >= (3, 0, 0):
+    basestring = str
 
 
 class Manifest:
@@ -31,7 +39,7 @@ class Manifest:
         crypt (int): 1, if payload is encrypted, 0 otherwise
         bk (str): Bundle Key - Bundle secret encrypted with author's public key
                   Enable by setting 'bundle_author' in Rhizome.insert/append
-        kwargs (dict[str, Any]): Additional custom metadata
+        kwargs (basestring): Additional custom metadata
                                  (See examples.rhizome for useage)
 
     Attributes:
@@ -53,7 +61,7 @@ class Manifest:
         crypt (int): 1, if payload is encrypted, 0 otherwise
         bk (str): Bundle Key - Bundle secret encrypted with author's public key
                   Enable by setting 'bundle_author' in Rhizome.insert/append
-        kwargs (dict[str, Any]): Additional custom metadata
+        kwargs (basestring): Additional custom metadata
                                  (See examples.rhizome for useage)
     """
     def __init__(self,
