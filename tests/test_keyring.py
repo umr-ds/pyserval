@@ -37,7 +37,7 @@ def serval_init():
     # create temp-directory
     os.mkdir("/tmp/pyserval-tests/")
     # copy config
-    shutil.copy("data/serval.conf", "/tmp/pyserval-tests")
+    shutil.copy("tests/data/serval.conf", "/tmp/pyserval-tests")
     # set SERVALINSTANCE_PATH
     os.putenv("SERVALINSTANCE_PATH", "/tmp/pyserval-tests/")
     # start servald
@@ -45,7 +45,7 @@ def serval_init():
 
     yield ServalClient("localhost", port=4110, user="pum", passwd="pum123")
 
-    #teardown
+    # teardown
     # stop servald
     subprocess.call(["servald", "stop"])
     # delete temp-directory
