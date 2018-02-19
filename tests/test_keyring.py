@@ -1,15 +1,11 @@
 """Tests for pyserval.keyring"""
-import os
 import random
-import shutil
-import subprocess
 
 import pytest
 
 from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers
 
-from pyserval.client import ServalClient
 from pyserval.keyring import ServalIdentity, EndpointNotImplementedException
 
 names = text(
@@ -25,31 +21,6 @@ pins = text(
 )
 
 new_keys = integers(min_value=3, max_value=10)
-
-
-@pytest.fixture(scope="module")
-def serval_init():
-    """Test setup/teardown fixture, gets executed once for the module
-
-    Initialises serval and creates connection-object
-    """
-    # setup
-    # create temp-directory
-    os.mkdir("/tmp/pyserval-tests/")
-    # copy config
-    shutil.copy("tests/data/serval.conf", "/tmp/pyserval-tests")
-    # set SERVALINSTANCE_PATH
-    os.putenv("SERVALINSTANCE_PATH", "/tmp/pyserval-tests/")
-    # start servald
-    subprocess.call(["servald", "start"])
-
-    yield ServalClient("localhost", port=4110, user="pum", passwd="pum123")
-
-    # teardown
-    # stop servald
-    subprocess.call(["servald", "stop"])
-    # delete temp-directory
-    shutil.rmtree("/tmp/pyserval-tests/")
 
 
 @given(pin=pins)
