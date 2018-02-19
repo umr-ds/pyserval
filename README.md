@@ -7,6 +7,7 @@ Provides a client to interact with serval-dna's REST-interface natively in pytho
 The following functionality is implemented:
 
 - Serval Keyring
+  - The `GET /restful/keyring/SID/lock` endpoint is part of the serval documentation, but is not actually implemented
 - Rhizome (except GET /restful/rhizome/newsince[/TOKEN]/bundlelist.json)
 - MeshMS (except GET /restful/meshms/SENDERSID/RECIPIENTSID/newsince[/TOKEN]/messagelist.json)
 - MeshMB

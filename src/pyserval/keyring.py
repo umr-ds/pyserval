@@ -275,6 +275,8 @@ class Keyring:
     def lock(self, sid):
         """Locks an existing identity with a given SID
 
+        NOTE: While this endpoint appears in the serval documentation it does not actually exists!
+
         Endpoint:
             GET /restful/keyring/SID/lock
 
@@ -287,6 +289,9 @@ class Keyring:
         Returns:
             ServalIdentity: Object of the locked identity if successful
         """
+        # this shouldn't be necessary, but unfortuantely, it is
+        raise EndpointNotImplementedException("GET /restful/keyring/SID/lock")
+
         assert isinstance(sid, basestring), "sid must be a string"
 
         return self._modify(sid=sid, operation="lock", params={})
@@ -350,3 +355,24 @@ class NoSuchIdentityException(Exception):
 
     def __str__(self):
         return "No Identity with SID {} available".format(self.sid)
+
+
+class EndpointNotImplementedException(Exception):
+    """Exception raised when trying to use an endpoint which has not actually been implemented on the server side
+
+    While in a perfect world there *SHOULD* be no need for this exception,
+    serval does have documented endpoint which do not actually exist.
+    We find this just ab baffling as you probably do...
+
+    Args:
+        endpoint (str): Name of the 'fictional' endpoint
+
+    Attributes:
+        endpoint (str): Name of the 'fictional' endpoint
+    """
+
+    def __init__(self, endpoint):
+        self.endpoint = endpoint
+
+    def __str__(self):
+        return "The endpoint '{}' has not been implemented by the serval project."

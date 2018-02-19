@@ -10,7 +10,7 @@ from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers
 
 from pyserval.client import ServalClient
-from pyserval.keyring import ServalIdentity
+from pyserval.keyring import ServalIdentity, EndpointNotImplementedException
 
 names = text(
     characters(blacklist_categories=('Cc', 'Cs')), min_size=1
@@ -124,17 +124,20 @@ def test_get_or_create(serval_init, n):
 
 
 def test_lock(serval_init):
-    keyring = serval_init.keyring
-    identities = keyring.get_identities()
-    n = len(identities)
-    while n > 0:
-        identity = identities[0]
-        # FIXME: fails with no identity found
-        locked_identity = keyring.lock(identity.sid)
+    # while the locking capability is present in the official documentation, it does not actually exist
+    # which by the way, the docs do not mention...
+    # so this test will unfortunately always 'fail'
+    with pytest.raises(EndpointNotImplementedException):
+        keyring = serval_init.keyring
         identities = keyring.get_identities()
-
-        assert locked_identity == identity
-        assert len(identities) == n - 1
-        assert identity not in identities
-
         n = len(identities)
+        while n > 0:
+            identity = identities[0]
+            locked_identity = keyring.lock(identity.sid)
+            identities = keyring.get_identities()
+
+            assert locked_identity == identity
+            assert len(identities) == n - 1
+            assert identity not in identities
+
+            n = len(identities)
