@@ -6,7 +6,7 @@ import subprocess
 
 import pytest
 
-from pyserval.client import ServalClient
+from pyserval.lowlevel.client import ServalClient
 
 
 @pytest.fixture(scope="module")

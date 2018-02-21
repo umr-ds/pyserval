@@ -6,7 +6,7 @@ pyserval.meshmb
 This module contains the means to publish and subscribe MeshMB feeds
 """
 
-from pyserval.util import decode_json_table, unmarshall
+from pyserval.lowlevel.util import decode_json_table, unmarshall
 
 
 class BroadcastMessage:

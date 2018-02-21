@@ -8,8 +8,8 @@ This module contains the means to interact with the serval keyring
 
 import sys
 
-from pyserval.util import unmarshall
-from pyserval.connection import RestfulConnection
+from pyserval.lowlevel.util import unmarshall
+from pyserval.lowlevel.connection import RestfulConnection
 
 # python3 does not have the basestring type, since it does not have the unicode type
 # if we are running under python3, we just test for str

@@ -3,9 +3,9 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.client import ServalClient
-from pyserval.rhizome import Manifest
-from pyserval.util import generate_secret
+from pyserval.lowlevel.client import ServalClient
+from pyserval.lowlevel.rhizome import Manifest
+from pyserval.lowlevel.util import generate_secret
 
 
 def anonymous_journal(cli):

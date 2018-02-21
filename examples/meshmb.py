@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.client import ServalClient
+from pyserval.lowlevel.client import ServalClient
 
 
 if __name__ == "__main__":

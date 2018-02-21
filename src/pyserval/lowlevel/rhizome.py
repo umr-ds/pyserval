@@ -8,7 +8,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 import sys
 
-from pyserval.util import decode_json_table, autocast
+from pyserval.lowlevel.util import decode_json_table, autocast
 
 
 # python3 does not have the basestring type, since it does not have the unicode type

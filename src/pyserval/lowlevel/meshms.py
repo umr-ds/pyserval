@@ -6,7 +6,7 @@ pyserval.meshms
 This module contains the means to send and receive MeshMS-messages
 """
 
-from pyserval.util import unmarshall
+from pyserval.lowlevel.util import unmarshall
 
 
 class Message:

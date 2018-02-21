@@ -6,7 +6,7 @@ import pytest
 from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers
 
-from pyserval.keyring import ServalIdentity, EndpointNotImplementedException
+from pyserval.lowlevel.keyring import ServalIdentity, EndpointNotImplementedException
 
 names = text(
     characters(blacklist_categories=('Cc', 'Cs')), min_size=1

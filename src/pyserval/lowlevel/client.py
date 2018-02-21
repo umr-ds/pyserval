@@ -6,11 +6,11 @@ pyserval.client
 This module provides a high-level way to interact with serval
 """
 
-from pyserval.connection import RestfulConnection
-from pyserval.keyring import Keyring
-from pyserval.rhizome import Rhizome
-from pyserval.meshms import MeshMS
-from pyserval.meshmb import MeshMB
+from pyserval.lowlevel.connection import RestfulConnection
+from pyserval.lowlevel.keyring import Keyring
+from pyserval.lowlevel.rhizome import Rhizome
+from pyserval.lowlevel.meshms import MeshMS
+from pyserval.lowlevel.meshmb import MeshMB
 
 
 class ServalClient:
