@@ -20,10 +20,10 @@ if sys.version_info >= (3, 0, 0):
 
 
 class ServalIdentity:
-    """Representation of an indentity in the serval keyring
+    """Representation of an identity in the serval keyring
 
     Args:
-        _keyring (Keyring): Keyring containing this identity
+        _keyring (HighLevelKeyring): Keyring containing this identity
         sid (str): 'Serval ID' of this identity (required)
         identity(str): 'Serval Signing ID' of this identity (required)
         did (str): 'Dialled Identity' - phone number associated with this identity (optional)
@@ -40,7 +40,7 @@ class ServalIdentity:
         Both 'did' and 'name' should be set via the 'set'-method
     """
     def __init__(self, _keyring, sid, identity, did=None, name=None):
-        assert isinstance(_keyring, Keyring), "_keyring must be a Keyring"
+        assert isinstance(_keyring, HighLevelKeyring), "_keyring must be a HighLevelKeyring"
         assert isinstance(sid, basestring), "sid must be a string"
         assert (did is None or isinstance(did, basestring)), "did must be a string"
         assert (name is None or isinstance(name, basestring)), "name must be a string"
@@ -108,7 +108,7 @@ class ServalIdentity:
         if not name and self.name:
             name = self.name
 
-        self._keyring.set(sid=self.sid, did=did, name=name)
+        self._keyring.set(identity=self, did=did, name=name)
         self.did = did
         self.name = name
 
@@ -118,7 +118,7 @@ class ServalIdentity:
         Raises:
             NoSuchIdentityException: If this identity is no longer available
         """
-        self._keyring.remove(self.sid)
+        self._keyring.remove(identity=self)
 
 
 class HighLevelKeyring:
@@ -144,7 +144,7 @@ class HighLevelKeyring:
         """
         serval_reply = self.low_level_keyring.add(pin)
         reply_json = serval_reply.json()
-        return ServalIdentity(self.low_level_keyring, **reply_json["identity"])
+        return ServalIdentity(self, **reply_json["identity"])
 
     def get_identities(self):
         """List of all currently unlocked identities
@@ -161,7 +161,7 @@ class HighLevelKeyring:
         identities = unmarshall(
             json_table=response_json,
             object_class=ServalIdentity,
-            _keyring=self.low_level_keyring)
+            _keyring=self)
 
         return identities
 
@@ -206,27 +206,27 @@ class HighLevelKeyring:
                 identities.append(self.add())
         return identities[:n]
 
-    def remove(self, sid):
-        """Removes an existing identity with a given SID
+    def remove(self, identity):
+        """Removes an existing identity
         Endpoint:
             GET /restful/keyring/SID/remove
         Args:
-            sid (str): SID of the identity to be deleted
+            identity (ServalIdentity): Identity to be removed
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
         Returns:
             ServalIdentity: Object of the deleted identity if successful
         """
-        serval_reply = self.low_level_keyring.remove(sid)
+        serval_reply = self.low_level_keyring.remove(identity.sid)
         reply_json = serval_reply.json()
-        return ServalIdentity(self.low_level_keyring, **reply_json["identity"])
+        return ServalIdentity(self, **reply_json["identity"])
 
-    def set(self, sid, did="", name=""):
-        """Sets the DID and/or name of the unlocked identity that has the given SID
+    def set(self, identity, did="", name=""):
+        """Sets the DID and/or name of an unlocked identity
         Endpoint:
             GET /restful/keyring/SID/set
         Args:
-            sid (str): SID of the identity to be updated (required)
+            identity (ServalIdentity): Identity to be updated (required)
             did (str): sets the DID (phone number)
                        String of 5-31 digits from 0123456789#*
             name (str): sets the name (optional)
@@ -239,6 +239,6 @@ class HighLevelKeyring:
         Returns:
              ServalIdentity: Object of the updated identity if successful
         """
-        serval_reply = self.low_level_keyring.set(sid, did, name)
+        serval_reply = self.low_level_keyring.set(identity.sid, did, name)
         reply_json = serval_reply.json()
-        return ServalIdentity(self.low_level_keyring, **reply_json["identity"])
+        return ServalIdentity(self, **reply_json["identity"])

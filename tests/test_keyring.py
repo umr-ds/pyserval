@@ -38,15 +38,15 @@ def test_set(serval_init, did, name):
     # setup
     keyring = serval_init[1].keyring
     identities = keyring.get_identities()
-    sid = random.choice(identities).sid
+    random_identity = random.choice(identities)
 
     # test local identity
-    identity = keyring.set(sid, did, name)
+    identity = keyring.set(random_identity, did, name)
     assert identity.did == did
     assert identity.name == name
 
     # test remote state
-    identity = keyring.get_identity(sid)
+    identity = keyring.get_identity(random_identity.sid)
     assert identity.did == did
     assert identity.name == name
 
@@ -75,7 +75,7 @@ def test_remove(serval_init):
     n = len(identities)
     while n > 0:
         identity = identities[0]
-        removed_identity = keyring.remove(identity.sid)
+        removed_identity = keyring.remove(identity)
         identities = keyring.get_identities()
 
         assert removed_identity == identity
