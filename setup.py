@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
+
 def readme():
     with open('README.md') as f:
         return f.read()

@@ -10,6 +10,9 @@ from pyserval.lowlevel.client import ServalClient
 from pyserval.highlevel.highlevel_client import HighLevelClient
 
 
+serval_conf = "interfaces.0.match=lo\napi.restful.users.pum.password=pum123\n"
+
+
 @pytest.fixture(scope="module")
 def serval_init():
     """Test setup/teardown fixture, gets executed once for the module
@@ -19,10 +22,14 @@ def serval_init():
     # setup
     # create temp-directory
     os.mkdir("/tmp/pyserval-tests/")
-    # copy config
-    shutil.copy("tests/data/serval.conf", "/tmp/pyserval-tests")
+
+    # write config
+    with open("/tmp/pyserval-tests/serval.conf", "w+") as f:
+        f.write(serval_conf)
+
     # set SERVALINSTANCE_PATH
     os.putenv("SERVALINSTANCE_PATH", "/tmp/pyserval-tests/")
+
     # start servald
     subprocess.call(["servald", "start"])
 
@@ -34,5 +41,6 @@ def serval_init():
     # teardown
     # stop servald
     subprocess.call(["servald", "stop"])
+
     # delete temp-directory
     shutil.rmtree("/tmp/pyserval-tests/")
