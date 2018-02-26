@@ -206,6 +206,14 @@ class HighLevelKeyring:
                 identities.append(self.add())
         return identities[:n]
 
+    def default_identity(self):
+        """Returns the first unlocked identity (or creates one, if none exist)
+
+        Returns:
+            ServalIdentity: First unlocked (or created) identity
+        """
+        return self.get_or_create(1)[0]
+
     def remove(self, identity):
         """Removes an existing identity
         Endpoint:
