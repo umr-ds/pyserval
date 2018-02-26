@@ -1,12 +1,10 @@
-"""Tests for pyserval.keyring"""
+"""Tests for pyserval.highlevel.highlevel_keyring"""
 import random
-
-import pytest
 
 from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers
 
-from pyserval.lowlevel.keyring import ServalIdentity, EndpointNotImplementedException
+from pyserval.highlevel.highlevel_keyring import ServalIdentity
 
 names = text(
     characters(blacklist_categories=('Cc', 'Cs')), min_size=1
@@ -25,7 +23,7 @@ new_keys = integers(min_value=3, max_value=10)
 
 @given(pin=pins)
 def test_add(serval_init, pin):
-    keyring = serval_init.keyring
+    keyring = serval_init[1].keyring
     n = len(keyring.get_identities())
     new_identity = keyring.add(pin)
     identities = keyring.get_identities()
@@ -38,7 +36,7 @@ def test_add(serval_init, pin):
 @given(did=dids, name=names)
 def test_set(serval_init, did, name):
     # setup
-    keyring = serval_init.keyring
+    keyring = serval_init[1].keyring
     identities = keyring.get_identities()
     sid = random.choice(identities).sid
 
@@ -54,7 +52,7 @@ def test_set(serval_init, did, name):
 
 
 def test_get_identities(serval_init):
-    keyring = serval_init.keyring
+    keyring = serval_init[1].keyring
     identities = keyring.get_identities()
     assert isinstance(identities, list)
 
@@ -64,7 +62,7 @@ def test_get_identities(serval_init):
 
 
 def test_get_identity(serval_init):
-    keyring = serval_init.keyring
+    keyring = serval_init[1].keyring
     identities = keyring.get_identities()
     for identity in identities:
         check_identity = keyring.get_identity(identity.sid)
@@ -72,7 +70,7 @@ def test_get_identity(serval_init):
 
 
 def test_remove(serval_init):
-    keyring = serval_init.keyring
+    keyring = serval_init[1].keyring
     identities = keyring.get_identities()
     n = len(identities)
     while n > 0:
@@ -89,26 +87,6 @@ def test_remove(serval_init):
 
 @given(n=new_keys)
 def test_get_or_create(serval_init, n):
-    keyring = serval_init.keyring
+    keyring = serval_init[1].keyring
     identites = keyring.get_or_create(n)
     assert len(identites) == n
-
-
-def test_lock(serval_init):
-    # while the locking capability is present in the official documentation, it does not actually exist
-    # which by the way, the docs do not mention...
-    # so this test will unfortunately always 'fail'
-    with pytest.raises(EndpointNotImplementedException):
-        keyring = serval_init.keyring
-        identities = keyring.get_identities()
-        n = len(identities)
-        while n > 0:
-            identity = identities[0]
-            locked_identity = keyring.lock(identity.sid)
-            identities = keyring.get_identities()
-
-            assert locked_identity == identity
-            assert len(identities) == n - 1
-            assert identity not in identities
-
-            n = len(identities)

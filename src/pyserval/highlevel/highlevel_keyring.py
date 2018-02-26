@@ -161,7 +161,7 @@ class HighLevelKeyring:
         identities = unmarshall(
             json_table=response_json,
             object_class=ServalIdentity,
-            _keyring=self)
+            _keyring=self.low_level_keyring)
 
         return identities
 

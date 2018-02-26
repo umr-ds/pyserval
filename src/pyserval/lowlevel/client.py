@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.client
+pyserval.lowlevel.client
 ~~~~~~~~~~~~~~~
 
-This module provides a high-level way to interact with serval
+Collection of API-objects
 """
 
 from pyserval.lowlevel.connection import RestfulConnection
