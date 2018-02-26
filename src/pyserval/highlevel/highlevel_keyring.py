@@ -8,7 +8,9 @@ High level API for accessing the serval keyring
 
 import sys
 
+from pyserval.exceptions import NoSuchIdentityException
 from pyserval.lowlevel.keyring import Keyring
+from pyserval.lowlevel.util import unmarshall
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -118,15 +120,125 @@ class ServalIdentity:
         """
         self._keyring.remove(self.sid)
 
-    def lock(self):
-        """Locks this identity
-
-        Raises:
-             EndpointNotImplementedException: Because it's actually not possible to do this
-        """
-        self._keyring.lock(self.sid)
-
 
 class HighLevelKeyring:
     def __init__(self, connection):
         self.low_level_keyring = Keyring(connection)
+
+    def add(self, pin=""):
+        """Creates a new identity with a random SID
+
+        Endpoint:
+            GET /restful/keyring/add
+
+        Args:
+            pin (str): If set the new identity will be protected by that passphrase,
+                       and the passphrase will be cached by Serval DNA
+                       so that the new identity is unlocked
+
+                       May not include non-printable characters
+                       NOTE:Even though 'pin' would imply numbers-only, it can be a arbitrary sting
+
+        Returns:
+            ServalIdentity: Object of the newly created identity
+        """
+        serval_reply = self.low_level_keyring.add(pin)
+        reply_json = serval_reply.json()
+        return ServalIdentity(self.low_level_keyring, **reply_json["identity"])
+
+    def get_identities(self):
+        """List of all currently unlocked identities
+
+        Endpoint:
+            GET /restful/keyring/identities.json
+
+        Returns:
+            List[ServalIdentity]: All currently unlocked identities
+        """
+        serval_response = self.low_level_keyring.get_identities()
+        response_json = serval_response.json()
+
+        identities = unmarshall(
+            json_table=response_json,
+            object_class=ServalIdentity,
+            _keyring=self)
+
+        return identities
+
+    def get_identity(self, sid):
+        """Gets the identity for a given sid
+
+        Args:
+            sid (str): SID of the requested identity
+
+        Returns:
+            ServalIdentity: Identity-information associated with the given SID
+
+        Raises:
+            NoSuchIdentityException: If no identity with the specified SID is available
+        """
+        assert isinstance(sid, basestring), "sid must be a string"
+
+        identities = self.get_identities()
+        for identity in identities:
+            if identity.sid == sid:
+                return identity
+
+        raise NoSuchIdentityException(sid)
+
+    def get_or_create(self, n):
+        """Returns the first n unlocked identities in the keyring
+        If there are fewer than n, new identities will be created
+
+        Args:
+            n (int): Number of identities
+
+        Returns:
+            List[ServalIdentity]: N first unlocked identities
+        """
+        assert isinstance(n, int), "n must be an integer"
+        assert n >= 0, "n may not be negative"
+
+        identities = self.get_identities()
+        if len(identities) < n:
+            new_identities = n - len(identities)
+            for _ in range(new_identities):
+                identities.append(self.add())
+        return identities[:n]
+
+    def remove(self, sid):
+        """Removes an existing identity with a given SID
+        Endpoint:
+            GET /restful/keyring/SID/remove
+        Args:
+            sid (str): SID of the identity to be deleted
+        Raises:
+            NoSuchIdentityException: If no identity with the specified SID is available
+        Returns:
+            ServalIdentity: Object of the deleted identity if successful
+        """
+        serval_reply = self.low_level_keyring.remove(sid)
+        reply_json = serval_reply.json()
+        return ServalIdentity(self.low_level_keyring, **reply_json["identity"])
+
+    def set(self, sid, did="", name=""):
+        """Sets the DID and/or name of the unlocked identity that has the given SID
+        Endpoint:
+            GET /restful/keyring/SID/set
+        Args:
+            sid (str): SID of the identity to be updated (required)
+            did (str): sets the DID (phone number)
+                       String of 5-31 digits from 0123456789#*
+            name (str): sets the name (optional)
+                        String of at most 63 utf-8 bytes, may not include non-printable characters
+                        may not start or end with a whitespace
+        Note:
+            If did/name is not set, then the field will be reset if currently set in the keyring
+        Raises:
+            NoSuchIdentityException: If no identity with the specified SID is available
+        Returns:
+             ServalIdentity: Object of the updated identity if successful
+        """
+        serval_reply = self.low_level_keyring.set(sid, did, name)
+        reply_json = serval_reply.json()
+        return ServalIdentity(self.low_level_keyring, **reply_json["identity"])

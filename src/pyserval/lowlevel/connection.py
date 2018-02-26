@@ -35,7 +35,7 @@ class RestfulConnection:
             params (dict[str, Any]): Additional parameters to be sent with the request
 
         Returns:
-            requests.models.Response: Response retuned by the serval-server
+            requests.models.Response: Response returned by the serval-server
         """
         request = requests.get(self._BASE + path, auth=self._AUTH, **params)
         return request

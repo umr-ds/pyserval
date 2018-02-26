@@ -8,8 +8,7 @@ This module contains the means to interact with the serval keyring
 
 import sys
 
-from pyserval.exceptions import NoSuchIdentityException, EndpointNotImplementedException
-from pyserval.lowlevel.util import unmarshall
+from pyserval.exceptions import EndpointNotImplementedException
 from pyserval.lowlevel.connection import RestfulConnection
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -40,26 +39,17 @@ class Keyring:
             operation (str): Kind of operation to be executed on the identity
             params (dict[str, Any]): Additional parameters for the operation
 
-        Raises:
-             NoSuchIdentityException: If no identity with the specified SID is available
-
         Returns:
-             ServalIdentity: Object of the modified identity
+             requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, basestring), "sid must be a string"
         assert isinstance(operation, basestring), "operation must be a string"
         assert isinstance(params, dict), "params must be a dictionary"
 
-        result = self._connection.get(
+        return self._connection.get(
             "/restful/keyring/{}/{}".format(sid, operation),
             params=params
         )
-
-        if result.status_code == 404:
-            raise NoSuchIdentityException(sid)
-
-        result_json = result.json()
-        return ServalIdentity(self, **result_json["identity"])
 
     def get_identities(self):
         """List of all currently unlocked identities
@@ -68,55 +58,9 @@ class Keyring:
             GET /restful/keyring/identities.json
 
         Returns:
-            List[ServalIdentity]: All currently unlocked identities
+            requests.models.Response: Response returned by the serval-server
         """
-        identities_json = self._connection.get("/restful/keyring/identities.json").json()
-        identities = unmarshall(
-            json_table=identities_json,
-            object_class=ServalIdentity,
-            _keyring=self)
-        return identities
-
-    def get_identity(self, sid):
-        """Gets the identity for a given sid
-
-        Args:
-            sid (str): SID of the requested identity
-
-        Returns:
-            ServalIdentity: Identity-information associated with the given SID
-
-        Raises:
-            NoSuchIdentityException: If no identity with the specified SID is available
-        """
-        assert isinstance(sid, basestring), "sid must be a string"
-
-        identities = self.get_identities()
-        for identity in identities:
-            if identity.sid == sid:
-                return identity
-
-        raise NoSuchIdentityException(sid)
-
-    def get_or_create(self, n):
-        """Returns the first n unlocked identities in the keyring
-        If there are fewer than n, new identities will be created
-
-        Args:
-            n (int): Number of identities
-
-        Returns:
-            List[ServalIdentity]: N first unlocked identities
-        """
-        assert isinstance(n, int), "n must be an integer"
-        assert n >= 0, "n may not be negative"
-
-        identities = self.get_identities()
-        if len(identities) < n:
-            new_identities = n - len(identities)
-            for _ in range(new_identities):
-                identities.append(self.add())
-        return identities[:n]
+        return self._connection.get("/restful/keyring/identities.json")
 
     def add(self, pin=""):
         """Creates a new identity with a random SID
@@ -133,7 +77,7 @@ class Keyring:
                        NOTE:Even though 'pin' would imply numbers-only, it can be a arbitrary sting
 
         Returns:
-            ServalIdentity: Object of the newly created identity
+            requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(pin, basestring), "pin must be a string"
 
@@ -141,8 +85,7 @@ class Keyring:
         if pin:
             params['pin'] = pin
 
-        request_json = self._connection.get("/restful/keyring/add", params=params).json()
-        return ServalIdentity(self, **request_json["identity"])
+        return self._connection.get("/restful/keyring/add", params=params)
 
     def remove(self, sid):
         """Removes an existing identity with a given SID
@@ -157,7 +100,7 @@ class Keyring:
             NoSuchIdentityException: If no identity with the specified SID is available
 
         Returns:
-            ServalIdentity: Object of the deleted identity if successful
+            requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, basestring), "sid must be a string"
 
@@ -205,7 +148,7 @@ class Keyring:
             NoSuchIdentityException: If no identity with the specified SID is available
 
         Returns:
-             ServalIdentity: Object of the updated identity if successful
+             requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, basestring), "sid must be a string"
         assert isinstance(did, basestring), "did must be a string"
