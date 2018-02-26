@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.keyring
+pyserval.lowlevel.keyring
 ~~~~~~~~~~~~~~~~
 
 This module contains the means to interact with the serval keyring
@@ -8,6 +8,7 @@ This module contains the means to interact with the serval keyring
 
 import sys
 
+from pyserval.exceptions import NoSuchIdentityException, EndpointNotImplementedException
 from pyserval.lowlevel.util import unmarshall
 from pyserval.lowlevel.connection import RestfulConnection
 
@@ -15,116 +16,6 @@ from pyserval.lowlevel.connection import RestfulConnection
 # if we are running under python3, we just test for str
 if sys.version_info >= (3, 0, 0):
     basestring = str
-
-
-class ServalIdentity:
-    """Representation of an indentity in the serval keyring
-
-    Args:
-        _keyring (Keyring): Keyring containing this identity
-        sid (str): 'Serval ID' of this identity (required)
-        identity(str): 'Serval Signing ID' of this identity (required)
-        did (str): 'Dialled Identity' - phone number associated with this identity (optional)
-        name (str): Human-readable name for this identity (optional)
-
-    Attributes:
-        sid (str): 'Serval ID' of this identity (required)
-        identity(str): 'Serval Signing ID' of this identity (required)
-        did (str): 'Dialled Identity' - phone number associated with this identity (optional)
-        name (str): Human-readable name for this identity (optional)
-
-    Note:
-        Both 'sid' and 'identity' are public keys and may be shared
-        Both 'did' and 'name' should be set via the 'set'-method
-    """
-    def __init__(self, _keyring, sid, identity, did=None, name=None):
-        assert isinstance(_keyring, Keyring), "_keyring must be a Keyring"
-        assert isinstance(sid, basestring), "sid must be a string"
-        assert (did is None or isinstance(did, basestring)), "did must be a string"
-        assert (name is None or isinstance(name, basestring)), "name must be a string"
-
-        self._keyring = _keyring
-        self.sid = sid
-        self.did = did
-        self.name = name
-        self.identity = identity
-
-    def __repr__(self):
-        return "ServalIdentity(sid={}, did=\"{}\", name=\"{}\")".format(
-            self.sid,
-            self.did,
-            self.name
-        )
-
-    def __str__(self):
-        if self.name:
-            return self.name
-        if self.did:
-            return "did:{}".format(self.did)
-        else:
-            return "{}*".format(self.sid[:16])
-
-    def __eq__(self, other):
-        if not type(other) == type(self):
-            return False
-        return (self.sid == other.sid and
-                self.did == other.did and
-                self.name == other.name and
-                self.identity == other.identity)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def refresh(self):
-        """Refreshes Information for the Identity"""
-        identities = self._keyring.get_identities()
-        for identity in identities:
-            if identity.sid == self.sid:
-                self.__dict__.update(identity.__dict__)
-
-    def set(self, did="", name=""):
-        """Sets the DID and/or name of this identity
-
-        Args:
-            did (str): Sets the DID (phone number);
-                       must be a string of five or more digits from the set 123456789#0*
-            name (str): Sets the name; must be non-empty
-
-        Raises:
-            NoSuchIdentityException: If this identity is no longer available
-        """
-        assert isinstance(did, basestring), "did must be a string"
-        assert isinstance(name, basestring), "name must be a string"
-
-        # make sure that we have the current state
-        self.refresh()
-
-        # serval will remove already set names when updating did and vice-versa.
-        # So the name/did needs to be sent with the change request
-        if not did and self.did:
-            did = self.did
-        if not name and self.name:
-            name = self.name
-
-        self._keyring.set(sid=self.sid, did=did, name=name)
-        self.did = did
-        self.name = name
-
-    def remove(self):
-        """Removes this Identity from the Keyring
-
-        Raises:
-            NoSuchIdentityException: If this identity is no longer available
-        """
-        self._keyring.remove(self.sid)
-
-    def lock(self):
-        """Locks this identity
-
-        Raises:
-             NoSuchIdentityException: If this identity is no longer available
-        """
-        self._keyring.lock(self.sid)
 
 
 class Keyring:
@@ -135,7 +26,7 @@ class Keyring:
     """
     def __init__(self, connection):
         assert isinstance(connection, RestfulConnection), \
-            "connection must be a RestfulConnection (from pyserval.connection)"
+            "connection must be a RestfulConnection (from pyserval.lowlevel.connection)"
 
         self._connection = connection
 
@@ -284,17 +175,14 @@ class Keyring:
             sid (str): SID of the identity to be locked
 
         Raises:
-            NoSuchIdentityException: If no identity with the specified SID is available
-
-        Returns:
-            ServalIdentity: Object of the locked identity if successful
+            EndpointNotImplementedException: Because it's actually not possible to do this
         """
-        # this shouldn't be necessary, but unfortuantely, it is
+        # this shouldn't be necessary, but unfortunately, it is
         raise EndpointNotImplementedException("GET /restful/keyring/SID/lock")
 
-        assert isinstance(sid, basestring), "sid must be a string"
-
-        return self._modify(sid=sid, operation="lock", params={})
+        # If the endpoint is ever actually implemented, uncomment this code and remove the exception
+        # assert isinstance(sid, basestring), "sid must be a string"
+        # return self._modify(sid=sid, operation="lock", params={})
 
     def set(self, sid, did="", name=""):
         """Sets the DID and/or name of the unlocked identity that has the given SID
@@ -334,45 +222,3 @@ class Keyring:
             params['name'] = name
 
         return self._modify(sid=sid, operation="set", params=params)
-
-
-class NoSuchIdentityException(Exception):
-    """Exception raised when trying to operate on a non-available identity
-
-    This may either mean that the identity does not exists, or that it is not unlocked
-    (https://github.com/servalproject/pyserval-dna/blob/development/doc/REST-API-Keyring.md#pin)
-    There is no way to distinguish between these cases
-
-    Args:
-        sid (str): SID of the identity
-
-    Attributes:
-        sid (str): SID of the identity
-    """
-
-    def __init__(self, sid):
-        self.sid = sid
-
-    def __str__(self):
-        return "No Identity with SID {} available".format(self.sid)
-
-
-class EndpointNotImplementedException(Exception):
-    """Exception raised when trying to use an endpoint which has not actually been implemented on the server side
-
-    While in a perfect world there *SHOULD* be no need for this exception,
-    serval does have documented endpoint which do not actually exist.
-    We find this just ab baffling as you probably do...
-
-    Args:
-        endpoint (str): Name of the 'fictional' endpoint
-
-    Attributes:
-        endpoint (str): Name of the 'fictional' endpoint
-    """
-
-    def __init__(self, endpoint):
-        self.endpoint = endpoint
-
-    def __str__(self):
-        return "The endpoint '{}' has not been implemented by the serval project."

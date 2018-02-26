@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ["highlevel", "lowlevel"]
+__all__ = ["highlevel", "lowlevel", "exceptions"]
 
 __title__ = 'pyserval'
 __version__ = '0.1.2'
