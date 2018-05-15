@@ -62,7 +62,21 @@ class Keyring:
         """
         return self._connection.get("/restful/keyring/identities.json")
 
-    def add(self, pin=""):
+    def get_identity(self, sid):
+        """Get the details of a specific identity
+
+        Endpoint:
+            GET /restful/keyring/SID
+
+        Args:
+            sid (str): SID of the identity
+
+        Returns:
+            requests.models.Response: Response returned by the serval-server
+        """
+        return self._connection.get("/restful/keyring/{}".format(sid))
+
+    def add(self, pin="", did="", name=""):
         """Creates a new identity with a random SID
 
         Endpoint:
@@ -75,17 +89,32 @@ class Keyring:
 
                        May not include non-printable characters
                        NOTE:Even though 'pin' would imply numbers-only, it can be a arbitrary sting
+            did (str): sets the DID (phone number)
+                       String of 5-31 digits from 0123456789#*
+            name (str): sets the name (optional)
+                        String of at most 63 utf-8 bytes, may not include non-printable characters
+                        may not start or end with a whitespace
 
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(pin, basestring), "pin must be a string"
+        assert isinstance(did, basestring), "did must be a string"
+        assert isinstance(name, basestring), "name must be a string"
+
+        assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
+        assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
+        assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
         if pin:
             params['pin'] = pin
+        if name:
+            params['name'] = name
+        if did:
+            params['did'] = did
 
-        return self._connection.get("/restful/keyring/add", params=params)
+        return self._connection.post("/restful/keyring/add", params=params)
 
     def remove(self, sid):
         """Removes an existing identity with a given SID
@@ -154,7 +183,7 @@ class Keyring:
         assert isinstance(did, basestring), "did must be a string"
         assert isinstance(name, basestring), "name must be a string"
 
-        assert (len(did) > 4 or not len), "did should be at least 5 digits"
+        assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
         assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
         assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 

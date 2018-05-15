@@ -125,7 +125,7 @@ class HighLevelKeyring:
     def __init__(self, connection):
         self.low_level_keyring = Keyring(connection)
 
-    def add(self, pin=""):
+    def add(self, pin="", did="", name=""):
         """Creates a new identity with a random SID
 
         Endpoint:
@@ -138,11 +138,16 @@ class HighLevelKeyring:
 
                        May not include non-printable characters
                        NOTE:Even though 'pin' would imply numbers-only, it can be a arbitrary sting
+            did (str): sets the DID (phone number)
+                       String of 5-31 digits from 0123456789#*
+            name (str): sets the name (optional)
+                        String of at most 63 utf-8 bytes, may not include non-printable characters
+                        may not start or end with a whitespace
 
         Returns:
             ServalIdentity: Object of the newly created identity
         """
-        serval_reply = self.low_level_keyring.add(pin)
+        serval_reply = self.low_level_keyring.add(pin=pin, did=did, name=name)
         reply_json = serval_reply.json()
         return ServalIdentity(self, **reply_json["identity"])
 
@@ -179,12 +184,14 @@ class HighLevelKeyring:
         """
         assert isinstance(sid, basestring), "sid must be a string"
 
-        identities = self.get_identities()
-        for identity in identities:
-            if identity.sid == sid:
-                return identity
+        serval_response = self.low_level_keyring.get_identity(sid)
 
-        raise NoSuchIdentityException(sid)
+        if serval_response.status_code == 404:
+            raise NoSuchIdentityException
+
+        response_json = serval_response.json()
+
+        return ServalIdentity(self, **response_json["identity"])
 
     def get_or_create(self, n):
         """Returns the first n unlocked identities in the keyring
