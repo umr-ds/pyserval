@@ -47,10 +47,10 @@ if __name__ == "__main__":
     print("New Identity with PIN: {}".format(new_identity_pin.sid))
 
     # Create a new identity with both a name and a did
-    # new_identity_name = keyring.add(name="A Name", did="123456")
-    # print("New Identity with name and DID: {}".format(new_identity_name))
+    new_identity_name = keyring.add(name="A Name", did="123456")
+    print("New Identity with name and DID: {}".format(new_identity_name))
 
     # Get a list of 5 identities from the keyring, if there are fewer than 5 unlocked identities available
     # new ones will be created
-    # five_identities = keyring.get_or_create(5)
-    # print("5 Identities: {}".format(five_identities))
+    five_identities = keyring.get_or_create(5)
+    print("5 Identities: {}".format(five_identities))
