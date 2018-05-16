@@ -7,7 +7,7 @@ import subprocess
 import pytest
 
 from pyserval.lowlevel.client import LowLevelClient
-from pyserval.highlevel.highlevel_client import HighLevelClient
+from pyserval.highlevel.client import HighLevelClient
 
 
 serval_conf = "interfaces.0.match=lo\napi.restful.users.pum.password=pum123\n"

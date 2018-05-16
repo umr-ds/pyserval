@@ -7,7 +7,7 @@ This module provides a high-level way to interact with serval
 """
 
 from pyserval.lowlevel.connection import RestfulConnection
-from pyserval.highlevel.highlevel_keyring import HighLevelKeyring
+from pyserval.highlevel.keyring import HighLevelKeyring
 
 
 class HighLevelClient:
