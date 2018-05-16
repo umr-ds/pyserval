@@ -138,23 +138,17 @@ class Keyring:
     def lock(self, sid):
         """Locks an existing identity with a given SID
 
-        NOTE: While this endpoint appears in the serval documentation it does not actually exists!
-
         Endpoint:
-            GET /restful/keyring/SID/lock
+            PUT /restful/keyring/SID/lock
 
         Args:
             sid (str): SID of the identity to be locked
 
-        Raises:
-            EndpointNotImplementedException: Because it's actually not possible to do this
+        Returns:
+            requests.models.Response: Response returned by the serval-server
         """
-        # this shouldn't be necessary, but unfortunately, it is
-        raise EndpointNotImplementedException("GET /restful/keyring/SID/lock")
-
-        # If the endpoint is ever actually implemented, uncomment this code and remove the exception
-        # assert isinstance(sid, basestring), "sid must be a string"
-        # return self._modify(sid=sid, operation="lock", params={})
+        assert isinstance(sid, basestring), "sid must be a string"
+        return self._connection.put("/restful/keyring/{}/lock".format(sid))
 
     def set(self, sid, did="", name=""):
         """Sets the DID and/or name of the unlocked identity that has the given SID

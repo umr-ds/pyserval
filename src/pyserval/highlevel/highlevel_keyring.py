@@ -120,6 +120,14 @@ class ServalIdentity:
         """
         self._keyring.delete(identity=self)
 
+    def lock(self):
+        """Locks this identity - can be unlocked again with its pin
+
+        Raises:
+            NoSuchIdentityException: If this identity is no longer available
+        """
+        self._keyring.lock(identity=self)
+
 
 class HighLevelKeyring:
     def __init__(self, connection):
@@ -270,3 +278,22 @@ class HighLevelKeyring:
         serval_reply = self.low_level_keyring.set(identity.sid, did, name)
         reply_json = serval_reply.json()
         return ServalIdentity(self, **reply_json["identity"])
+
+    def lock(self, identity):
+        """Locks an identity - you will need the pin to unlock it again
+
+        NOTE: This endpoint does not work as documented - it does not return the locked identity's details on success
+
+        Endpoint:
+            PUT /restful/keyring/SID/lock
+
+        Args:
+            identity (ServalIdentity): Identity to be locked
+
+        Raises:
+            NoSuchIdentityException: If no identity with the specified SID is available
+        """
+        serval_response = self.low_level_keyring.lock(identity.sid)
+
+        if serval_response.status_code == 404:
+            raise NoSuchIdentityException(identity.sid)

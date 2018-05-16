@@ -62,3 +62,11 @@ if __name__ == "__main__":
     # You can also tell an identity to delete itself
     five_identities[1].delete()
     print("Deleted Itself: {}".format(five_identities[1].sid))
+
+    # Lock an identity
+    keyring.lock(five_identities[2])
+    print("Locked Identity: {}".format(five_identities[2].sid))
+
+    # Identities can also lock themselves
+    five_identities[3].lock()
+    print("Locked itself: {}".format(five_identities[3].sid))
