@@ -81,11 +81,13 @@ class ServalIdentity:
         return not self.__eq__(other)
 
     def refresh(self):
-        """Refreshes Information for the Identity"""
-        identities = self._keyring.get_identities()
-        for identity in identities:
-            if identity.sid == self.sid:
-                self.__dict__.update(identity.__dict__)
+        """Refreshes Information for the Identity
+
+        Raises:
+            NoSuchIdentityException: If this identity is no longer available
+        """
+        refreshed = self._keyring.get_identity(self.sid)
+        self.__dict__.update(refreshed.__dict__)
 
     def set(self, did="", name=""):
         """Sets the DID and/or name of this identity
