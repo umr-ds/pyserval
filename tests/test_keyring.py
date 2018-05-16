@@ -41,14 +41,29 @@ def test_set(serval_init, did, name):
     random_identity = random.choice(identities)
 
     # test local identity
-    identity = keyring.set(random_identity, did, name)
-    assert identity.did == did
-    assert identity.name == name
+    identity = keyring.set(random_identity, did=did, name=name)
+    # if name or did is emptystring, it is not changed
+    if did:
+        assert identity.did == did
+    else:
+        assert identity.did == random_identity.did
+
+    if name:
+        assert identity.name == name
+    else:
+        assert identity.name == random_identity.name
 
     # test remote state
     identity = keyring.get_identity(random_identity.sid)
-    assert identity.did == did
-    assert identity.name == name
+    if did:
+        assert identity.did == did
+    else:
+        assert identity.did == random_identity.did
+
+    if name:
+        assert identity.name == name
+    else:
+        assert identity.name == random_identity.name
 
 
 def test_get_identities(serval_init):

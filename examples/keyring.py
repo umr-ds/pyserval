@@ -51,7 +51,7 @@ if __name__ == "__main__":
     print("New Identity with name and DID: {}".format(new_identity_name))
 
     # Modify name and did
-    modified_identity = keyring.set(new_identity_name, did="654321", name="Another Name")
+    modified_identity = keyring.set(new_identity_name, did='11111', name='')
     print("Modified Identity: {}".format(modified_identity))
 
     # Get a list of 5 identities from the keyring, if there are fewer than 5 unlocked identities available
