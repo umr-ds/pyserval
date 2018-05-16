@@ -52,3 +52,14 @@ class RestfulConnection:
         """
         request = requests.post(self._BASE + path, auth=self._AUTH, **params)
         return request
+
+    def delete(self, path):
+        """Sends DELETE-request to REST-API
+
+        Args:
+            path (str): (relative) path to the REST-endpoint
+
+        Returns:
+            requests.models.Response: Response returned by the serval-server
+        """
+        return requests.delete("{}{}".format(self._BASE, path), auth=self._AUTH)

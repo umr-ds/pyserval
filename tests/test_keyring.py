@@ -75,7 +75,7 @@ def test_remove(serval_init):
     n = len(identities)
     while n > 0:
         identity = identities[0]
-        removed_identity = keyring.remove(identity)
+        removed_identity = keyring.delete(identity)
         identities = keyring.get_identities()
 
         assert removed_identity == identity

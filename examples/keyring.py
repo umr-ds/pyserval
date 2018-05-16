@@ -54,3 +54,11 @@ if __name__ == "__main__":
     # new ones will be created
     five_identities = keyring.get_or_create(5)
     print("5 Identities: {}".format(five_identities))
+
+    # Delete one of the identities
+    deleted_identity = keyring.delete(five_identities[0])
+    print("Deleted Identity: {}".format(deleted_identity.sid))
+
+    # You can also tell an identity to delete itself
+    five_identities[1].delete()
+    print("Deleted Itself: {}".format(five_identities[1].sid))

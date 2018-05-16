@@ -112,13 +112,13 @@ class ServalIdentity:
         self.did = did
         self.name = name
 
-    def remove(self):
+    def delete(self):
         """Removes this Identity from the Keyring
 
         Raises:
             NoSuchIdentityException: If this identity is no longer available
         """
-        self._keyring.remove(identity=self)
+        self._keyring.delete(identity=self)
 
 
 class HighLevelKeyring:
@@ -187,7 +187,7 @@ class HighLevelKeyring:
         serval_response = self.low_level_keyring.get_identity(sid)
 
         if serval_response.status_code == 404:
-            raise NoSuchIdentityException
+            raise NoSuchIdentityException(sid)
 
         response_json = serval_response.json()
 
@@ -221,25 +221,35 @@ class HighLevelKeyring:
         """
         return self.get_or_create(1)[0]
 
-    def remove(self, identity):
+    def delete(self, identity):
         """Removes an existing identity
+
         Endpoint:
             GET /restful/keyring/SID/remove
+
         Args:
             identity (ServalIdentity): Identity to be removed
+
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
+
         Returns:
             ServalIdentity: Object of the deleted identity if successful
         """
-        serval_reply = self.low_level_keyring.remove(identity.sid)
-        reply_json = serval_reply.json()
+        serval_response = self.low_level_keyring.delete(identity.sid)
+
+        if serval_response.status_code == 404:
+            raise NoSuchIdentityException(identity.sid)
+
+        reply_json = serval_response.json()
         return ServalIdentity(self, **reply_json["identity"])
 
     def set(self, identity, did="", name=""):
         """Sets the DID and/or name of an unlocked identity
+
         Endpoint:
             GET /restful/keyring/SID/set
+
         Args:
             identity (ServalIdentity): Identity to be updated (required)
             did (str): sets the DID (phone number)
@@ -247,10 +257,13 @@ class HighLevelKeyring:
             name (str): sets the name (optional)
                         String of at most 63 utf-8 bytes, may not include non-printable characters
                         may not start or end with a whitespace
+
         Note:
             If did/name is not set, then the field will be reset if currently set in the keyring
+
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
+
         Returns:
              ServalIdentity: Object of the updated identity if successful
         """

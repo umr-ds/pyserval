@@ -116,12 +116,12 @@ class Keyring:
 
         return self._connection.post("/restful/keyring/add", params=params)
 
-    def remove(self, sid):
-        """Removes an existing identity with a given SID
+    def delete(self, sid):
+        """Deletes an existing identity with a given SID
 
         Endpoint:
-            GET /restful/keyring/SID/remove
-
+            DELETE /restful/keyring/SID
+            
         Args:
             sid (str): SID of the identity to be deleted
 
@@ -133,7 +133,7 @@ class Keyring:
         """
         assert isinstance(sid, basestring), "sid must be a string"
 
-        return self._modify(sid=sid, operation="remove", params={})
+        return self._connection.delete("/restful/keyring/{}".format(sid))
 
     def lock(self, sid):
         """Locks an existing identity with a given SID
