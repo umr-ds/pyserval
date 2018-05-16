@@ -136,9 +136,6 @@ class HighLevelKeyring:
     def add(self, pin="", did="", name=""):
         """Creates a new identity with a random SID
 
-        Endpoint:
-            GET /restful/keyring/add
-
         Args:
             pin (str): If set the new identity will be protected by that passphrase,
                        and the passphrase will be cached by Serval DNA
@@ -159,16 +156,16 @@ class HighLevelKeyring:
         reply_json = serval_reply.json()
         return ServalIdentity(self, **reply_json["identity"])
 
-    def get_identities(self):
+    def get_identities(self, pin=""):
         """List of all currently unlocked identities
 
-        Endpoint:
-            GET /restful/keyring/identities.json
+        Args:
+            pin (str): Passphrase to unlock identity prior to lookup
 
         Returns:
             List[ServalIdentity]: All currently unlocked identities
         """
-        serval_response = self.low_level_keyring.get_identities()
+        serval_response = self.low_level_keyring.get_identities(pin=pin)
         response_json = serval_response.json()
 
         identities = unmarshall(
@@ -178,11 +175,12 @@ class HighLevelKeyring:
 
         return identities
 
-    def get_identity(self, sid):
+    def get_identity(self, sid, pin=""):
         """Gets the identity for a given sid
 
         Args:
             sid (str): SID of the requested identity
+            pin (str): Passphrase to unlock identity prior to lookup
 
         Returns:
             ServalIdentity: Identity-information associated with the given SID
@@ -192,7 +190,7 @@ class HighLevelKeyring:
         """
         assert isinstance(sid, basestring), "sid must be a string"
 
-        serval_response = self.low_level_keyring.get_identity(sid)
+        serval_response = self.low_level_keyring.get_identity(sid=sid, pin=pin)
 
         if serval_response.status_code == 404:
             raise NoSuchIdentityException(sid)
@@ -229,14 +227,12 @@ class HighLevelKeyring:
         """
         return self.get_or_create(1)[0]
 
-    def delete(self, identity):
+    def delete(self, identity, pin=""):
         """Removes an existing identity
-
-        Endpoint:
-            GET /restful/keyring/SID/remove
 
         Args:
             identity (ServalIdentity): Identity to be removed
+            pin (str): Passphrase to unlock identity prior to deletion
 
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
@@ -244,7 +240,7 @@ class HighLevelKeyring:
         Returns:
             ServalIdentity: Object of the deleted identity if successful
         """
-        serval_response = self.low_level_keyring.delete(identity.sid)
+        serval_response = self.low_level_keyring.delete(sid=identity.sid, pin=pin)
 
         if serval_response.status_code == 404:
             raise NoSuchIdentityException(identity.sid)
@@ -254,9 +250,6 @@ class HighLevelKeyring:
 
     def set(self, identity, did="", name=""):
         """Sets the DID and/or name of an unlocked identity
-
-        Endpoint:
-            GET /restful/keyring/SID/set
 
         Args:
             identity (ServalIdentity): Identity to be updated (required)
@@ -283,9 +276,6 @@ class HighLevelKeyring:
         """Locks an identity - you will need the pin to unlock it again
 
         NOTE: This endpoint does not work as documented - it does not return the locked identity's details on success
-
-        Endpoint:
-            PUT /restful/keyring/SID/lock
 
         Args:
             identity (ServalIdentity): Identity to be locked

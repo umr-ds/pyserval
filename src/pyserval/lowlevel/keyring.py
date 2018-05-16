@@ -51,18 +51,27 @@ class Keyring:
             params=params
         )
 
-    def get_identities(self):
+    def get_identities(self, pin=""):
         """List of all currently unlocked identities
 
         Endpoint:
             GET /restful/keyring/identities.json
 
+        Args:
+            pin (str): Passphrase to unlock identity prior to lookup
+
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return self._connection.get("/restful/keyring/identities.json")
+        assert isinstance(pin, basestring), "pin must be a string"
 
-    def get_identity(self, sid):
+        params = {}
+        if pin:
+            params['pin'] = pin
+
+        return self._connection.get("/restful/keyring/identities.json", params=params)
+
+    def get_identity(self, sid, pin=""):
         """Get the details of a specific identity
 
         Endpoint:
@@ -70,11 +79,18 @@ class Keyring:
 
         Args:
             sid (str): SID of the identity
+            pin (str): Passphrase to unlock identity prior to lookup
 
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return self._connection.get("/restful/keyring/{}".format(sid))
+        assert isinstance(pin, basestring), "pin must be a string"
+
+        params = {}
+        if pin:
+            params['pin'] = pin
+
+        return self._connection.get("/restful/keyring/{}".format(sid), params=params)
 
     def add(self, pin="", did="", name=""):
         """Creates a new identity with a random SID
@@ -116,7 +132,7 @@ class Keyring:
 
         return self._connection.post("/restful/keyring/add", params=params)
 
-    def delete(self, sid):
+    def delete(self, sid, pin=""):
         """Deletes an existing identity with a given SID
 
         Endpoint:
@@ -124,6 +140,7 @@ class Keyring:
 
         Args:
             sid (str): SID of the identity to be deleted
+            pin (str): Passphrase to unlock identity prior to deletion
 
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
@@ -132,8 +149,13 @@ class Keyring:
             requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, basestring), "sid must be a string"
+        assert isinstance(pin, basestring), "pin must be a string"
 
-        return self._connection.delete("/restful/keyring/{}".format(sid))
+        params = {}
+        if pin:
+            params['pin'] = pin
+
+        return self._connection.delete("/restful/keyring/{}".format(sid), params=params)
 
     def lock(self, sid):
         """Locks an existing identity with a given SID
