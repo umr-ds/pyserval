@@ -142,9 +142,6 @@ class Keyring:
             sid (str): SID of the identity to be deleted
             pin (str): Passphrase to unlock identity prior to deletion
 
-        Raises:
-            NoSuchIdentityException: If no identity with the specified SID is available
-
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
@@ -172,7 +169,7 @@ class Keyring:
         assert isinstance(sid, basestring), "sid must be a string"
         return self._connection.put("/restful/keyring/{}/lock".format(sid))
 
-    def set(self, sid, did="", name=""):
+    def set(self, sid, pin="", did="", name=""):
         """Sets the DID and/or name of the unlocked identity that has the given SID
 
         Endpoint:
@@ -180,17 +177,12 @@ class Keyring:
 
         Args:
             sid (str): SID of the identity to be updated (required)
+            pin (str): Passphrase to unlock identity prior to modification
             did (str): sets the DID (phone number)
                        String of 5-31 digits from 0123456789#*
             name (str): sets the name (optional)
                         String of at most 63 utf-8 bytes, may not include non-printable characters
                         may not start or end with a whitespace
-
-        Note:
-            If did/name is not set, then the field will be reset if currently set in the keyring
-
-        Raises:
-            NoSuchIdentityException: If no identity with the specified SID is available
 
         Returns:
              requests.models.Response: Response returned by the serval-server
@@ -199,14 +191,16 @@ class Keyring:
         assert isinstance(did, basestring), "did must be a string"
         assert isinstance(name, basestring), "name must be a string"
 
-        assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
-        assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
-        assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
+        # assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
+        # assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
+        # assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
+        if pin:
+            params['pin'] = pin
         if did:
             params['did'] = did
         if name:
             params['name'] = name
 
-        return self._modify(sid=sid, operation="set", params=params)
+        return self._connection.patch("/restful/keyring/{}".format(sid), params=params)

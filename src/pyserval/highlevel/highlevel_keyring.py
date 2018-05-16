@@ -39,11 +39,16 @@ class ServalIdentity:
         Both 'sid' and 'identity' are public keys and may be shared
         Both 'did' and 'name' should be set via the 'set'-method
     """
-    def __init__(self, _keyring, sid, identity, did=None, name=None):
+    def __init__(self, _keyring, sid, identity, did="", name=""):
+        if did is None:
+            did = ""
+        if name is None:
+            name = ""
+
         assert isinstance(_keyring, HighLevelKeyring), "_keyring must be a HighLevelKeyring"
         assert isinstance(sid, basestring), "sid must be a string"
-        assert (did is None or isinstance(did, basestring)), "did must be a string"
-        assert (name is None or isinstance(name, basestring)), "name must be a string"
+        assert isinstance(did, basestring), "did must be a string"
+        assert isinstance(name, basestring), "name must be a string"
 
         self._keyring = _keyring
         self.sid = sid
@@ -59,10 +64,8 @@ class ServalIdentity:
         )
 
     def __str__(self):
-        if self.name:
-            return self.name
-        if self.did:
-            return "did:{}".format(self.did)
+        if self.name or self.did:
+            return "(Name: {}, DID: {})".format(self.name, self.did)
         else:
             return "{}*".format(self.sid[:16])
 
@@ -100,13 +103,6 @@ class ServalIdentity:
 
         # make sure that we have the current state
         self.refresh()
-
-        # serval will remove already set names when updating did and vice-versa.
-        # So the name/did needs to be sent with the change request
-        if not did and self.did:
-            did = self.did
-        if not name and self.name:
-            name = self.name
 
         self._keyring.set(identity=self, did=did, name=name)
         self.did = did
@@ -248,19 +244,17 @@ class HighLevelKeyring:
         reply_json = serval_response.json()
         return ServalIdentity(self, **reply_json["identity"])
 
-    def set(self, identity, did="", name=""):
+    def set(self, identity, pin="", did="", name=""):
         """Sets the DID and/or name of an unlocked identity
 
         Args:
             identity (ServalIdentity): Identity to be updated (required)
+            pin (str): Passphrase to unlock identity prior to modification
             did (str): sets the DID (phone number)
                        String of 5-31 digits from 0123456789#*
             name (str): sets the name (optional)
                         String of at most 63 utf-8 bytes, may not include non-printable characters
                         may not start or end with a whitespace
-
-        Note:
-            If did/name is not set, then the field will be reset if currently set in the keyring
 
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
@@ -268,9 +262,14 @@ class HighLevelKeyring:
         Returns:
              ServalIdentity: Object of the updated identity if successful
         """
-        serval_reply = self.low_level_keyring.set(identity.sid, did, name)
-        reply_json = serval_reply.json()
-        return ServalIdentity(self, **reply_json["identity"])
+        serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
+
+        if serval_response.status_code == 404:
+            raise NoSuchIdentityException(identity.sid)
+
+        response_json = serval_response.json()
+
+        return ServalIdentity(self, **response_json["identity"])
 
     def lock(self, identity):
         """Locks an identity - you will need the pin to unlock it again
