@@ -7,13 +7,13 @@ Collection of API-objects
 """
 
 from pyserval.lowlevel.connection import RestfulConnection
-from pyserval.lowlevel.keyring import Keyring
-from pyserval.lowlevel.rhizome import Rhizome
+from pyserval.lowlevel.keyring import LowLevelKeyring
+from pyserval.lowlevel.rhizome import LowLevelRhizome
 from pyserval.lowlevel.meshms import MeshMS
 from pyserval.lowlevel.meshmb import MeshMB
 
 
-class ServalClient:
+class LowLevelClient:
     """Meta-Class to access package functionality
 
     Allows for the automatic initialisation of all API-objects at once.
@@ -36,7 +36,7 @@ class ServalClient:
     """
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
         self._connection = RestfulConnection(host=host, port=port, user=user, passwd=passwd)
-        self.keyring = Keyring(self._connection)
-        self.rhizome = Rhizome(self._connection)
+        self.keyring = LowLevelKeyring(self._connection)
+        self.rhizome = LowLevelRhizome(self._connection)
         self.meshms = MeshMS(self._connection)
         self.meshmb = MeshMB(self._connection)

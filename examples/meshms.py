@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.lowlevel.client import ServalClient
+from pyserval.lowlevel.client import LowLevelClient
 
 
 if __name__ == "__main__":
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    client = ServalClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    client = LowLevelClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
 
     # get first two identites in the keyring
     sender, recipient = client.keyring.get_or_create(2)

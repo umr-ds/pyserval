@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.lowlevel.client import ServalClient
+from pyserval.lowlevel.client import LowLevelClient
 from pyserval.lowlevel.rhizome import Manifest
 from pyserval.lowlevel.util import generate_secret
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    c = ServalClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    c = LowLevelClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
 
     journal = anonymous_journal(c)
     bundle = bundle_with_author(c)

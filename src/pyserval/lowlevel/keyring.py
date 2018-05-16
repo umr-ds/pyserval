@@ -17,7 +17,7 @@ if sys.version_info >= (3, 0, 0):
     basestring = str
 
 
-class Keyring:
+class LowLevelKeyring:
     """Interface to access keyring-related endpoints of the REST-interface
 
     Args:

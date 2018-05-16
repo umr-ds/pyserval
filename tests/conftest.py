@@ -6,7 +6,7 @@ import subprocess
 
 import pytest
 
-from pyserval.lowlevel.client import ServalClient
+from pyserval.lowlevel.client import LowLevelClient
 from pyserval.highlevel.highlevel_client import HighLevelClient
 
 
@@ -33,7 +33,7 @@ def serval_init():
     # start servald
     subprocess.call(["servald", "start"])
 
-    low_level_client = ServalClient("localhost", port=4110, user="pum", passwd="pum123")
+    low_level_client = LowLevelClient("localhost", port=4110, user="pum", passwd="pum123")
     high_level_client = HighLevelClient("localhost", port=4110, user="pum", passwd="pum123")
 
     yield low_level_client, high_level_client

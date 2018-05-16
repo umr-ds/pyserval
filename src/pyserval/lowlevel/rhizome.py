@@ -153,7 +153,7 @@ class Bundle:
     """Representation of a Rhizome-bundle
 
     Args:
-        rhizome (Rhizome): Interface-object to interact with the Rhizome REST-interface
+        rhizome (LowLevelRhizome): Interface-object to interact with the Rhizome REST-interface
         manifest (Manifest): Manifest for the bundle (may be partial)
         payload (Any): Payload of the bundle
                        (may be empty if bundle is not a journal)
@@ -225,7 +225,7 @@ class Bundle:
         self.__dict__.update(updated.__dict__)
 
 
-class Rhizome:
+class LowLevelRhizome:
     """Interface to access Rhizome-related endpoints of the REST-interface
 
     Args:

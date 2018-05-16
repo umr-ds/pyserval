@@ -9,7 +9,7 @@ High level API for accessing the serval keyring
 import sys
 
 from pyserval.exceptions import NoSuchIdentityException
-from pyserval.lowlevel.keyring import Keyring
+from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.util import unmarshall
 
 
@@ -129,7 +129,7 @@ class ServalIdentity:
 
 class HighLevelKeyring:
     def __init__(self, connection):
-        self.low_level_keyring = Keyring(connection)
+        self.low_level_keyring = LowLevelKeyring(connection)
 
     def add(self, pin="", did="", name=""):
         """Creates a new identity with a random SID
