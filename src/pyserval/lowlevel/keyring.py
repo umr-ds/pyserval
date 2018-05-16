@@ -80,7 +80,7 @@ class Keyring:
         """Creates a new identity with a random SID
 
         Endpoint:
-            GET /restful/keyring/add
+            POST /restful/keyring/add
 
         Args:
             pin (str): If set the new identity will be protected by that passphrase,
@@ -121,7 +121,7 @@ class Keyring:
 
         Endpoint:
             DELETE /restful/keyring/SID
-            
+
         Args:
             sid (str): SID of the identity to be deleted
 
