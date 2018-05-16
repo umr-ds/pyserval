@@ -37,8 +37,7 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        request = requests.get(self._BASE + path, auth=self._AUTH, **params)
-        return request
+        return requests.get(self._BASE + path, auth=self._AUTH, **params)
 
     def post(self, path, **params):
         """Sends POST-request to REST-API
@@ -50,16 +49,40 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        request = requests.post(self._BASE + path, auth=self._AUTH, **params)
-        return request
+        return requests.post(self._BASE + path, auth=self._AUTH, **params)
 
-    def delete(self, path):
-        """Sends DELETE-request to REST-API
+    def put(self, path, **params):
+        """Sends PUT-request to REST-API
 
         Args:
             path (str): (relative) path to the REST-endpoint
+            params (dict[str, Any]): Additional parameters to be sent with the request
 
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return requests.delete("{}{}".format(self._BASE, path), auth=self._AUTH)
+        return requests.put(self._BASE + path, auth=self._AUTH, **params)
+
+    def delete(self, path, **params):
+        """Sends DELETE-request to REST-API
+
+        Args:
+            path (str): (relative) path to the REST-endpoint
+            params (dict[str, Any]): Additional parameters to be sent with the request
+
+        Returns:
+            requests.models.Response: Response returned by the serval-server
+        """
+        return requests.delete("{}{}".format(self._BASE, path), auth=self._AUTH, **params)
+
+    def patch(self, path, **params):
+        """Sends PATCH-request to REST-API
+
+        Args:
+            path (str): (relative) path to the REST-endpoint
+            params (dict[str, Any]): Additional parameters to be sent with the request
+
+        Returns:
+            requests.models.Response: Response returned by the serval-server
+        """
+        return requests.patch(self._BASE + path, auth=self._AUTH, **params)
