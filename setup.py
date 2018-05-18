@@ -49,7 +49,7 @@ setup(
     ],
     keywords='serval dtn',
     license='MIT',
-    packages=find_packages(exclude=['docs', 'tests']),
+    packages=find_packages(exclude=['docs', 'tests', 'examples']),
     install_requires=dependencies,
     extras_require=extras,
     zip_safe=True,
