@@ -2,7 +2,7 @@
 import random
 
 from hypothesis import given
-from hypothesis.strategies import text, characters, sampled_from, integers
+from hypothesis.strategies import text, characters, sampled_from, integers, booleans
 
 from pyserval.highlevel.keyring import ServalIdentity
 
@@ -19,6 +19,8 @@ pins = text(
 )
 
 new_keys = integers(min_value=3, max_value=10)
+
+bools = booleans()
 
 
 @given(pin=pins)
@@ -64,6 +66,31 @@ def test_set(serval_init, did, name):
         assert identity.name == name
     else:
         assert identity.name == random_identity.name
+
+
+@given(did=bools, name=bools)
+def test_reset(serval_init, did, name):
+    # setup
+    keyring = serval_init[1].keyring
+    identities = keyring.get_identities()
+    random_identity = random.choice(identities)
+
+    identity = keyring.reset(identity=random_identity, name=name, did=did)
+    remote_identity = keyring.get_identity(sid=random_identity.sid)
+
+    if did:
+        assert identity.did == ""
+        assert remote_identity.did == ""
+    else:
+        assert identity.did == random_identity.did
+        assert remote_identity.did == random_identity.did
+
+    if name:
+        assert identity.name == ""
+        assert remote_identity.name == ""
+    else:
+        assert identity.name == random_identity.name
+        assert remote_identity.name == random_identity.name
 
 
 def test_get_identities(serval_init):

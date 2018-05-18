@@ -264,6 +264,56 @@ class HighLevelKeyring:
         Returns:
              ServalIdentity: Object of the updated identity if successful
         """
+        assert isinstance(identity, ServalIdentity), "identity must be a ServalIdentity"
+        assert isinstance(pin, basestring), "PIN must be a string"
+        assert isinstance(did, basestring), "did must be a string"
+        assert isinstance(name, basestring), "name must be a string"
+
+        # If you want to reset did and/or name, use the reset-method
+        if not len(did):
+            did = None
+        if not len(name):
+            name = None
+
+        serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
+
+        if serval_response.status_code == 404:
+            raise NoSuchIdentityException(identity.sid)
+
+        response_json = serval_response.json()
+
+        return ServalIdentity(self, **response_json["identity"])
+
+    def reset(self, identity, pin="", did=False, name=False):
+        """Reset Name and/or DID of an identity
+
+        Args:
+            identity (ServalIdentity): Identity to be updated (required)
+            pin (str): Passphrase to unlock identity prior to modification
+            did (bool): Whether the DID should be reset
+            name (bool): Whether the Name should be reset
+
+        Raises:
+            NoSuchIdentityException: If no identity with the specified SID is available
+
+        Returns:
+             ServalIdentity: Object of the updated identity if successful
+        """
+        assert isinstance(identity, ServalIdentity), "identity must be a ServalIdentity"
+        assert isinstance(pin, basestring), "PIN must be a string"
+        assert isinstance(did, bool), "did must be a boolean"
+        assert isinstance(name, bool), "name must be a boolean"
+
+        if did:
+            did = ""
+        else:
+            did = None
+
+        if name:
+            name = ""
+        else:
+            name = None
+
         serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
 
         if serval_response.status_code == 404:

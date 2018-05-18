@@ -169,7 +169,7 @@ class LowLevelKeyring:
         assert isinstance(sid, basestring), "sid must be a string"
         return self._connection.put("/restful/keyring/{}/lock".format(sid))
 
-    def set(self, sid, pin="", did="", name=""):
+    def set(self, sid, pin="", did=None, name=None):
         """Sets the DID and/or name of the unlocked identity that has the given SID
 
         Endpoint:
@@ -178,9 +178,9 @@ class LowLevelKeyring:
         Args:
             sid (str): SID of the identity to be updated (required)
             pin (str): Passphrase to unlock identity prior to modification
-            did (str): sets the DID (phone number)
+            did (Union[str, None]): sets the DID (phone number)
                        String of 5-31 digits from 0123456789#*
-            name (str): sets the name (optional)
+            name (Union[str, None]): sets the name (optional)
                         String of at most 63 utf-8 bytes, may not include non-printable characters
                         may not start or end with a whitespace
 
@@ -188,19 +188,22 @@ class LowLevelKeyring:
              requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, basestring), "sid must be a string"
-        assert isinstance(did, basestring), "did must be a string"
-        assert isinstance(name, basestring), "name must be a string"
+        assert isinstance(sid, basestring), "sid must be a string"
+        assert (did is None or isinstance(did, basestring)), "did must be a string"
+        if did is not None:
+            assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
+            assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
 
-        assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
-        assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
-        assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
+        assert (name is None or isinstance(name, basestring)), "name must be a string"
+        if name is not None:
+            assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
         if pin:
             params['pin'] = pin
-        if did:
+        if did is not None:
             params['did'] = did
-        if name:
+        if name is not None:
             params['name'] = name
 
         return self._connection.patch("/restful/keyring/{}".format(sid), params=params)
