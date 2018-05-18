@@ -276,8 +276,6 @@ class HighLevelKeyring:
     def lock(self, identity):
         """Locks an identity - you will need the pin to unlock it again
 
-        NOTE: This endpoint does not work as documented - it does not return the locked identity's details on success
-
         Args:
             identity (ServalIdentity): Identity to be locked
 
@@ -288,3 +286,7 @@ class HighLevelKeyring:
 
         if serval_response.status_code == 404:
             raise NoSuchIdentityException(identity.sid)
+
+        response_json = serval_response.json()
+
+        return ServalIdentity(self, **response_json["identity"])
