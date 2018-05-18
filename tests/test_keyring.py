@@ -105,3 +105,23 @@ def test_get_or_create(serval_init, n):
     keyring = serval_init[1].keyring
     identites = keyring.get_or_create(n)
     assert len(identites) == n
+
+
+@given(did=dids, name=names)
+def test_identity_refresh(serval_init, did, name):
+    """Test the 'refresh' method of the ServalIdentity Class"""
+    keyring = serval_init[1].keyring
+    identities = keyring.get_identities()
+    random_identity = random.choice(identities)
+
+    # set name & did to new values
+    keyring.set(identity=random_identity, did=did, name=name)
+
+    # refresh identity
+    random_identity.refresh()
+
+    # check if new local state is valid
+    if did:
+        assert random_identity.did == did
+    if name:
+        assert random_identity.name == name

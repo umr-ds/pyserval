@@ -191,9 +191,9 @@ class LowLevelKeyring:
         assert isinstance(did, basestring), "did must be a string"
         assert isinstance(name, basestring), "name must be a string"
 
-        # assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
-        # assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
-        # assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
+        assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
+        assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
+        assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
         if pin:

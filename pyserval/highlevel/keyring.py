@@ -86,7 +86,7 @@ class ServalIdentity:
         Raises:
             NoSuchIdentityException: If this identity is no longer available
         """
-        refreshed = self._keyring.get_identity(self.sid)
+        refreshed = self._keyring.get_identity(sid=self.sid)
         self.__dict__.update(refreshed.__dict__)
 
     def set(self, did="", name=""):

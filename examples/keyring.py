@@ -33,6 +33,11 @@ if __name__ == "__main__":
     print("Identities:")
     print(keyring.get_identities())
 
+    # If you don't care about the exact identity, you can just get a default one
+    # NOTE: if there are no unlocked identities in your keyring, a new one will be created
+    default_identity = keyring.default_identity()
+    print("Default identity: {}".format(default_identity))
+
     # Create a new Identity
     new_identity = keyring.add()
     print("New Identity: {}".format(new_identity.sid))
@@ -74,3 +79,11 @@ if __name__ == "__main__":
     # Identities can also lock themselves
     five_identities[3].lock()
     print("Locked itself: {}".format(five_identities[3].sid))
+
+    # The ServalIdentity-Class has a number of convenient auxilliary methods
+    # If you want to be sure that your local state is not stale, you can have an identity refresh its information
+
+    refreshed_identity = keyring.default_identity()
+    keyring.set(identity=refreshed_identity, name="Will be refreshed")
+    refreshed_identity.refresh()
+    print("Refreshed identity: {}".format(refreshed_identity))
