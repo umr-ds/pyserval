@@ -33,5 +33,5 @@ The tests require you to have `servald` from [serval-dna](https://github.com/ser
 2. Install project to python-path
     - You might want to use a virtualenv
     - You might also want to do an editable install with `pip install -e .`
-3. Install testing dependencies with `pip install .[test]`
+3. Install testing dependencies with `pip install -r requirements.txt`
 4. In the project root run `pytest --cov=pyserval`

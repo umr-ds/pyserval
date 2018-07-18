@@ -20,16 +20,6 @@ dependencies = [
     'requests',
 ]
 
-test_dependencies = [
-    'pytest',
-    'hypothesis',
-    'pytest-cov'
-]
-
-extras = {
-    'test': test_dependencies,
-}
-
 setup(
     name='pyserval',
     version='0.2',
@@ -51,7 +41,6 @@ setup(
     license='MIT',
     packages=find_packages(exclude=['docs', 'tests', 'examples']),
     install_requires=dependencies,
-    extras_require=extras,
     zip_safe=True,
     project_urls={
         'Bug Reports': 'https://github.com/umr-ds/pyserval/issues',
