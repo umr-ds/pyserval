@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.highlevel.gighlevel_keyring
+pyserval.keyring
 ~~~~~~~~~~~~~~~~
 
 High level API for accessing the serval keyring
@@ -23,7 +23,7 @@ class ServalIdentity:
     """Representation of an identity in the serval keyring
 
     Args:
-        _keyring (HighLevelKeyring): Keyring containing this identity
+        _keyring (Keyring): Keyring containing this identity
         sid (str): 'Serval ID' of this identity (required)
         identity(str): 'Serval Signing ID' of this identity (required)
         did (str): 'Dialled Identity' - phone number associated with this identity (optional)
@@ -45,7 +45,7 @@ class ServalIdentity:
         if name is None:
             name = ""
 
-        assert isinstance(_keyring, HighLevelKeyring), "_keyring must be a HighLevelKeyring"
+        assert isinstance(_keyring, Keyring), "_keyring must be a HighLevelKeyring"
         assert isinstance(sid, basestring), "sid must be a string"
         assert isinstance(did, basestring), "did must be a string"
         assert isinstance(name, basestring), "name must be a string"
@@ -127,7 +127,7 @@ class ServalIdentity:
         self._keyring.lock(identity=self)
 
 
-class HighLevelKeyring:
+class Keyring:
     def __init__(self, connection):
         self.low_level_keyring = LowLevelKeyring(connection)
 

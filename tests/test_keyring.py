@@ -4,7 +4,7 @@ import random
 from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers, booleans
 
-from pyserval.highlevel.keyring import ServalIdentity
+from pyserval.keyring import ServalIdentity
 
 names = text(
     characters(blacklist_categories=('Cc', 'Cs')), min_size=1
