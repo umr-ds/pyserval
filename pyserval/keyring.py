@@ -128,8 +128,14 @@ class ServalIdentity:
 
 
 class Keyring:
-    def __init__(self, connection):
-        self.low_level_keyring = LowLevelKeyring(connection)
+    """High-level interface to interact with the serval keyring
+
+    Args:
+        low_level_keyring (LowLevelKeyring): Instance of the LowLevelKeyring used to perform the basic requests
+    """
+    def __init__(self, low_level_keyring):
+        assert isinstance(low_level_keyring, LowLevelKeyring)
+        self.low_level_keyring = low_level_keyring
 
     def add(self, pin="", did="", name=""):
         """Creates a new identity with a random SID

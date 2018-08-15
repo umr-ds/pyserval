@@ -14,9 +14,10 @@ from pyserval.lowlevel.meshmb import MeshMB
 
 
 class LowLevelClient:
-    """Meta-Class to access package functionality
+    """Aggregates the low level API-interfaces in one place
 
-    Allows for the automatic initialisation of all API-objects at once.
+    If you do not have a specific reason to use the low-level primitives,
+    you should probably go with the high-level client
 
     Args:
         host (str): Hostname to connect to
