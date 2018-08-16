@@ -10,7 +10,8 @@ import sys
 
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
-from pyserval.exceptions import ManifestNotFoundError
+from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
+from pyserval.exceptions import DecryptionError
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -242,14 +243,56 @@ class Rhizome:
 
         Returns:
             str: Payload of the bundle
+
+        Note:
+            For documentation on possible status code combinations, see
+            https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#get-restfulrhizomebidrawbin
         """
         assert isinstance(bundle, Bundle)
 
-        # TODO: Check status and raise proper exceptions
-
         if bundle.manifest.crypt == 1:
             serval_reply = self._low_level_rhizome.get_decrypted(bundle.bundle_id)
-            return serval_reply.text
+
+            if serval_reply.status_code == 200:
+                return serval_reply.text
+
+            elif serval_reply.status_code == 404:
+                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+
+                if bundle_status == 0:
+                    raise ManifestNotFoundError(bid=bundle.bundle_id)
+
+                elif bundle_status == 1 and payload_status == 1:
+                    raise PayloadNotFoundError(bid=bundle.bundle_id)
+
+                else:
+                    raise UnknownRhizomeStatusError(
+                        serval_response=serval_reply
+                    )
+
+            elif serval_reply.status_code == 419:
+                raise DecryptionError(bid=bundle.bundle_id)
+
         else:
             serval_reply = self._low_level_rhizome.get_raw(bundle.bundle_id)
-            return serval_reply.text
+
+            if serval_reply.status_code == 200:
+                return serval_reply.text
+
+            elif serval_reply.status_code == 404:
+                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+                if bundle_status == 0:
+                    raise ManifestNotFoundError(bid=bundle.bundle_id)
+                elif bundle_status == 1 and payload_status == 1:
+                    raise PayloadNotFoundError(bid=bundle.bundle_id)
+                else:
+                    raise UnknownRhizomeStatusError(
+                        serval_response=serval_reply
+                    )
+
+        # if we don't recognise the status code combination, raise the appropriate error
+        raise UnknownRhizomeStatusError(
+            serval_response=serval_reply
+        )

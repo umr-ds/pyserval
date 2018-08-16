@@ -8,6 +8,8 @@ Collected exceptions
 
 import sys
 
+from requests.models import Response
+
 # python3 does not have the basestring type, since it does not have the unicode type
 # if we are running under python3, we just test for str
 if sys.version_info >= (3, 0, 0):
@@ -84,3 +86,48 @@ class PayloadNotFoundError(Exception):
 
     def __str__(self):
         return "Bundle {} appears to have no payload".format(self.bid)
+
+
+class DecryptionError(Exception):
+    """Raised if trying to decrypt a bundle's payload without having the necessary key
+
+    Args:
+        bid (str): Bundle ID of the bundle
+    """
+    def __init__(self, bid):
+        assert isinstance(bid, basestring)
+        self.bid = bid
+
+    def __str__(self):
+        return "Can't decrypt bundle payload, BID: {}".format(self.bid)
+
+
+class UnknownRhizomeStatusError(Exception):
+    """Raised for rhizome responses with an unknown combination of HTTP/Bundle/Payload status
+
+    Args:
+        serval_response (requests.models.Response): Response returned by the serval-server
+
+    Attributes:
+        http_status (int): HTTP status code of the response
+        bundle_status (int): bundle status code of the response
+        payload_status (int): payload status of the response
+
+    Note:
+        For documentation on the rhizome specific status codes, see
+        https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#bundle-status-code
+        https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#payload-status-code
+    """
+    def __init__(self, serval_response):
+        assert isinstance(serval_response, Response)
+
+        self.http_status = serval_response.status_code
+        self.bundle_status = serval_response.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+        self.payload_status = serval_response.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+
+    def __str__(self):
+        return "Unknown status code combination (HTTP: {}, Bundle: {}, Payload: {})".format(
+            self.http_status,
+            self.bundle_status,
+            self.payload_status
+        )
