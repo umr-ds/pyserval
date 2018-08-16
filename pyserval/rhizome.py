@@ -77,7 +77,14 @@ class Bundle:
         # TODO: Update local state
 
     def get_payload(self):
-        """Get the bundle's payload from the rhizome store"""
+        """Get the bundle's payload from the rhizome store
+
+        Returns:
+            str: The new payload
+        """
+        payload = self._rhizome.get_payload(self)
+        self.payload = payload
+        return payload
 
     def update_payload(self):
         """Update the bundle's payload"""
@@ -147,7 +154,7 @@ class Journal(Bundle):
 class Rhizome:
     def __init__(self, low_level_rhizome):
         assert isinstance(low_level_rhizome, LowLevelRhizome)
-        self.low_level_rhizome = low_level_rhizome
+        self._low_level_rhizome = low_level_rhizome
 
     def get_bundlelist(self):
         """Get list of all bundles in the rhizome store
@@ -155,7 +162,7 @@ class Rhizome:
         Returns:
             List[Union[Bundle, Journal]]
         """
-        serval_reply = self.low_level_rhizome.get_manifests()
+        serval_reply = self._low_level_rhizome.get_manifests()
         reply_json = serval_reply.json()
 
         bundle_data = decode_json_table(reply_json)
@@ -206,7 +213,7 @@ class Rhizome:
         """
         assert isinstance(bid, basestring)
 
-        serval_reply = self.low_level_rhizome.get_manifest(bid=bid)
+        serval_reply = self._low_level_rhizome.get_manifest(bid=bid)
 
         if serval_reply.status_code == 404:
             raise NoSuchBundleException(bid)
@@ -226,3 +233,23 @@ class Rhizome:
                 self,
                 manifest=manifest
             )
+
+    def get_payload(self, bundle):
+        """Get the payload for a bundle
+
+        Args:
+            bundle (Union[Bundle, Journal]): Bundle/Journal object
+
+        Returns:
+            str: Payload of the bundle
+        """
+        assert isinstance(bundle, Bundle)
+
+        # TODO: Check status and raise proper exceptions
+
+        if bundle.manifest.crypt == 1:
+            serval_reply = self._low_level_rhizome.get_decrypted(bundle.bundle_id)
+            return serval_reply.text
+        else:
+            serval_reply = self._low_level_rhizome.get_raw(bundle.bundle_id)
+            return serval_reply.text

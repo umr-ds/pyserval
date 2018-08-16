@@ -159,16 +159,14 @@ class LowLevelRhizome:
             bid (str): Bundle ID
 
         Returns:
-            str: Daw payload of the bundle
+            requests.models.Response: Response returned by the serval-server
 
         Note:
             If the payload is encrypted, this method will return the ciphertext
         """
-        raw = self._connection.get("/restful/rhizome/{}/raw.bin".format(bid)).text
-        return raw
+        return self._connection.get("/restful/rhizome/{}/raw.bin".format(bid))
 
     def get_decrypted(self, bid):
-        # TODO: actually implement exception for missing decryption key
         """Gets the decrypted payload of a bundle
 
         Endpoint:
@@ -178,7 +176,7 @@ class LowLevelRhizome:
             bid (str): Bundle ID
 
         Returns:
-            str: Decrypted payload of the bundle
+            requests.models.Response: Response returned by the serval-server
 
         Note:
             If the payload is encrypted and the decryption key is known,
@@ -188,8 +186,7 @@ class LowLevelRhizome:
 
             If the payload is encrypted and the decryption key is unknown, the call will fail
         """
-        decrypted = self._connection.get("/restful/rhizome/{}/decrypted.bin".format(bid)).text
-        return decrypted
+        return self._connection.get("/restful/rhizome/{}/decrypted.bin".format(bid))
 
     @staticmethod
     def _format_params(manifest,
