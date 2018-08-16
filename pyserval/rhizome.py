@@ -6,8 +6,17 @@ pyserval.rhizome
 This module contains the means to interact with rhizome, the serval distributed file-store
 """
 
+import sys
+
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
+from pyserval.exceptions import NoSuchBundleException
+
+
+# python3 does not have the basestring type, since it does not have the unicode type
+# if we are running under python3, we just test for str
+if sys.version_info >= (3, 0, 0):
+    basestring = str
 
 
 class Bundle:
@@ -182,3 +191,38 @@ class Rhizome:
             bundles.append(new_bundle)
 
         return bundles
+
+    def get_bundle(self, bid):
+        """Get the bundle for a specific BID
+
+        Args:
+            bid (str): Bundle ID
+
+        Returns:
+            Union[Bundle, Journal]):
+
+        Raises:
+            NoSuchIdentityException: If no bundle with the specified BID is available
+        """
+        assert isinstance(bid, basestring)
+
+        serval_reply = self.low_level_rhizome.get_manifest(bid=bid)
+
+        if serval_reply.status_code == 404:
+            raise NoSuchBundleException(bid)
+
+        reply_text = serval_reply.text
+
+        manifest = Manifest()
+        manifest.update(reply_text)
+
+        if manifest.tail is None:
+            return Bundle(
+                self,
+                manifest=manifest
+            )
+        else:
+            return Journal(
+                self,
+                manifest=manifest
+            )

@@ -145,12 +145,9 @@ class LowLevelRhizome:
             bid (str): Bundle ID
 
         Returns:
-            Manifest: Manifest of the specified Bundle
+            requests.models.Response: Response returned by the serval-server
         """
-        response = self._connection.get("/restful/rhizome/{}.rhm".format(bid)).text
-        manifest = Manifest()
-        manifest.update(response)
-        return manifest
+        return self._connection.get("/restful/rhizome/{}.rhm".format(bid))
 
     def get_raw(self, bid):
         """Gets the raw payload of a bundle

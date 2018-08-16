@@ -16,9 +16,6 @@ class NoSuchIdentityException(Exception):
 
     Args:
         sid (str): SID of the identity
-
-    Attributes:
-        sid (str): SID of the identity
     """
 
     def __init__(self, sid):
@@ -37,9 +34,6 @@ class EndpointNotImplementedException(Exception):
 
     Args:
         endpoint (str): Name of the 'fictional' endpoint
-
-    Attributes:
-        endpoint (str): Name of the 'fictional' endpoint
     """
 
     def __init__(self, endpoint):
@@ -57,10 +51,6 @@ class JournalException(Exception):
     Args:
         is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
                            False, if a normal bundle was passed to the 'append'-endpoint
-
-    Attributes:
-        is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
-                           False, if a normal bundle was passed to the 'append'-endpoint
     """
     def __init__(self, is_journal):
         self.is_journal = is_journal
@@ -76,3 +66,16 @@ class EmptyPayloadException(Exception):
     """Raised if a journal with empty payload is passed to the 'append'-endpoint"""
     def __str__(self):
         return "Journals require a payload"
+
+
+class NoSuchBundleException(Exception):
+    """Raised when attempting to get the info for a non-existing bundle
+
+    Args:
+        bid (str): Attempted BID
+    """
+    def __init__(self, bid):
+        self.bid = bid
+
+    def __str__(self):
+        return "No Bundle with BID {} available".format(self.bid)
