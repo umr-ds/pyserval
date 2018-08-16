@@ -8,7 +8,6 @@ This module contains the means to interact with the serval keyring
 
 import sys
 
-from pyserval.exceptions import EndpointNotImplementedException
 from pyserval.lowlevel.connection import RestfulConnection
 
 # python3 does not have the basestring type, since it does not have the unicode type

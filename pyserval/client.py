@@ -8,6 +8,7 @@ This module provides a high-level way to interact with serval
 
 from pyserval.lowlevel.client import LowLevelClient
 from pyserval.keyring import Keyring
+from pyserval.rhizome import Rhizome
 
 
 class Client:
@@ -28,3 +29,4 @@ class Client:
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
         self.low_level_client = LowLevelClient(host=host, port=port, user=user, passwd=passwd)
         self.keyring = Keyring(self.low_level_client.keyring)
+        self.rhizome = Rhizome(self.low_level_client.rhizome)

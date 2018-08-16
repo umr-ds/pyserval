@@ -8,6 +8,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 import sys
 
+from pyserval.exceptions import JournalException, EmptyPayloadException
 from pyserval.lowlevel.util import decode_json_table, autocast
 
 
@@ -21,28 +22,6 @@ class Manifest:
     """Representation of a rhizome-bundle's manifest
 
     Args:
-        id (str): Bundle ID - generated from Bundle Secret for new bundles
-        version (int): Version of the bundle - a bundle with a higher version will replace
-                       its old versions
-                       May be specified manually, otherwise will be UNIX-timestamp of update
-        filsize (int): Size (in bytes) of payload
-        service (str): Name of service to be published under
-        date (int): UNIX-Timestamp of bundle creation (is not changed by updates)
-        filehash (str): If payload is not empty (filesize != 0), contains sha512 of payload
-        tail (int): For journals: offset up to which content has been dropped
-                    May be increased by updates to clear space in rhizome-store
-        sender (str): SID of the bundle author
-                      (optional unless the bundle is a MeshMS, or MeshMB ply)
-        recipient (str): SID of the data recipient
-                         (optional unless the bundle is a MeshMS, or MeshMB ply)
-        name (str): Human-readable bundle name
-        crypt (int): 1, if payload is encrypted, 0 otherwise
-        bk (str): Bundle Key - Bundle secret encrypted with author's public key
-                  Enable by setting 'bundle_author' in Rhizome.insert/append
-        kwargs (basestring): Additional custom metadata
-                                 (See examples.rhizome for useage)
-
-    Attributes:
         id (str): Bundle ID - generated from Bundle Secret for new bundles
         version (int): Version of the bundle - a bundle with a higher version will replace
                        its old versions
@@ -127,102 +106,13 @@ class Manifest:
 
         self.__dict__.update(values)
 
-    def is_partial(self):
-        """Checks whether or not the manifest is complete
-
-        A manifest is complete, if at least the following fields have been set:
-        - id
-        - version
-        - filesize
-        - service
-        - date
-
-        Incomplete manifests are called 'partial'
+    def is_valid(self):
+        """Checks whether the manifest is valid
 
         Returns:
-            bool: True if manifest is partial, False otherwise
+            bool: True if valid, False otherwise
         """
-        return (self.id is None
-                or self.version is None
-                or self.filesize is None
-                or self.service is None
-                or self.date is None)
-
-
-class Bundle:
-    """Representation of a Rhizome-bundle
-
-    Args:
-        rhizome (LowLevelRhizome): Interface-object to interact with the Rhizome REST-interface
-        manifest (Manifest): Manifest for the bundle (may be partial)
-        payload (Any): Payload of the bundle
-                       (may be empty if bundle is not a journal)
-        bundle_id (str): Bundle ID (same as manifest.id)
-        bundle_author (str): SID of a local unlocked identity
-                             Setting this enables the 'bk' field in the manifest
-        bundle_secret (str): Secret key used for bundle-signing
-
-    Note:
-        If bundle_author is not set, then the bundle will be anonymous. In this case,
-        the bundle_secret has to be saved, or else it will be impossible to update the bundle later.
-        If bundle_author is set,
-        then the bundle_secret will be encrypted by the identity's public key
-        and stored in the 'bk' field.
-        This allows the secret to be recovered if the identity's private key is accessible.
-
-    Attributes:
-        manifest (Manifest): Manifest for the bundle (may be partial)
-        payload (Any): Payload of the bundle
-                       (may be empty if bundle is not a journal)
-        bundle_id (str): Bundle ID (same as manifest.id)
-        bundle_author (str): SID of a local unlocked identity
-                             Setting this enables the 'bk' field in the manifest
-        bundle_secret (str): Secret key used for bundle-signing
-    """
-    def __init__(self, rhizome,
-                 manifest,
-                 payload=None,
-                 bundle_id="",
-                 bundle_author="",
-                 bundle_secret=""):
-        self._rhizome = rhizome
-        self.manifest = manifest
-        self.payload = payload
-        self.bundle_id = bundle_id
-        self.bundle_author = bundle_author
-        self.bundle_secret = bundle_secret
-
-    def __str__(self):
-        return str(self.__dict__)
-
-    def __repr__(self):
-        return str(self.__dict__)
-
-    def update(self):
-        """Updates the bundle's content in rhizome"""
-
-        # Remove filesize & hash so that they will be recomputed
-        self.manifest.filesize = None
-        self.manifest.filehash = None
-
-        # remove version (will be reset with current timestamp)
-        # TODO: Different ways to increase version
-        self.manifest.version = None
-
-        if self.manifest.tail is None:
-            updated = self._rhizome.insert(manifest=self.manifest,
-                                           payload=self.payload,
-                                           bundle_id=self.bundle_id,
-                                           bundle_author=self.bundle_author,
-                                           bundle_secret=self.bundle_secret)
-        else:
-            updated = self._rhizome.append(manifest=self.manifest,
-                                           payload=self.payload,
-                                           bundle_id=self.bundle_id,
-                                           bundle_author=self.bundle_author,
-                                           bundle_secret=self.bundle_secret)
-
-        self.__dict__.update(updated.__dict__)
+        # TODO: implement
 
 
 class LowLevelRhizome:
@@ -234,22 +124,21 @@ class LowLevelRhizome:
     def __init__(self, connection):
         self._connection = connection
 
-    # TODO: rename to something like 'get_manifests'?
-    def get_bundlelist(self):
+    def get_manifests(self):
         """Returns list of all bundles stored in rhizome
 
         Endpoint:
             GET /restful/rhizome/bundlelist.json
 
         Returns:
-            List[Bundle]: List of all bundles currently present in the Rhizome-store
+            List[Manifest]: List of all Manifests currently present in the Rhizome-store
 
         Note:
             This endpoint does NOT return the Bundle's payload, this must be queried separately
         """
         result_json = self._connection.get("/restful/rhizome/bundlelist.json").json()
         bundle_data = decode_json_table(result_json)
-        bundles = []
+        manifests = []
 
         for data in bundle_data:
             manifest = Manifest()
@@ -260,16 +149,9 @@ class LowLevelRhizome:
 
             manifest.__dict__.update(**manifest_data)
 
-            new_bundle = Bundle(self,
-                                manifest=manifest,
-                                bundle_id=data['id'])
+            manifests.append(manifest)
 
-            if data['.author'] is not None:
-                new_bundle.bundle_author = data['.author']
-
-            bundles.append(new_bundle)
-
-        return bundles
+        return manifests
 
     def get_manifest(self, bid):
         """Gets the manifest for a specified BID
@@ -494,32 +376,3 @@ class LowLevelRhizome:
                       bundle_id=manifest.id,
                       bundle_author=bundle_author,
                       bundle_secret=bundle_secret)
-
-
-class JournalException(Exception):
-    """Raised if attempting to updated a bundle using the wrong endpoint
-
-    For normal bundles, use 'insert' and for journals use 'append'
-
-    Args:
-        is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
-                           False, if a normal bundle was passed to the 'append'-endpoint
-
-    Attributes:
-        is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
-                           False, if a normal bundle was passed to the 'append'-endpoint
-    """
-    def __init__(self, is_journal):
-        self.is_journal = is_journal
-
-    def __str__(self):
-        if self.is_journal:
-            return "Bundle is a journal; please use 'append'-endpoint"
-        else:
-            return "Bundle is not a journal; please use 'insert'-endpoint"
-
-
-class EmptyPayloadException(Exception):
-    """Raised if a journal with empty payload is passed to the 'append'-endpoint"""
-    def __str__(self):
-        return "Journals require a payload"

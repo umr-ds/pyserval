@@ -47,3 +47,32 @@ class EndpointNotImplementedException(Exception):
 
     def __str__(self):
         return "The endpoint '{}' has not been implemented by the serval project."
+
+
+class JournalException(Exception):
+    """Raised if attempting to updated a bundle using the wrong endpoint
+
+    For normal bundles, use 'insert' and for journals use 'append'
+
+    Args:
+        is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
+                           False, if a normal bundle was passed to the 'append'-endpoint
+
+    Attributes:
+        is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
+                           False, if a normal bundle was passed to the 'append'-endpoint
+    """
+    def __init__(self, is_journal):
+        self.is_journal = is_journal
+
+    def __str__(self):
+        if self.is_journal:
+            return "Bundle is a journal; please use 'append'-endpoint"
+        else:
+            return "Bundle is not a journal; please use 'insert'-endpoint"
+
+
+class EmptyPayloadException(Exception):
+    """Raised if a journal with empty payload is passed to the 'append'-endpoint"""
+    def __str__(self):
+        return "Journals require a payload"
