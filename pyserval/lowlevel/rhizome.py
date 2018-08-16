@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.rhizome
+pyserval.lowlevel.rhizome
 ~~~~~~~~~~~~~~~~
 
 This module contains the means to interact with rhizome, the serval distributed file-store
@@ -9,7 +9,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 import sys
 
 from pyserval.exceptions import JournalException, EmptyPayloadException
-from pyserval.lowlevel.util import decode_json_table, autocast
+from pyserval.lowlevel.util import autocast
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -71,9 +71,6 @@ class Manifest:
         self.BK = BK
         self.__dict__.update(kwargs)
 
-    def __str__(self):
-        return str(self.__dict__)
-
     def __repr__(self):
         return str(self.__dict__)
 
@@ -131,27 +128,12 @@ class LowLevelRhizome:
             GET /restful/rhizome/bundlelist.json
 
         Returns:
-            List[Manifest]: List of all Manifests currently present in the Rhizome-store
+            requests.models.Response: Response returned by the serval-server
 
         Note:
             This endpoint does NOT return the Bundle's payload, this must be queried separately
         """
-        result_json = self._connection.get("/restful/rhizome/bundlelist.json").json()
-        bundle_data = decode_json_table(result_json)
-        manifests = []
-
-        for data in bundle_data:
-            manifest = Manifest()
-            # take only those values from data which belong into the manifest
-            manifest_data = {
-                key: value for (key, value) in data.items() if key in manifest.__dict__.keys()
-            }
-
-            manifest.__dict__.update(**manifest_data)
-
-            manifests.append(manifest)
-
-        return manifests
+        return self._connection.get("/restful/rhizome/bundlelist.json")
 
     def get_manifest(self, bid):
         """Gets the manifest for a specified BID
