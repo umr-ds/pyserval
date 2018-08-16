@@ -8,7 +8,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 import sys
 
-from pyserval.exceptions import JournalException, EmptyPayloadException
+from pyserval.exceptions import JournalError, EmptyPayloadError
 from pyserval.lowlevel.util import autocast
 
 
@@ -277,7 +277,7 @@ class LowLevelRhizome:
             JournalException: If the field manifest.tail is present
         """
         if manifest.tail is not None:
-            raise JournalException(True)
+            raise JournalError(True)
 
         params = self._format_params(manifest=manifest,
                                      payload=payload,
@@ -331,9 +331,9 @@ class LowLevelRhizome:
             EmptyPayloadException: If payload is empty
         """
         if manifest.tail is None:
-            raise JournalException(False)
+            raise JournalError(False)
         if not payload:
-            raise EmptyPayloadException()
+            raise EmptyPayloadError()
 
         params = self._format_params(manifest=manifest,
                                      payload=payload,

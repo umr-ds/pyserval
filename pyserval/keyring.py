@@ -8,7 +8,7 @@ High level API for accessing the serval keyring
 
 import sys
 
-from pyserval.exceptions import NoSuchIdentityException
+from pyserval.exceptions import IdentityNotFoundError
 from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.util import unmarshall
 
@@ -197,7 +197,7 @@ class Keyring:
         serval_response = self.low_level_keyring.get_identity(sid=sid, pin=pin)
 
         if serval_response.status_code == 404:
-            raise NoSuchIdentityException(sid)
+            raise IdentityNotFoundError(sid)
 
         response_json = serval_response.json()
 
@@ -247,7 +247,7 @@ class Keyring:
         serval_response = self.low_level_keyring.delete(sid=identity.sid, pin=pin)
 
         if serval_response.status_code == 404:
-            raise NoSuchIdentityException(identity.sid)
+            raise IdentityNotFoundError(identity.sid)
 
         reply_json = serval_response.json()
         return ServalIdentity(self, **reply_json["identity"])
@@ -284,7 +284,7 @@ class Keyring:
         serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
 
         if serval_response.status_code == 404:
-            raise NoSuchIdentityException(identity.sid)
+            raise IdentityNotFoundError(identity.sid)
 
         response_json = serval_response.json()
 
@@ -323,7 +323,7 @@ class Keyring:
         serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
 
         if serval_response.status_code == 404:
-            raise NoSuchIdentityException(identity.sid)
+            raise IdentityNotFoundError(identity.sid)
 
         response_json = serval_response.json()
 
@@ -341,7 +341,7 @@ class Keyring:
         serval_response = self.low_level_keyring.lock(identity.sid)
 
         if serval_response.status_code == 404:
-            raise NoSuchIdentityException(identity.sid)
+            raise IdentityNotFoundError(identity.sid)
 
         response_json = serval_response.json()
 

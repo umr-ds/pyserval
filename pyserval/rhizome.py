@@ -10,7 +10,7 @@ import sys
 
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
-from pyserval.exceptions import NoSuchBundleException
+from pyserval.exceptions import ManifestNotFoundError
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -216,7 +216,7 @@ class Rhizome:
         serval_reply = self._low_level_rhizome.get_manifest(bid=bid)
 
         if serval_reply.status_code == 404:
-            raise NoSuchBundleException(bid)
+            raise ManifestNotFoundError(bid)
 
         reply_text = serval_reply.text
 

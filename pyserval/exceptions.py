@@ -6,9 +6,16 @@ pyserval.exceptions
 Collected exceptions
 """
 
+import sys
 
-class NoSuchIdentityException(Exception):
-    """Exception raised when trying to operate on a non-available identity
+# python3 does not have the basestring type, since it does not have the unicode type
+# if we are running under python3, we just test for str
+if sys.version_info >= (3, 0, 0):
+    basestring = str
+
+
+class IdentityNotFoundError(Exception):
+    """Error raised when trying to operate on a non-available identity
 
     This may either mean that the identity does not exists, or that it is not unlocked
     (https://github.com/servalproject/pyserval-dna/blob/development/doc/REST-API-Keyring.md#pin)
@@ -19,31 +26,14 @@ class NoSuchIdentityException(Exception):
     """
 
     def __init__(self, sid):
+        assert isinstance(sid, basestring)
         self.sid = sid
 
     def __str__(self):
         return "No Identity with SID {} available".format(self.sid)
 
 
-class EndpointNotImplementedException(Exception):
-    """Exception raised when trying to use an endpoint which has not actually been implemented on the server side
-
-    While in a perfect world there *SHOULD* be no need for this exception,
-    serval does have documented endpoint which do not actually exist.
-    We find this just ab baffling as you probably do...
-
-    Args:
-        endpoint (str): Name of the 'fictional' endpoint
-    """
-
-    def __init__(self, endpoint):
-        self.endpoint = endpoint
-
-    def __str__(self):
-        return "The endpoint '{}' has not been implemented by the serval project."
-
-
-class JournalException(Exception):
+class JournalError(Exception):
     """Raised if attempting to updated a bundle using the wrong endpoint
 
     For normal bundles, use 'insert' and for journals use 'append'
@@ -62,20 +52,35 @@ class JournalException(Exception):
             return "Bundle is not a journal; please use 'insert'-endpoint"
 
 
-class EmptyPayloadException(Exception):
+class EmptyPayloadError(Exception):
     """Raised if a journal with empty payload is passed to the 'append'-endpoint"""
     def __str__(self):
         return "Journals require a payload"
 
 
-class NoSuchBundleException(Exception):
+class ManifestNotFoundError(Exception):
     """Raised when attempting to get the info for a non-existing bundle
 
     Args:
         bid (str): Attempted BID
     """
     def __init__(self, bid):
+        assert isinstance(bid, basestring)
         self.bid = bid
 
     def __str__(self):
-        return "No Bundle with BID {} available".format(self.bid)
+        return "No Manifest for BID {} available".format(self.bid)
+
+
+class PayloadNotFoundError(Exception):
+    """Raised if attempting to get a bundle's payload when no such payload exists
+
+    Args:
+        bid (str): Bundle ID of the bundle
+    """
+    def __init__(self, bid):
+        assert isinstance(bid, basestring)
+        self.bid = bid
+
+    def __str__(self):
+        return "Bundle {} appears to have no payload".format(self.bid)
