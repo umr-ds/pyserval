@@ -1,4 +1,4 @@
-"""Tests for pyserval.highlevel.highlevel_keyring"""
+"""Tests for pyserval.keyring"""
 import random
 
 from hypothesis import given
@@ -25,7 +25,7 @@ bools = booleans()
 
 @given(pin=pins)
 def test_add(serval_init, pin):
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     n = len(keyring.get_identities())
     new_identity = keyring.add(pin)
     identities = keyring.get_identities()
@@ -38,7 +38,7 @@ def test_add(serval_init, pin):
 @given(did=dids, name=names)
 def test_set(serval_init, did, name):
     # setup
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     random_identity = random.choice(identities)
 
@@ -71,7 +71,7 @@ def test_set(serval_init, did, name):
 @given(did=bools, name=bools)
 def test_reset(serval_init, did, name):
     # setup
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     random_identity = random.choice(identities)
 
@@ -94,7 +94,7 @@ def test_reset(serval_init, did, name):
 
 
 def test_get_identities(serval_init):
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     assert isinstance(identities, list)
 
@@ -104,7 +104,7 @@ def test_get_identities(serval_init):
 
 
 def test_get_identity(serval_init):
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     for identity in identities:
         check_identity = keyring.get_identity(identity.sid)
@@ -112,7 +112,7 @@ def test_get_identity(serval_init):
 
 
 def test_remove(serval_init):
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     n = len(identities)
     while n > 0:
@@ -129,7 +129,7 @@ def test_remove(serval_init):
 
 @given(n=new_keys)
 def test_get_or_create(serval_init, n):
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identites = keyring.get_or_create(n)
     assert len(identites) == n
 
@@ -137,7 +137,7 @@ def test_get_or_create(serval_init, n):
 @given(did=dids, name=names)
 def test_identity_refresh(serval_init, did, name):
     """Test the 'refresh' method of the ServalIdentity Class"""
-    keyring = serval_init[1].keyring
+    keyring = serval_init.keyring
     identities = keyring.get_identities()
     random_identity = random.choice(identities)
 
