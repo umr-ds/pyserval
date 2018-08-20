@@ -39,6 +39,7 @@ if __name__ == '__main__':
 
     # get bundle payload
     print(new_bundle.get_payload())
+    print("")
 
     # create new journal
     new_journal = rhizome.new_journal(
@@ -48,3 +49,14 @@ if __name__ == '__main__':
     )
 
     print(new_journal.get_payload())
+    print("")
+
+    # append some payload
+    new_journal.append_payload("\nNow he has")
+    print(new_journal.payload)
+    print("")
+
+    # drop some payload
+    new_journal.drop_payload(21)
+    print(new_journal.payload)
+    print("")

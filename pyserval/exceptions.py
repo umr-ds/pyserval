@@ -54,12 +54,6 @@ class JournalError(Exception):
             return "Bundle is not a journal; please use 'insert'-endpoint"
 
 
-class EmptyPayloadError(Exception):
-    """Raised if a journal with empty payload is passed to the 'append'-endpoint"""
-    def __str__(self):
-        return "Journals require a payload"
-
-
 class ManifestNotFoundError(Exception):
     """Raised when attempting to get the info for a non-existing bundle
 

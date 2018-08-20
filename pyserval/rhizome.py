@@ -75,8 +75,7 @@ class Bundle:
         # TODO: Different ways to increase version
         self.manifest.version = None
 
-        # TODO: Update payload in rhizome store
-        # TODO: Update local state
+        self._rhizome.insert(self)
 
     def get_payload(self):
         """Get the bundle's payload from the rhizome store
@@ -88,11 +87,17 @@ class Bundle:
         self.payload = payload
         return payload
 
-    def update_payload(self):
-        """Update the bundle's payload"""
+    def update_payload(self, payload):
+        """Update the bundle's payload
+
+        Args:
+            payload (Union[str, bytes]): New payload
+        """
+        self.payload = payload
+        self.update()
 
 
-class Journal(Bundle):
+class Journal:
     """Representation of a Journal
 
         Args:
@@ -124,33 +129,68 @@ class Journal(Bundle):
         bundle_secret="",
         from_here=0
     ):
-        Bundle.__init__(
-            self,
-            rhizome=rhizome,
-            manifest=manifest,
-            payload=payload,
-            bundle_id=bundle_id,
-            bundle_author=bundle_author,
-            bundle_secret=bundle_secret,
-            from_here=from_here
-        )
+        self._rhizome = rhizome
+        self.manifest = manifest
+        self.payload = payload
+        self.bundle_id = bundle_id
+        self.bundle_author = bundle_author
+        self.bundle_secret = bundle_secret
+        self.from_here = from_here
 
     def __repr__(self):
         return "Journal({})".format(repr(self.__dict__))
 
-    def update(self):
-        """Updates the journal's content in the rhizome store"""
+    def get_payload(self):
+        """Get the bundle's payload from the rhizome store
 
-        # Remove filesize & hash so that they will be recomputed
+        Returns:
+            str: The new payload
+        """
+        payload = self._rhizome.get_payload(self)
+        self.payload = payload
+        return payload
+
+    def update(self, payload=None):
+        """Updates the journal's content in the rhizome store
+
+        Args:
+            payload (Union[None, str, bytes]):
+
+        Note:
+            While for a normal bundle, the updated payload will replace the previos payload,
+            for journals it will instead be appended
+        """
+
+        # Remove filesize & hash as they will always be recomputed automatically
         self.manifest.filesize = None
         self.manifest.filehash = None
 
-        # remove version (will be reset with current timestamp)
-        # TODO: Different ways to increase version
+        # remove version (will be set to tail + filesize)
         self.manifest.version = None
 
-        # TODO: Update payload in rhizome store
-        # TODO: Update local state
+        self._rhizome.append(self, payload=payload)
+
+    def append_payload(self, payload):
+        """Append additional payload to the bundle
+
+        Args:
+            payload (Union[str, bytes]): Additional payload
+        """
+        self.update(payload=payload)
+        # since payload is appended wen then need to get the new complete payload
+        self.get_payload()
+
+    def drop_payload(self, n_bytes):
+        """Drop parts of the payload
+
+        Args:
+            n_bytes (int): Number of bytes to be dropped
+        """
+        # FIXME: This does not appear to do anything...
+        self.manifest.tail += n_bytes
+        self.update(payload="")
+        # get new, shrunk payload
+        self.get_payload()
 
 
 class Rhizome:
@@ -257,7 +297,7 @@ class Rhizome:
             For documentation on possible status code combinations, see
             https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#get-restfulrhizomebidrawbin
         """
-        assert isinstance(bundle, Bundle)
+        assert isinstance(bundle, Bundle) or isinstance(bundle, Journal)
 
         if bundle.manifest.crypt == 1:
             serval_reply = self._low_level_rhizome.get_decrypted(bundle.bundle_id)
@@ -383,23 +423,28 @@ class Rhizome:
 
         return bundle
 
-    def append(self, journal):
+    def append(self, journal, payload=None):
         """Creates/updates a journal
 
         Args:
             journal (Journal): Journal object whose data will be updated
+            payload (Union[str, bytes, None]): If not None, this will be used instead of the journal's own payload
 
         Note:
             Don't use for plain bundles, use ''insert'' instead
         """
         assert isinstance(journal, Journal)
+        if payload is None:
+            payload = journal.payload
+
+        assert isinstance(payload, basestring) or isinstance(payload, bytes)
 
         serval_reply = self._low_level_rhizome.append(
             manifest=journal.manifest,
             bundle_id=journal.bundle_id,
             bundle_author=journal.bundle_author,
             bundle_secret=journal.bundle_secret,
-            payload=journal.payload
+            payload=payload
         )
 
         reply_content = serval_reply.text
@@ -410,8 +455,8 @@ class Rhizome:
 
     def new_journal(
         self,
+        payload,
         name="",
-        payload="",
         identity=None,
         use_default_identity=False,
         service=""
@@ -419,8 +464,8 @@ class Rhizome:
         """Creates a new journal
 
         Args:
+            payload (Union[str, bytes]): Initial payload - must be non-empty
             name (str): Human readable name for the journal
-            payload (Union[str, bytes]): Initial payload
             identity (ServalIdentity): If set, then this identity's SID will be set as the journal author
             use_default_identity (bool): If true, then the keyring will be queried for the default identity
                                          This will then be used in place of the identity arg
@@ -431,6 +476,7 @@ class Rhizome:
         """
         assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert payload, "Payload must be non-empty"
         assert isinstance(use_default_identity, bool)
 
         if use_default_identity:

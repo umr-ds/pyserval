@@ -319,12 +319,9 @@ class LowLevelRhizome:
 
         Raises:
             JournalException: If the field manifest.tail is not present
-            EmptyPayloadException: If payload is empty
         """
         if manifest.tail is None:
             raise JournalError(False)
-        if not payload:
-            raise EmptyPayloadError()
 
         params = self._format_params(manifest=manifest,
                                      payload=payload,
