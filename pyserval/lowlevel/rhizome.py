@@ -271,7 +271,7 @@ class LowLevelRhizome:
             payload (Any): Optional new payload for the bundle
 
         Returns:
-            Bundle: Updated bundle
+            requests.models.Response: Response returned by the serval-server
 
         Raises:
             JournalException: If the field manifest.tail is present
@@ -285,17 +285,7 @@ class LowLevelRhizome:
                                      bundle_author=bundle_author,
                                      bundle_secret=bundle_secret)
 
-        # TODO: Check response code and raise exceptions
-        result = self._connection.post("/restful/rhizome/insert", files=params).text
-
-        manifest.update(result)
-
-        return Bundle(self,
-                      manifest=manifest,
-                      payload=payload,
-                      bundle_id=manifest.id,
-                      bundle_author=bundle_author,
-                      bundle_secret=bundle_secret)
+        return self._connection.post("/restful/rhizome/insert", files=params)
 
     def append(self, manifest,
                payload,

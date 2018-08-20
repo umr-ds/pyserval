@@ -12,6 +12,7 @@ from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
 from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
 from pyserval.exceptions import DecryptionError
+from pyserval.keyring import Keyring, ServalIdentity
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -153,9 +154,17 @@ class Journal(Bundle):
 
 
 class Rhizome:
-    def __init__(self, low_level_rhizome):
+    """Interface for interacting with the serval rhizome API
+
+    Args:
+        low_level_rhizome (LowLevelRhizome): Used to perform low level requests
+        keyring (Keyring): Bundles can be associated with identities
+    """
+    def __init__(self, low_level_rhizome, keyring):
         assert isinstance(low_level_rhizome, LowLevelRhizome)
+        assert isinstance(keyring, Keyring)
         self._low_level_rhizome = low_level_rhizome
+        self._keyring = keyring
 
     def get_bundlelist(self):
         """Get list of all bundles in the rhizome store
@@ -307,20 +316,70 @@ class Rhizome:
             Don't use for journals, use ''append'' instead
         """
         assert isinstance(bundle, Bundle)
-        assert not isinstance(bundle, Journal)
-        # TODO: implement
+        assert not isinstance(bundle, Journal), "For journals, use ''append''"
 
-    def new_bundle(self, payload):
+        serval_reply = self._low_level_rhizome.insert(
+            manifest=bundle.manifest,
+            bundle_id=bundle.bundle_id,
+            bundle_author=bundle.bundle_author,
+            bundle_secret=bundle.bundle_secret,
+            payload=bundle.payload
+        )
+        reply_content = serval_reply.text
+
+        # TODO: check status code and raise appropriate exceptions
+
+        bundle.manifest.update(reply_content)
+
+    def new_bundle(
+        self,
+        name="",
+        payload="",
+        identity=None,
+        use_default_identity=False,
+        service=""
+    ):
         """Creates a new bundle
 
         Args:
+            name (str): Human readable name for the bundle
             payload (Union[str, bytes]): Initial payload
+            identity (ServalIdentity): If set, then this identity's SID will be set as the bundle author
+            use_default_identity (bool): If true, then the keyring will be queried for the default identity
+                                         This will then be used in place of the identity arg
+            service (str): (Optional) Service this bundle belongs to
 
         Returns:
             Bundle: New Bundle-object containing all relevant data
         """
+        assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
-        # TODO: implement
+        assert isinstance(use_default_identity, bool)
+
+        if use_default_identity:
+            identity = self._keyring.default_identity()
+
+        assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
+
+        manifest = Manifest(
+            name=name,
+            service=service,
+            sender=identity.sid
+        )
+
+        bundle = Bundle(
+            rhizome=self,
+            manifest=manifest,
+            bundle_author=identity.sid,
+            payload=payload,
+            from_here=2
+        )
+
+        self.insert(bundle)
+
+        bundle.bundle_id = bundle.manifest.id
+
+        return bundle
 
     def append(self, journal):
         """Creates/updates a journal
