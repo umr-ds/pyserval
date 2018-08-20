@@ -65,3 +65,22 @@ if __name__ == '__main__':
     new_journal.drop_payload(21)
     print(new_journal.payload)
     print("")
+
+    # get list of all bundles
+    all_bundles = rhizome.get_bundlelist()
+    print(all_bundles)
+    print("")
+
+    # these bundles don't have their payloads loaded, as this may take some time
+    print("Bundle Payload: {}".format(all_bundles[0].payload))
+    print("")
+    # so you need to call get_payload() once
+    all_bundles[0].get_payload()
+    print("Bundle Payload: {}".format(all_bundles[0].payload))
+    print("")
+
+    # this gets you the bundle for a specific bid
+    specific_bundle = rhizome.get_bundle(all_bundles[1].bundle_id)
+    # in this case, the payload will already be there
+    print(specific_bundle.payload)
+    print("")

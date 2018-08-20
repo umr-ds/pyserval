@@ -256,7 +256,7 @@ class Rhizome:
             bid (str): Bundle ID
 
         Returns:
-            Union[Bundle, Journal]):
+            Union[Bundle, Journal]: Object containing all relevant data
 
         Raises:
             NoSuchIdentityException: If no bundle with the specified BID is available
@@ -274,15 +274,20 @@ class Rhizome:
         manifest.update(reply_text)
 
         if manifest.tail is None:
-            return Bundle(
+            bundle = Bundle(
                 self,
-                manifest=manifest
+                manifest=manifest,
+                bundle_id=manifest.id
             )
         else:
-            return Journal(
+            bundle = Journal(
                 self,
-                manifest=manifest
+                manifest=manifest,
+                bundle_id=manifest.id
             )
+
+        bundle.get_payload()
+        return bundle
 
     def get_payload(self, bundle):
         """Get the payload for a bundle
