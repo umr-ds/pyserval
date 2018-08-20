@@ -361,6 +361,10 @@ class Rhizome:
 
         assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
 
+        assert isinstance(service, basestring)
+        if not service:
+            service = "file"
+
         manifest = Manifest(
             name=name,
             service=service,

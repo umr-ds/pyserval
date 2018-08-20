@@ -335,10 +335,3 @@ class LowLevelRhizome:
         result = self._connection.post("/restful/rhizome/append", files=params).text
 
         manifest.update(result)
-
-        return Bundle(self,
-                      manifest=manifest,
-                      payload=payload,
-                      bundle_id=manifest.id,
-                      bundle_author=bundle_author,
-                      bundle_secret=bundle_secret)
