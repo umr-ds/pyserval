@@ -230,7 +230,8 @@ class LowLevelRhizome:
         manifest_header = ""
 
         for (key, value) in dir(manifest):
-            manifest_header += "{}={}\n".format(key, value)
+            if value:
+                manifest_header += "{}={}\n".format(key, value)
 
         params.append(
             (
@@ -314,7 +315,7 @@ class LowLevelRhizome:
             payload (Any): Optional new payload for the bundle
 
         Returns:
-            Bundle: Updated bundle
+            requests.models.Response: Response returned by the serval-server
 
         Raises:
             JournalException: If the field manifest.tail is not present
@@ -331,7 +332,4 @@ class LowLevelRhizome:
                                      bundle_author=bundle_author,
                                      bundle_secret=bundle_secret)
 
-        # TODO: Check response code and raise exceptions
-        result = self._connection.post("/restful/rhizome/append", files=params).text
-
-        manifest.update(result)
+        return self._connection.post("/restful/rhizome/append", files=params)

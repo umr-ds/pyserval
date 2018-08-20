@@ -362,8 +362,6 @@ class Rhizome:
         assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
 
         assert isinstance(service, basestring)
-        if not service:
-            service = "file"
 
         manifest = Manifest(
             name=name,
@@ -395,15 +393,70 @@ class Rhizome:
             Don't use for plain bundles, use ''insert'' instead
         """
         assert isinstance(journal, Journal)
-        # TODO: implement
 
-    def new_journal(self, payload):
+        serval_reply = self._low_level_rhizome.append(
+            manifest=journal.manifest,
+            bundle_id=journal.bundle_id,
+            bundle_author=journal.bundle_author,
+            bundle_secret=journal.bundle_secret,
+            payload=journal.payload
+        )
+
+        reply_content = serval_reply.text
+
+        # TODO: check status code and raise appropriate exceptions
+
+        journal.manifest.update(reply_content)
+
+    def new_journal(
+        self,
+        name="",
+        payload="",
+        identity=None,
+        use_default_identity=False,
+        service=""
+    ):
         """Creates a new journal
 
         Args:
+            name (str): Human readable name for the journal
             payload (Union[str, bytes]): Initial payload
+            identity (ServalIdentity): If set, then this identity's SID will be set as the journal author
+            use_default_identity (bool): If true, then the keyring will be queried for the default identity
+                                         This will then be used in place of the identity arg
+            service (str): (Optional) Service this journal belongs to
 
         Returns:
-            Journal
+            Journal: New journal object containing all relevant data
         """
+        assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert isinstance(use_default_identity, bool)
+
+        if use_default_identity:
+            identity = self._keyring.default_identity()
+
+        assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
+
+        assert isinstance(service, basestring)
+
+        manifest = Manifest(
+            name=name,
+            service=service,
+            sender=identity.sid,
+            tail=0
+        )
+
+        journal = Journal(
+            rhizome=self,
+            manifest=manifest,
+            bundle_author=identity.sid,
+            payload=payload,
+            from_here=2
+        )
+
+        self.append(journal)
+
+        journal.bundle_id = journal.manifest.id
+
+        return journal

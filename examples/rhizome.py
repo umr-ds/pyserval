@@ -39,3 +39,12 @@ if __name__ == '__main__':
 
     # get bundle payload
     print(new_bundle.get_payload())
+
+    # create new journal
+    new_journal = rhizome.new_journal(
+        name="foo",
+        payload="Batman has no journal",
+        use_default_identity=True
+    )
+
+    print(new_journal.get_payload())
