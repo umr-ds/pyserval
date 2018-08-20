@@ -382,7 +382,8 @@ class Rhizome:
         payload="",
         identity=None,
         use_default_identity=False,
-        service=""
+        service="",
+        custom_manifest=None
     ):
         """Creates a new bundle
 
@@ -393,6 +394,8 @@ class Rhizome:
             use_default_identity (bool): If true, then the keyring will be queried for the default identity
                                          This will then be used in place of the identity arg
             service (str): (Optional) Service this bundle belongs to
+            custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
+                                                                as custom fields in the new bundle's manifest
 
         Returns:
             Bundle: New Bundle-object containing all relevant data
@@ -405,14 +408,17 @@ class Rhizome:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
-
         assert isinstance(service, basestring)
+        assert custom_manifest is None or isinstance(custom_manifest, dict)
 
         manifest = Manifest(
             name=name,
             service=service,
-            sender=identity.sid
+            sender=identity.sid,
         )
+
+        if custom_manifest:
+            manifest.__dict__.update(custom_manifest)
 
         bundle = Bundle(
             rhizome=self,
@@ -464,7 +470,8 @@ class Rhizome:
         name="",
         identity=None,
         use_default_identity=False,
-        service=""
+        service="",
+        custom_manifest=None
     ):
         """Creates a new journal
 
@@ -475,6 +482,8 @@ class Rhizome:
             use_default_identity (bool): If true, then the keyring will be queried for the default identity
                                          This will then be used in place of the identity arg
             service (str): (Optional) Service this journal belongs to
+            custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
+                                                                as custom fields in the new bundle's manifest
 
         Returns:
             Journal: New journal object containing all relevant data
@@ -488,8 +497,8 @@ class Rhizome:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
-
         assert isinstance(service, basestring)
+        assert custom_manifest is None or isinstance(custom_manifest, dict)
 
         manifest = Manifest(
             name=name,
@@ -497,6 +506,9 @@ class Rhizome:
             sender=identity.sid,
             tail=0
         )
+
+        if custom_manifest:
+            manifest.__dict__.update(custom_manifest)
 
         journal = Journal(
             rhizome=self,

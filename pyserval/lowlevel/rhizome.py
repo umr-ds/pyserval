@@ -40,8 +40,8 @@ class Manifest:
         crypt (int): 1, if payload is encrypted, 0 otherwise
         bk (str): Bundle Key - Bundle secret encrypted with author's public key
                   Enable by setting 'bundle_author' in Rhizome.insert/append
-        kwargs (basestring): Additional custom metadata
-                                 (See examples.rhizome for useage)
+        kwargs (str): Additional custom metadata
+                    (See examples.rhizome for usage)
     """
     def __init__(self,
                  id=None,

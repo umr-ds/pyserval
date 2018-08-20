@@ -84,3 +84,14 @@ if __name__ == '__main__':
     # in this case, the payload will already be there
     print(specific_bundle.payload)
     print("")
+
+    # create new bundle with custom manifest fields
+    new_bundle_custom = rhizome.new_bundle(
+        name="Custom Fields",
+        use_default_identity=True,
+        custom_manifest={"foo": "bar", "fizz": "buzz"}
+    )
+    # check custom fields
+    bundle_check = rhizome.get_bundle(new_bundle_custom.bundle_id)
+    print(bundle_check.manifest.foo)
+    print("")
