@@ -8,7 +8,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 import sys
 
-from pyserval.exceptions import JournalError, EmptyPayloadError
+from pyserval.exceptions import JournalError
 from pyserval.lowlevel.util import autocast
 
 

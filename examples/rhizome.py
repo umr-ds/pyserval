@@ -41,6 +41,11 @@ if __name__ == '__main__':
     print(new_bundle.get_payload())
     print("")
 
+    # change bundle payload
+    new_bundle.update_payload("This is a new payload")
+    print(new_bundle.payload)
+    print("")
+
     # create new journal
     new_journal = rhizome.new_journal(
         name="foo",
