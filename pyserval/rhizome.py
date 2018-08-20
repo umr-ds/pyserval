@@ -296,3 +296,51 @@ class Rhizome:
         raise UnknownRhizomeStatusError(
             serval_response=serval_reply
         )
+
+    def insert(self, bundle):
+        """Creates/Updates a bundle
+
+        Args:
+            bundle (Bundle): Bundle object whose data will be inserted
+
+        Note:
+            Don't use for journals, use ''append'' instead
+        """
+        assert isinstance(bundle, Bundle)
+        assert not isinstance(bundle, Journal)
+        # TODO: implement
+
+    def new_bundle(self, payload):
+        """Creates a new bundle
+
+        Args:
+            payload (Union[str, bytes]): Initial payload
+
+        Returns:
+            Bundle: New Bundle-object containing all relevant data
+        """
+        assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        # TODO: implement
+
+    def append(self, journal):
+        """Creates/updates a journal
+
+        Args:
+            journal (Journal): Journal object whose data will be updated
+
+        Note:
+            Don't use for plain bundles, use ''insert'' instead
+        """
+        assert isinstance(journal, Journal)
+        # TODO: implement
+
+    def new_journal(self, payload):
+        """Creates a new journal
+
+        Args:
+            payload (Union[str, bytes]): Initial payload
+
+        Returns:
+            Journal
+        """
+        assert isinstance(payload, basestring) or isinstance(payload, bytes)
