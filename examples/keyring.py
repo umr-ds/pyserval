@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.highlevel.client import HighLevelClient
+from pyserval.client import Client
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Example for keyring-endpoints")
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    c = HighLevelClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    c = Client(host=args.host, port=args.port, user=args.user, passwd=args.password)
     keyring = c.keyring
 
     # Get all identities
