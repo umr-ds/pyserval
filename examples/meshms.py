@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.lowlevel.client import LowLevelClient
+from pyserval.client import Client
 
 
 if __name__ == "__main__":
@@ -27,21 +27,22 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    client = LowLevelClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    client = Client(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    meshms = client.low_level_client.meshms
 
     # get first two identites in the keyring
     sender, recipient = client.keyring.get_or_create(2)
 
     print("Sending test message\n")
-    client.meshms.send_message(sender=sender.sid,
-                               recipient=recipient.sid,
-                               message="This is a test-message")
+    meshms.send_message(sender=sender.sid,
+                        recipient=recipient.sid,
+                        message="This is a test-message")
 
     print("Conversation List")
-    conversations = client.meshms.conversation_list(sender.sid)
+    conversations = meshms.conversation_list(sender.sid)
     print(conversations)
     print()
 
     print("Message List:")
-    messages = client.meshms.message_list(sender.sid, recipient.sid)
+    messages = meshms.message_list(sender.sid, recipient.sid)
     print(messages)

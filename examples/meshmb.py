@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from pyserval.lowlevel.client import LowLevelClient
+from pyserval.client import Client
 
 
 if __name__ == "__main__":
@@ -27,16 +27,17 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    client = LowLevelClient(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    client = Client(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    meshmb = client.low_level_client.meshmb
 
     identities = [identity.identity for identity in client.keyring.get_or_create(2)]
 
-    client.meshmb.send_message(identity=identities[0],
-                               message="This is a test broadcast")
+    meshmb.send_message(identity=identities[0],
+                        message="This is a test broadcast")
 
-    print(client.meshmb.get_messages(identities[0]))
+    print(meshmb.get_messages(identities[0]))
 
-    client.meshmb.follow_feed(identities[1], identities[0])
-    print(client.meshmb.get_feedlist(identities[1]))
-    print(client.meshmb.get_activity(identities[1]))
-    client.meshmb.unfollow_feed(identities[1], identities[0])
+    meshmb.follow_feed(identities[1], identities[0])
+    print(meshmb.get_feedlist(identities[1]))
+    print(meshmb.get_activity(identities[1]))
+    meshmb.unfollow_feed(identities[1], identities[0])
