@@ -37,7 +37,13 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return requests.get(self._BASE + path, auth=self._AUTH, **params)
+
+        response = requests.get(self._BASE + path, auth=self._AUTH, **params)
+
+        if response.encoding is None:
+            response.encoding = 'utf-8'
+
+        return response
 
     def post(self, path, **params):
         """Sends POST-request to REST-API
@@ -49,7 +55,12 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return requests.post(self._BASE + path, auth=self._AUTH, **params)
+        response = requests.post(self._BASE + path, auth=self._AUTH, **params)
+
+        if response.encoding is None:
+            response.encoding = 'utf-8'
+
+        return response
 
     def put(self, path, **params):
         """Sends PUT-request to REST-API
@@ -61,7 +72,12 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return requests.put(self._BASE + path, auth=self._AUTH, **params)
+        response = requests.put(self._BASE + path, auth=self._AUTH, **params)
+
+        if response.encoding is None:
+            response.encoding = 'utf-8'
+
+        return response
 
     def delete(self, path, **params):
         """Sends DELETE-request to REST-API
@@ -73,7 +89,12 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return requests.delete("{}{}".format(self._BASE, path), auth=self._AUTH, **params)
+        response = requests.delete("{}{}".format(self._BASE, path), auth=self._AUTH, **params)
+
+        if response.encoding is None:
+            response.encoding = 'utf-8'
+
+        return response
 
     def patch(self, path, **params):
         """Sends PATCH-request to REST-API
@@ -85,4 +106,9 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return requests.patch(self._BASE + path, auth=self._AUTH, **params)
+        response = requests.patch(self._BASE + path, auth=self._AUTH, **params)
+
+        if response.encoding is None:
+            response.encoding = 'utf-8'
+
+        return response
