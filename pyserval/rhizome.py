@@ -11,7 +11,7 @@ import sys
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
 from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
-from pyserval.exceptions import DecryptionError, DuplicateBundleException
+from pyserval.exceptions import DecryptionError, DuplicateBundleException, RhizomeInsertionError
 from pyserval.keyring import Keyring, ServalIdentity
 
 
@@ -395,8 +395,6 @@ class Rhizome:
         )
         reply_content = serval_reply.text
 
-        # TODO: check status code and raise appropriate exceptions
-
         if serval_reply.status_code == 200:
             manifest = Manifest()
             manifest.update(reply_content)
@@ -413,6 +411,10 @@ class Rhizome:
                     bundle_secret=bundle_secret,
                     from_here=2
                 )
+        else:
+            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+            bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
+            raise RhizomeInsertionError(bundle_status=bundle_status, bundle_message=bundle_message)
 
     def new_bundle(
         self,

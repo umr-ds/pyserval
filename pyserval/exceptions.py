@@ -143,3 +143,21 @@ class DuplicateBundleException(Exception):
 
     def __str__(self):
         return "Bundle is duplicate of BID {}".format(self.bid)
+
+
+class RhizomeInsertionError(Exception):
+    """Raised if a call to the 'insert' or 'append' endpoint fails
+
+    Args:
+        bundle_status (int): Status code for the failure
+        bundle_message (str): Human readable explanation of the failure
+    """
+    def __init__(self, bundle_status, bundle_message):
+        assert isinstance(bundle_status, int)
+        assert isinstance(bundle_message, basestring)
+
+        self.status = bundle_status
+        self.message = bundle_message
+
+    def __str__(self):
+        return "Insertion failed with code {}, Message: {}".format(self.status, self.message)
