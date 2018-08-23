@@ -404,7 +404,7 @@ class Rhizome:
         if identity is None:
             identity = self._keyring.default_identity()
 
-        assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
+        assert isinstance(identity, ServalIdentity)
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
 
@@ -490,7 +490,7 @@ class Rhizome:
         if identity is None:
             identity = self._keyring.default_identity()
 
-        assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
+        assert isinstance(identity, ServalIdentity)
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
 

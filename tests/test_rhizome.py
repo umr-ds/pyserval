@@ -20,7 +20,6 @@ def test_new_bundle(serval_init, name):
 
     new_bundle = rhizome.new_bundle(
         name=name,
-        use_default_identity=True
     )
 
     test_bundle = rhizome.get_bundle(new_bundle.bundle_id)
