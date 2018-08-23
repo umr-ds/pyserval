@@ -75,13 +75,15 @@ class Bundle:
         # TODO: Different ways to increase version
         self.manifest.version = None
 
-        self._rhizome.insert(
+        new_self = self._rhizome.insert(
             manifest=self.manifest,
             payload=self.payload,
             bundle_id=self.bundle_id,
             bundle_author=self.bundle_author,
             bundle_secret=self.bundle_secret
         )
+
+        self.manifest = new_self.manifest
 
     def get_payload(self):
         """Get the bundle's payload from the rhizome store
@@ -100,6 +102,15 @@ class Bundle:
             payload (Union[str, bytes]): New payload
         """
         self.payload = payload
+        self.update()
+
+    def update_manifest(self, **kwargs):
+        """Update the bundle's manifest's contents
+
+        Args:
+            kwargs (Union[str, int]): names & updated values for the manifest
+        """
+        self.manifest.__dict__.update(kwargs)
         self.update()
 
 
