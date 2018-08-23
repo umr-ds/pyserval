@@ -463,7 +463,7 @@ class Rhizome:
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
 
-        if payload:
+        if recipient:
             encryption = 1
         else:
             encryption = 0
