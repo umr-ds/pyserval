@@ -5,9 +5,10 @@ from pyserval.exceptions import DuplicateBundleException
 from pyserval.lowlevel.util import autocast
 
 from hypothesis import given
-from hypothesis.strategies import text, characters
+from hypothesis.strategies import text, characters, binary
 
 names = text(characters(blacklist_categories=('Cc', 'Cs')))
+payloads = binary()
 
 
 # if we try to create a bundle which is a 'duplicate' of an existing bundle, it will cause an exception
@@ -15,24 +16,27 @@ names = text(characters(blacklist_categories=('Cc', 'Cs')))
 created_bundles = []
 
 
-@given(name=names)
-def test_new_bundle(serval_init, name):
+@given(name=names, payload=payloads)
+def test_new_bundle(serval_init, name, payload):
     """Test adding of new bundles
 
     Args:
         serval_init (Client): Serval client created by test init
         name (str): Semi-random test names created by hypothesis
+        payload (bytes): Random bytes for test payload
     """
     rhizome = serval_init.rhizome
     global created_bundles
 
     create_parameters = {
-        'name': name
+        'name': name,
+        'payload': payload
     }
 
     try:
         new_bundle = rhizome.new_bundle(
             name=name,
+            payload=payload
         )
     except DuplicateBundleException:
         # check, if we actually already created this bundle
@@ -50,3 +54,5 @@ def test_new_bundle(serval_init, name):
         # manifest fields are automatically cast into their respective data types if they
         # are merely string representations
         assert test_bundle.manifest.name == autocast(name)
+
+    assert test_bundle.get_payload() == payload

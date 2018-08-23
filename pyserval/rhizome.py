@@ -89,7 +89,7 @@ class Bundle:
         """Get the bundle's payload from the rhizome store
 
         Returns:
-            str: The new payload
+            bytes: The bundle's payload
         """
         payload = self._rhizome.get_payload(self)
         self.payload = payload
@@ -313,7 +313,7 @@ class Rhizome:
             bundle (Union[Bundle, Journal]): Bundle/Journal object
 
         Returns:
-            str: Payload of the bundle
+            bytes: Payload of the bundle
 
         Note:
             For documentation on possible status code combinations, see
@@ -325,7 +325,7 @@ class Rhizome:
             serval_reply = self._low_level_rhizome.get_decrypted(bundle.bundle_id)
 
             if serval_reply.status_code == 200:
-                return serval_reply.text
+                return serval_reply.content
 
             elif serval_reply.status_code == 404:
                 bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
@@ -349,7 +349,7 @@ class Rhizome:
             serval_reply = self._low_level_rhizome.get_raw(bundle.bundle_id)
 
             if serval_reply.status_code == 200:
-                return serval_reply.text
+                return serval_reply.content
 
             elif serval_reply.status_code == 404:
                 bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
