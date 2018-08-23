@@ -395,22 +395,21 @@ class Rhizome:
         )
         reply_content = serval_reply.text
 
-        if serval_reply.status_code == 200:
+        if serval_reply.status_code == 201:
             manifest = Manifest()
             manifest.update(reply_content)
-
-            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-            if bundle_status == 200:
-                raise DuplicateBundleException(bid=manifest.id)
-            else:
-                return Bundle(
-                    rhizome=self,
-                    manifest=manifest,
-                    bundle_id=manifest.id,
-                    bundle_author=bundle_author,
-                    bundle_secret=bundle_secret,
-                    from_here=2
-                )
+            return Bundle(
+                rhizome=self,
+                manifest=manifest,
+                bundle_id=manifest.id,
+                bundle_author=bundle_author,
+                bundle_secret=bundle_secret,
+                from_here=2
+            )
+        elif serval_reply.status_code == 200:
+            manifest = Manifest()
+            manifest.update(reply_content)
+            raise DuplicateBundleException(bid=manifest.id)
         else:
             bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
             bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")

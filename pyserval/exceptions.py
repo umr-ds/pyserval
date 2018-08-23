@@ -132,6 +132,7 @@ class DuplicateBundleException(Exception):
 
     When you try to insert a bundle without providing an ID but with the same payload, service, name,
     sender, recipient as an existing bundle then this is considered a duplicate.
+    The same is true if an id is supplied but the version field in the new manifest is not greater
     In this case, serval will return status 200 for your request but will not modify any data for that bundle
 
     Args:
