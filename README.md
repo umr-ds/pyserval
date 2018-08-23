@@ -23,7 +23,7 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
 
 ## Installation
 
-`pip install https://github.com/umr-ds/pyserval/releases/download/v0.3/pyserval-0.3.1-py2.py3-none-any.whl`
+`pip install https://github.com/umr-ds/pyserval/releases/download/v0.3.1/pyserval-0.3.1-py2.py3-none-any.whl`
 
 ## Running the tests
 
