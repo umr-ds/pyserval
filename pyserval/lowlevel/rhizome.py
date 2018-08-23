@@ -230,7 +230,9 @@ class LowLevelRhizome:
         manifest_header = ""
 
         for (key, value) in dir(manifest):
-            if value:
+            # Emptystring or None should be ignored
+            # The number 0 should be included
+            if value or value == 0:
                 manifest_header += "{}={}\n".format(key, value)
 
         params.append(
