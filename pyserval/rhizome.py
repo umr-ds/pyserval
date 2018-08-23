@@ -381,7 +381,6 @@ class Rhizome:
         name="",
         payload="",
         identity=None,
-        use_default_identity=False,
         service="",
         custom_manifest=None
     ):
@@ -391,8 +390,7 @@ class Rhizome:
             name (str): Human readable name for the bundle
             payload (Union[str, bytes]): Initial payload
             identity (ServalIdentity): If set, then this identity's SID will be set as the bundle author
-            use_default_identity (bool): If true, then the keyring will be queried for the default identity
-                                         This will then be used in place of the identity arg
+                                       If unset, the keyring's default identity will be used
             service (str): (Optional) Service this bundle belongs to
             custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
                                                                 as custom fields in the new bundle's manifest
@@ -402,9 +400,8 @@ class Rhizome:
         """
         assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
-        assert isinstance(use_default_identity, bool)
 
-        if use_default_identity:
+        if identity is None:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
@@ -469,7 +466,6 @@ class Rhizome:
         payload,
         name="",
         identity=None,
-        use_default_identity=False,
         service="",
         custom_manifest=None
     ):
@@ -479,8 +475,7 @@ class Rhizome:
             payload (Union[str, bytes]): Initial payload - must be non-empty
             name (str): Human readable name for the journal
             identity (ServalIdentity): If set, then this identity's SID will be set as the journal author
-            use_default_identity (bool): If true, then the keyring will be queried for the default identity
-                                         This will then be used in place of the identity arg
+                                       If unset, the keyring's default identity will be used
             service (str): (Optional) Service this journal belongs to
             custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
                                                                 as custom fields in the new bundle's manifest
@@ -491,9 +486,8 @@ class Rhizome:
         assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
         assert payload, "Payload must be non-empty"
-        assert isinstance(use_default_identity, bool)
 
-        if use_default_identity:
+        if identity is None:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity), "Please supply a ServalIdentity or set 'use_default_identity'"
