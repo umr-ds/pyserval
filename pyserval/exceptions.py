@@ -125,3 +125,21 @@ class UnknownRhizomeStatusError(Exception):
             self.bundle_status,
             self.payload_status
         )
+
+
+class DuplicateBundleException(Exception):
+    """Rhizome performs 'duplicate detection' during the insert process
+
+    When you try to insert a bundle without providing an ID but with the same payload, service, name,
+    sender, recipient as an existing bundle then this is considered a duplicate.
+    In this case, serval will return status 200 for your request but will not modify any data for that bundle
+
+    Args:
+        bid (str): BID of the bundle which is being duplicated
+    """
+    def __init__(self, bid):
+        assert isinstance(bid, basestring)
+        self.bid = bid
+
+    def __str__(self):
+        return "Bundle is duplicate of BID {}".format(self.bid)

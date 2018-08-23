@@ -11,7 +11,7 @@ import sys
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
 from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
-from pyserval.exceptions import DecryptionError
+from pyserval.exceptions import DecryptionError, DuplicateBundleException
 from pyserval.keyring import Keyring, ServalIdentity
 
 
@@ -75,7 +75,13 @@ class Bundle:
         # TODO: Different ways to increase version
         self.manifest.version = None
 
-        self._rhizome.insert(self)
+        self._rhizome.insert(
+            manifest=self.manifest,
+            payload=self.payload,
+            bundle_id=self.bundle_id,
+            bundle_author=self.bundle_author,
+            bundle_secret=self.bundle_secret
+        )
 
     def get_payload(self):
         """Get the bundle's payload from the rhizome store
@@ -351,36 +357,69 @@ class Rhizome:
             serval_response=serval_reply
         )
 
-    def insert(self, bundle):
+    def insert(
+        self,
+        manifest,
+        bundle_id="",
+        bundle_author="",
+        bundle_secret="",
+        payload=""
+    ):
         """Creates/Updates a bundle
 
         Args:
-            bundle (Bundle): Bundle object whose data will be inserted
+            manifest (Manifest): Valid (partial) bundle manifest
+            bundle_id (str): Optional BID - necessary if attempting to modify an existing bundle
+            bundle_author (str): Optional SID for a local, unlocked identity
+                                 When set, the bundle secret may be reconstructed later on
+            bundle_secret (str): Optional Curve25519 private key, used to create an anonymous bundle
+                                 Note that this will not be saved anywhere, you need to save it yourself
+                                 or lose access to the bundle
+            payload (Union[str, bytes]): Optional payload
+
+        Returns:
+            Bundle: New Bundle-object which contains the reply's data
 
         Note:
             Don't use for journals, use ''append'' instead
         """
-        assert isinstance(bundle, Bundle)
-        assert not isinstance(bundle, Journal), "For journals, use ''append''"
+        assert isinstance(manifest, Manifest)
+        assert manifest.tail is None, "For journals, use ''append''"
 
         serval_reply = self._low_level_rhizome.insert(
-            manifest=bundle.manifest,
-            bundle_id=bundle.bundle_id,
-            bundle_author=bundle.bundle_author,
-            bundle_secret=bundle.bundle_secret,
-            payload=bundle.payload
+            manifest=manifest,
+            bundle_id=bundle_id,
+            bundle_author=bundle_author,
+            bundle_secret=bundle_secret,
+            payload=payload
         )
         reply_content = serval_reply.text
 
         # TODO: check status code and raise appropriate exceptions
 
-        bundle.manifest.update(reply_content)
+        if serval_reply.status_code == 200:
+            manifest = Manifest()
+            manifest.update(reply_content)
+
+            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+            if bundle_status == 200:
+                raise DuplicateBundleException(bid=manifest.id)
+            else:
+                return Bundle(
+                    rhizome=self,
+                    manifest=manifest,
+                    bundle_id=manifest.id,
+                    bundle_author=bundle_author,
+                    bundle_secret=bundle_secret,
+                    from_here=2
+                )
 
     def new_bundle(
         self,
         name="",
         payload="",
         identity=None,
+        recipient="",
         service="",
         custom_manifest=None
     ):
@@ -391,6 +430,9 @@ class Rhizome:
             payload (Union[str, bytes]): Initial payload
             identity (ServalIdentity): If set, then this identity's SID will be set as the bundle author
                                        If unset, the keyring's default identity will be used
+            recipient (str): Optional SID of the bundle's recipient
+                             If unset, bundle will be public and readable by anyone
+                             If set, bundle will be encrypted
             service (str): (Optional) Service this bundle belongs to
             custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
                                                                 as custom fields in the new bundle's manifest
@@ -405,31 +447,35 @@ class Rhizome:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity)
+        assert isinstance(recipient, basestring)
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
+
+        if payload:
+            encryption = 1
+        else:
+            encryption = 0
 
         manifest = Manifest(
             name=name,
             service=service,
             sender=identity.sid,
+            recipient=recipient,
+            crypt=encryption
         )
 
         if custom_manifest:
             manifest.__dict__.update(custom_manifest)
 
-        bundle = Bundle(
-            rhizome=self,
+        bundle_author = identity.sid
+
+        new_bundle = self.insert(
             manifest=manifest,
-            bundle_author=identity.sid,
-            payload=payload,
-            from_here=2
+            bundle_author=bundle_author,
+            payload=payload
         )
 
-        self.insert(bundle)
-
-        bundle.bundle_id = bundle.manifest.id
-
-        return bundle
+        return new_bundle
 
     def append(self, journal, payload=None):
         """Creates/updates a journal
