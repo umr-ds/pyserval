@@ -341,8 +341,8 @@ class Rhizome:
                     return serval_reply.content
 
             elif serval_reply.status_code == 404:
-                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+                bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
+                payload_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code"))
 
                 if bundle_status == 0:
                     raise ManifestNotFoundError(bid=bundle.bundle_id)
@@ -368,8 +368,8 @@ class Rhizome:
                     return serval_reply.content
 
             elif serval_reply.status_code == 404:
-                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+                bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
+                payload_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code"))
                 if bundle_status == 0:
                     raise ManifestNotFoundError(bid=bundle.bundle_id)
                 elif bundle_status == 1 and payload_status == 1:
@@ -439,7 +439,7 @@ class Rhizome:
             manifest.update(reply_content)
             raise DuplicateBundleException(bid=manifest.id)
         else:
-            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+            bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
             bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
             raise RhizomeInsertionError(bundle_status=bundle_status, bundle_message=bundle_message)
 
@@ -504,6 +504,8 @@ class Rhizome:
             payload=payload
         )
 
+        new_bundle.payload = payload
+
         return new_bundle
 
     def append(
@@ -559,7 +561,7 @@ class Rhizome:
             manifest.update(reply_content)
             raise DuplicateBundleException(bid=manifest.id)
         else:
-            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+            bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
             bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
             raise RhizomeInsertionError(bundle_status=bundle_status, bundle_message=bundle_message)
 
@@ -625,5 +627,7 @@ class Rhizome:
             bundle_author=bundle_author,
             payload=payload
         )
+
+        new_journal.payload = payload
 
         return new_journal
