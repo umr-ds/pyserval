@@ -22,7 +22,7 @@ dependencies = [
 
 setup(
     name='pyserval',
-    version='0.3.1',
+    version='0.3.2',
     description='Python client for serval-dna REST interface',
     long_description=long_description,
     long_description_content_type='text/markdown',
