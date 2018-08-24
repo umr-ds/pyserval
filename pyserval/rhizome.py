@@ -306,14 +306,16 @@ class Rhizome:
         bundle.get_payload()
         return bundle
 
-    def get_payload(self, bundle):
+    def get_payload(self, bundle, decode=False):
         """Get the payload for a bundle
 
         Args:
             bundle (Union[Bundle, Journal]): Bundle/Journal object
+            decode (bool): Set, if payload is utf-8 encoded string (if your original payload was a string and not bytes)
+                           If unset, returns raw bytes
 
         Returns:
-            bytes: Payload of the bundle
+            Union[bytes, str]: Payload of the bundle
 
         Note:
             For documentation on possible status code combinations, see
@@ -325,7 +327,10 @@ class Rhizome:
             serval_reply = self._low_level_rhizome.get_decrypted(bundle.bundle_id)
 
             if serval_reply.status_code == 200:
-                return serval_reply.content
+                if decode:
+                    return serval_reply.text
+                else:
+                    return serval_reply.content
 
             elif serval_reply.status_code == 404:
                 bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
@@ -349,7 +354,10 @@ class Rhizome:
             serval_reply = self._low_level_rhizome.get_raw(bundle.bundle_id)
 
             if serval_reply.status_code == 200:
-                return serval_reply.content
+                if decode:
+                    return serval_reply.text
+                else:
+                    return serval_reply.content
 
             elif serval_reply.status_code == 404:
                 bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
