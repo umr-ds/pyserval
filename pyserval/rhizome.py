@@ -404,6 +404,7 @@ class Rhizome:
         """
         assert isinstance(manifest, Manifest)
         assert manifest.tail is None, "For journals, use ''append''"
+        assert isinstance(payload, basestring) or isinstance(payload, bytes)
 
         serval_reply = self._low_level_rhizome.insert(
             manifest=manifest,
@@ -497,41 +498,69 @@ class Rhizome:
 
         return new_bundle
 
-    def append(self, journal, payload=None):
+    def append(
+        self,
+        manifest,
+        bundle_id="",
+        bundle_author="",
+        bundle_secret="",
+        payload=""
+    ):
         """Creates/updates a journal
 
         Args:
-            journal (Journal): Journal object whose data will be updated
-            payload (Union[str, bytes, None]): If not None, this will be used instead of the journal's own payload
+            manifest (Manifest): Valid (partial) bundle manifest
+            bundle_id (str): Optional BID - necessary if attempting to modify an existing bundle
+            bundle_author (str): Optional SID for a local, unlocked identity
+                                 When set, the bundle secret may be reconstructed later on
+            bundle_secret (str): Optional Curve25519 private key, used to create an anonymous bundle
+                                 Note that this will not be saved anywhere, you need to save it yourself
+                                 or lose access to the bundle
+            payload (Union[str, bytes]): Optional payload
 
         Note:
             Don't use for plain bundles, use ''insert'' instead
         """
-        assert isinstance(journal, Journal)
-        if payload is None:
-            payload = journal.payload
-
+        # TODO: This is VERY similar to the insert method - extract the common parts into a separate method
+        assert isinstance(manifest, Manifest)
+        assert manifest.tail is not None, "For plain bundles, use ''insert''"
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
 
         serval_reply = self._low_level_rhizome.append(
-            manifest=journal.manifest,
-            bundle_id=journal.bundle_id,
-            bundle_author=journal.bundle_author,
-            bundle_secret=journal.bundle_secret,
+            manifest=manifest,
+            bundle_id=bundle_id,
+            bundle_author=bundle_author,
+            bundle_secret=bundle_secret,
             payload=payload
         )
-
         reply_content = serval_reply.text
 
-        # TODO: check status code and raise appropriate exceptions
-
-        journal.manifest.update(reply_content)
+        if serval_reply.status_code == 201:
+            manifest = Manifest()
+            manifest.update(reply_content)
+            return Journal(
+                rhizome=self,
+                manifest=manifest,
+                bundle_id=manifest.id,
+                bundle_author=bundle_author,
+                bundle_secret=bundle_secret,
+                from_here=2
+            )
+        elif serval_reply.status_code == 200:
+            manifest = Manifest()
+            manifest.update(reply_content)
+            raise DuplicateBundleException(bid=manifest.id)
+        else:
+            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+            bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
+            raise RhizomeInsertionError(bundle_status=bundle_status, bundle_message=bundle_message)
 
     def new_journal(
         self,
-        payload,
         name="",
+        payload="",
         identity=None,
+        recipient="",
         service="",
         custom_manifest=None
     ):
@@ -542,6 +571,9 @@ class Rhizome:
             name (str): Human readable name for the journal
             identity (ServalIdentity): If set, then this identity's SID will be set as the journal author
                                        If unset, the keyring's default identity will be used
+            recipient (str): Optional SID of the bundle's recipient
+                             If unset, bundle will be public and readable by anyone
+                             If set, bundle will be encrypted
             service (str): (Optional) Service this journal belongs to
             custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
                                                                 as custom fields in the new bundle's manifest
@@ -549,37 +581,41 @@ class Rhizome:
         Returns:
             Journal: New journal object containing all relevant data
         """
+        # TODO: this is also very similar to new_bundle - refactor and extract common components
         assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
-        assert payload, "Payload must be non-empty"
 
         if identity is None:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity)
+        assert isinstance(recipient, basestring)
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
+
+        if recipient:
+            encryption = 1
+        else:
+            encryption = 0
 
         manifest = Manifest(
             name=name,
             service=service,
             sender=identity.sid,
+            recipient=recipient,
+            crypt=encryption,
             tail=0
         )
 
         if custom_manifest:
             manifest.__dict__.update(custom_manifest)
 
-        journal = Journal(
-            rhizome=self,
+        bundle_author = identity.sid
+
+        new_journal = self.append(
             manifest=manifest,
-            bundle_author=identity.sid,
-            payload=payload,
-            from_here=2
+            bundle_author=bundle_author,
+            payload=payload
         )
 
-        self.append(journal)
-
-        journal.bundle_id = journal.manifest.id
-
-        return journal
+        return new_journal
