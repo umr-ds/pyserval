@@ -185,7 +185,15 @@ class Journal:
         # remove version (will be set to tail + filesize)
         self.manifest.version = None
 
-        self._rhizome.append(self, payload=payload)
+        new_self = self._rhizome.append(
+            manifest=self.manifest,
+            bundle_id=self.bundle_id,
+            bundle_author=self.bundle_author,
+            bundle_secret=self.bundle_secret,
+            payload=payload
+        )
+
+        self.manifest = new_self.manifest
 
     def append_payload(self, payload):
         """Append additional payload to the bundle
