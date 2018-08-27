@@ -7,7 +7,7 @@ from pyserval.lowlevel.util import autocast
 from hypothesis import given
 from hypothesis.strategies import binary
 
-from tests.custom_strategies import unicode_printable
+from tests.custom_strategies import unicode_printable, ascii_alphanum
 
 payloads = binary()
 
@@ -17,7 +17,7 @@ payloads = binary()
 created_bundles = []
 
 
-@given(name=unicode_printable, payload=payloads, service=unicode_printable)
+@given(name=unicode_printable, payload=payloads, service=ascii_alphanum)
 def test_new_bundle(serval_init, name, payload, service):
     """Test adding of new bundles
 
@@ -33,14 +33,14 @@ def test_new_bundle(serval_init, name, payload, service):
     create_parameters = {
         'name': name,
         'payload': payload,
-        #'service': service
+        'service': service
     }
 
     try:
         new_bundle = rhizome.new_bundle(
             name=name,
             payload=payload,
-            #service=service
+            service=service
         )
     except DuplicateBundleException:
         # check, if we actually already created this bundle
@@ -51,9 +51,13 @@ def test_new_bundle(serval_init, name, payload, service):
 
     test_bundle = rhizome.get_bundle(new_bundle.bundle_id)
 
-    # as it turns out, if no name is provided, serval will will set it to "file1"
-    if not name:
-        assert test_bundle.manifest.name == "file1"
+    # as it turns out, if no name is provided, serval will will set it to the payload filename
+    # but as it further turns out, this only happen, if the 'service' field is unset...
+    if not name and not service:
+        assert test_bundle.manifest.name == "file"
+    # if service is set, then the name will be None...
+    elif not name:
+        assert test_bundle.manifest.name is None
     else:
         # manifest fields are automatically cast into their respective data types if they
         # are merely string representations
@@ -61,7 +65,7 @@ def test_new_bundle(serval_init, name, payload, service):
 
     assert test_bundle.get_payload() == payload
 
-    #if not service:
-    #    assert test_bundle.manifest.service == 'file'
-    #else:
-    #    assert test_bundle.manifest.service == autocast(service)
+    if not service:
+        assert test_bundle.manifest.service == 'file'
+    else:
+        assert test_bundle.manifest.service == autocast(service)
