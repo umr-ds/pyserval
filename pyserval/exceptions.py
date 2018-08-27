@@ -162,3 +162,24 @@ class RhizomeInsertionError(Exception):
 
     def __str__(self):
         return "Insertion failed with code {}, Message: {}".format(self.status, self.message)
+
+
+class InvalidManifestError(Exception):
+    """Raised by the manifest's is_valid-method if the manifest is invalid
+
+    Args:
+        key (str): invalid key
+        value (str): invalid value
+        reason (str): Human readable explanation of what is wrong
+    """
+    def __init__(self, key, value, reason):
+        assert isinstance(key, basestring)
+        assert isinstance(value, basestring)
+        assert isinstance(reason, basestring)
+
+        self.key = key
+        self.value = value
+        self.reason = reason
+
+    def __str__(self):
+        return "Invalid Manifest field: ({}: {}), Reason: {}".format(self.key, self.value, self.reason)

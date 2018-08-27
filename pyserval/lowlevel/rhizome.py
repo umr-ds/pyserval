@@ -8,7 +8,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 import sys
 
-from pyserval.exceptions import JournalError
+from pyserval.exceptions import JournalError, InvalidManifestError
 from pyserval.lowlevel.util import autocast
 
 
@@ -106,10 +106,21 @@ class Manifest:
     def is_valid(self):
         """Checks whether the manifest is valid
 
-        Returns:
-            bool: True if valid, False otherwise
+        Raises:
+            InvalidManifestError: If the manifest is invalid
         """
-        # TODO: implement
+        if self.service:
+            # apparently service names may only by alphanumeric
+            # even though the documentation does not say so...
+            if not self.service.isalnum():
+                raise InvalidManifestError(
+                    key="service",
+                    value=str(self.service),
+                    reason="Service must be alphanumeric"
+                )
+        # TODO: further checks
+
+        return True
 
 
 class LowLevelRhizome:
@@ -209,6 +220,8 @@ class LowLevelRhizome:
         Returns:
             List[Tuple[str, Any]]: Formatted parameters for POST-request
         """
+        manifest.is_valid()
+
         params = []
 
         # add bundle-id, if present
@@ -242,7 +255,7 @@ class LowLevelRhizome:
             )
         )
 
-        params.append(("payload", ("file1", payload)))
+        params.append(("payload", ("file", payload)))
 
         return params
 
