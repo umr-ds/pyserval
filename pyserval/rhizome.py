@@ -119,6 +119,12 @@ class Bundle:
         self.manifest.__dict__.update(kwargs)
         self.update()
 
+    def refresh(self):
+        """Refresh the bundle's metadata & payload to be certain that we have the complete current state"""
+        self.manifest = self._rhizome._get_manifest(self.bundle_id)
+        self.get_payload()
+        self.complete = True
+
 
 class Journal:
     """Representation of a Journal
@@ -228,6 +234,12 @@ class Journal:
         self.update(payload="")
         # get new, shrunk payload
         self.get_payload()
+
+    def refresh(self):
+        """Refresh the bundle's metadata & payload to be certain that we have the complete current state"""
+        self.manifest = self._rhizome._get_manifest(self.bundle_id)
+        self.get_payload()
+        self.complete = True
 
 
 class Rhizome:
