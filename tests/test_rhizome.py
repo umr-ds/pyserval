@@ -5,9 +5,10 @@ from pyserval.exceptions import DuplicateBundleException
 from pyserval.lowlevel.util import autocast
 
 from hypothesis import given
-from hypothesis.strategies import text, characters, binary
+from hypothesis.strategies import binary
 
-names = text(characters(blacklist_categories=('Cc', 'Cs')))
+from tests.custom_strategies import unicode_printable
+
 payloads = binary()
 
 
@@ -16,27 +17,30 @@ payloads = binary()
 created_bundles = []
 
 
-@given(name=names, payload=payloads)
-def test_new_bundle(serval_init, name, payload):
+@given(name=unicode_printable, payload=payloads, service=unicode_printable)
+def test_new_bundle(serval_init, name, payload, service):
     """Test adding of new bundles
 
     Args:
         serval_init (Client): Serval client created by test init
         name (str): Semi-random test names created by hypothesis
         payload (bytes): Random bytes for test payload
+        service (str): Semi-random service name
     """
     rhizome = serval_init.rhizome
     global created_bundles
 
     create_parameters = {
         'name': name,
-        'payload': payload
+        'payload': payload,
+        #'service': service
     }
 
     try:
         new_bundle = rhizome.new_bundle(
             name=name,
-            payload=payload
+            payload=payload,
+            #service=service
         )
     except DuplicateBundleException:
         # check, if we actually already created this bundle
@@ -56,3 +60,8 @@ def test_new_bundle(serval_init, name, payload):
         assert test_bundle.manifest.name == autocast(name)
 
     assert test_bundle.get_payload() == payload
+
+    #if not service:
+    #    assert test_bundle.manifest.service == 'file'
+    #else:
+    #    assert test_bundle.manifest.service == autocast(service)
