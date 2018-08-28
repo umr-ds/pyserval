@@ -6,7 +6,7 @@ pyserval.rhizome
 This module contains the means to interact with rhizome, the serval distributed file-store
 """
 
-import sys
+import sys, copy
 
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
@@ -63,6 +63,27 @@ class Bundle:
 
     def __repr__(self):
         return "Bundle({})".format(repr(self.__dict__))
+
+    def clone(self, name=None, service=None):
+        """Creates a clone of the bundle in rhizome.
+        
+        Two clones share a payload but have different bundle ids. This is possible by choosing another name or service."""
+        manifest_copy = copy.copy(self.manifest)
+        
+        manifest_copy.id = None
+        manifest_copy.BK = None
+
+        if name:
+            manifest_copy.name = name
+        if service:
+            manifest_copy.service = service
+
+        the_clone = self._rhizome.insert(
+            manifest=manifest_copy,
+            bundle_author=self.bundle_author,
+        )
+
+        return the_clone
 
     def update(self):
         """Updates the bundle's content in rhizome"""
