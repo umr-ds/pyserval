@@ -39,7 +39,7 @@ class ServalIdentity:
         Both 'sid' and 'identity' are public keys and may be shared
         Both 'did' and 'name' should be set via the 'set'-method
     """
-    def __init__(self, _keyring, sid, identity, did="", name=""):
+    def __init__(self, _keyring, sid, identity="", did="", name=""):
         if did is None:
             did = ""
         if name is None:
