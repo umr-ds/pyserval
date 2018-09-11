@@ -150,18 +150,25 @@ class RhizomeInsertionError(Exception):
     """Raised if a call to the 'insert' or 'append' endpoint fails
 
     Args:
+        http_status (int): HTTP-status-code of the reply
         bundle_status (int): Status code for the failure
         bundle_message (str): Human readable explanation of the failure
+        response_text (str): Text of response returned by the server - since we can't always rely on
+                             the first two arguments being provided
     """
-    def __init__(self, bundle_status, bundle_message):
-        assert isinstance(bundle_status, int)
-        assert isinstance(bundle_message, basestring)
-
+    def __init__(self, http_status, bundle_status, bundle_message, response_text):
+        self.http_status = http_status
         self.status = bundle_status
         self.message = bundle_message
+        self.response_text = response_text
 
     def __str__(self):
-        return "Insertion failed with code {}, Message: {}".format(self.status, self.message)
+        return "Insertion failed with: HTTP-code: {}, bundle-code {}, bundle-Message: {}, server-response: {}".format(
+            self.http_status,
+            self.status,
+            self.message,
+            self.response_text
+        )
 
 
 class InvalidManifestError(Exception):

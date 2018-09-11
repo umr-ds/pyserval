@@ -502,9 +502,14 @@ class Rhizome:
             manifest.update(reply_content)
             raise DuplicateBundleException(bid=manifest.id)
         else:
-            bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
+            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
             bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
-            raise RhizomeInsertionError(bundle_status=bundle_status, bundle_message=bundle_message)
+            raise RhizomeInsertionError(
+                http_status=serval_reply.status_code,
+                bundle_status=bundle_status,
+                bundle_message=bundle_message,
+                response_text=reply_content
+            )
 
     def new_bundle(
         self,
@@ -625,9 +630,14 @@ class Rhizome:
             manifest.update(reply_content)
             raise DuplicateBundleException(bid=manifest.id)
         else:
-            bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
+            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
             bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
-            raise RhizomeInsertionError(bundle_status=bundle_status, bundle_message=bundle_message)
+            raise RhizomeInsertionError(
+                http_status=serval_reply.status_code,
+                bundle_status=bundle_status,
+                bundle_message=bundle_message,
+                response_text=reply_content
+            )
 
     def new_journal(
         self,
