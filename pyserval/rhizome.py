@@ -6,7 +6,8 @@ pyserval.rhizome
 This module contains the means to interact with rhizome, the serval distributed file-store
 """
 
-import sys, copy
+import sys
+import copy
 
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
@@ -404,15 +405,13 @@ class Rhizome:
                     return serval_reply.content
 
             elif serval_reply.status_code == 404:
-                bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
-                payload_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code"))
+                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
 
-                if bundle_status == 0:
+                if bundle_status == '0':
                     raise ManifestNotFoundError(bid=bundle.bundle_id)
-
-                elif bundle_status == 1 and payload_status == 1:
+                elif bundle_status == '1' and payload_status == '1':
                     raise PayloadNotFoundError(bid=bundle.bundle_id)
-
                 else:
                     raise UnknownRhizomeStatusError(
                         serval_response=serval_reply
@@ -431,11 +430,12 @@ class Rhizome:
                     return serval_reply.content
 
             elif serval_reply.status_code == 404:
-                bundle_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code"))
-                payload_status = int(serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code"))
-                if bundle_status == 0:
+                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+
+                if bundle_status == '0':
                     raise ManifestNotFoundError(bid=bundle.bundle_id)
-                elif bundle_status == 1 and payload_status == 1:
+                elif bundle_status == '1' and payload_status == '1':
                     raise PayloadNotFoundError(bid=bundle.bundle_id)
                 else:
                     raise UnknownRhizomeStatusError(
