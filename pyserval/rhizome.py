@@ -34,6 +34,9 @@ class Bundle:
                              Setting this enables the 'bk' field in the manifest
         bundle_secret (str): Secret key used for bundle-signing
         from_here (int): Whether the bundle has been authored on this device
+        complete (bool): Whether this bundle is complete
+                         If gotten via get_bundlelist, the manifest will be incomplete and there will be no payload
+                         call 'refresh' before trying to do anything with it
 
     Note:
         If bundle_author is not set, then the bundle will be anonymous. In this case,
@@ -51,7 +54,8 @@ class Bundle:
         bundle_id="",
         bundle_author="",
         bundle_secret="",
-        from_here=0
+        from_here=0,
+        complete=False
     ):
         self._rhizome = rhizome
         self.manifest = manifest
@@ -60,6 +64,7 @@ class Bundle:
         self.bundle_author = bundle_author
         self.bundle_secret = bundle_secret
         self.from_here = from_here
+        self.complete = complete
 
     def __repr__(self):
         return "Bundle({})".format(repr(self.__dict__))
@@ -87,6 +92,7 @@ class Bundle:
 
     def update(self):
         """Updates the bundle's content in rhizome"""
+        assert self.complete, "Pleas call 'refresh' before trying to update"
 
         # Remove filesize & hash so that they will be recomputed
         self.manifest.filesize = None
@@ -134,6 +140,12 @@ class Bundle:
         self.manifest.__dict__.update(kwargs)
         self.update()
 
+    def refresh(self):
+        """Refresh the bundle's metadata & payload to be certain that we have the complete current state"""
+        self.manifest = self._rhizome._get_manifest(self.bundle_id)
+        self.get_payload()
+        self.complete = True
+
 
 class Journal:
     """Representation of a Journal
@@ -148,6 +160,9 @@ class Journal:
                                  Setting this enables the 'bk' field in the manifest
             bundle_secret (str): Secret key used for bundle-signing
             from_here (int): Whether the bundle has been authored on this device
+            complete (bool): Whether this bundle is complete
+                         If gotten via get_bundlelist, the manifest will be incomplete and there will be no payload
+                         call 'refresh' before trying to do anything with it
 
         Note:
             If bundle_author is not set, then the bundle will be anonymous. In this case,
@@ -165,7 +180,8 @@ class Journal:
         bundle_id="",
         bundle_author="",
         bundle_secret="",
-        from_here=0
+        from_here=0,
+        complete=False
     ):
         self._rhizome = rhizome
         self.manifest = manifest
@@ -174,6 +190,7 @@ class Journal:
         self.bundle_author = bundle_author
         self.bundle_secret = bundle_secret
         self.from_here = from_here
+        self.complete = complete
 
     def __repr__(self):
         return "Journal({})".format(repr(self.__dict__))
@@ -198,6 +215,7 @@ class Journal:
             While for a normal bundle, the updated payload will replace the previos payload,
             for journals it will instead be appended
         """
+        assert self.complete, "Pleas call 'refresh' before trying to update"
 
         # Remove filesize & hash as they will always be recomputed automatically
         self.manifest.filesize = None
@@ -237,6 +255,12 @@ class Journal:
         self.update(payload="")
         # get new, shrunk payload
         self.get_payload()
+
+    def refresh(self):
+        """Refresh the bundle's metadata & payload to be certain that we have the complete current state"""
+        self.manifest = self._rhizome._get_manifest(self.bundle_id)
+        self.get_payload()
+        self.complete = True
 
 
 class Rhizome:
@@ -295,14 +319,14 @@ class Rhizome:
 
         return bundles
 
-    def get_bundle(self, bid):
-        """Get the bundle for a specific BID
+    def _get_manifest(self, bid):
+        """Get only the manifest for a specific BID
 
         Args:
             bid (str): Bundle ID
 
         Returns:
-            Union[Bundle, Journal]: Object containing all relevant data
+            Manifest: Bundle's manifest
 
         Raises:
             NoSuchIdentityException: If no bundle with the specified BID is available
@@ -319,17 +343,35 @@ class Rhizome:
         manifest = Manifest()
         manifest.update(reply_text)
 
+        return manifest
+
+    def get_bundle(self, bid):
+        """Get the bundle for a specific BID
+
+        Args:
+            bid (str): Bundle ID
+
+        Returns:
+            Union[Bundle, Journal]: Object containing all relevant data
+
+        Raises:
+            NoSuchIdentityException: If no bundle with the specified BID is available
+        """
+        manifest = self._get_manifest(bid)
+
         if manifest.tail is None:
             bundle = Bundle(
                 self,
                 manifest=manifest,
-                bundle_id=manifest.id
+                bundle_id=manifest.id,
+                complete=True
             )
         else:
             bundle = Journal(
                 self,
                 manifest=manifest,
-                bundle_id=manifest.id
+                bundle_id=manifest.id,
+                complete=True
             )
 
         bundle.get_payload()
@@ -522,10 +564,11 @@ class Rhizome:
         new_bundle = self.insert(
             manifest=manifest,
             bundle_author=bundle_author,
-            payload=payload
+            payload=payload,
         )
 
         new_bundle.payload = payload
+        new_bundle.complete = True
 
         return new_bundle
 
@@ -650,5 +693,6 @@ class Rhizome:
         )
 
         new_journal.payload = payload
+        new_journal.complete = True
 
         return new_journal

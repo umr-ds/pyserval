@@ -5,6 +5,7 @@ from hypothesis import given
 from hypothesis.strategies import text, characters, sampled_from, integers, booleans
 
 from pyserval.keyring import ServalIdentity
+from tests.custom_strategies import unicode_printable
 
 names = text(
     characters(blacklist_categories=('Cc', 'Cs')), min_size=1
@@ -14,16 +15,12 @@ dids = text(
     sampled_from(['1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '0', '*']), min_size=5, max_size=31
 )
 
-pins = text(
-    characters(blacklist_categories=('Cc', 'Cs'))
-)
-
 new_keys = integers(min_value=3, max_value=10)
 
 bools = booleans()
 
 
-@given(pin=pins)
+@given(pin=unicode_printable)
 def test_add(serval_init, pin):
     keyring = serval_init.keyring
     n = len(keyring.get_identities())
