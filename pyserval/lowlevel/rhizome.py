@@ -26,7 +26,7 @@ class Manifest:
         version (int): Version of the bundle - a bundle with a higher version will replace
                        its old versions
                        May be specified manually, otherwise will be UNIX-timestamp of update
-        filsize (int): Size (in bytes) of payload
+        filesize (int): Size (in bytes) of payload
         service (str): Name of service to be published under
         date (int): UNIX-Timestamp of bundle creation (is not changed by updates)
         filehash (str): If payload is not empty (filesize != 0), contains sha512 of payload
@@ -70,6 +70,14 @@ class Manifest:
         self.crypt = crypt
         self.BK = BK
         self.__dict__.update(kwargs)
+
+        self.types = {
+            'version': int,
+            'filesize': int,
+            'date': int,
+            'tail': int,
+            'crypt': int,
+        }
 
     def __repr__(self):
         return str(self.__dict__)
@@ -121,6 +129,26 @@ class Manifest:
         # TODO: further checks
 
         return True
+
+    def autocast(self, field_name, value):
+        """Tries to automatically cast a string into another type
+        Rhizome HTTP replies for manifests are always strings,
+        but the underlying type might be different
+
+        Checks the object's 'types'-dict to determine if the value should be cast to another type
+        or left unchanged.
+
+        Args:
+            field_name (str): Name of the manifest field
+            value (str): String returned by the serval rest-server
+
+        Returns:
+            Any: Possibly cast value
+        """
+        try:
+            return self.types[field_name](value)
+        except KeyError:
+            return value
 
 
 class LowLevelRhizome:
