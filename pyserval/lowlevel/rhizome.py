@@ -73,7 +73,7 @@ class Manifest:
         self.BK = BK
         self.__dict__.update(kwargs)
 
-        self.types = {
+        self._types = {
             "version": int,
             "filesize": int,
             "date": int,
@@ -84,15 +84,15 @@ class Manifest:
     def __repr__(self):
         return str(self.__dict__)
 
-    def __dir__(self):
-        """Called by dir()
+    def fields(self):
+        """Get List of (fieldname, value) tuples of all relevant manifest fields
 
         Returns:
             List[Tuple[str, Any]]: Fields which are not None
         """
         items = []
         for key, value in self.__dict__.items():
-            if value is not None:
+            if value is not None and not key.startswith('_'):
                 items.append((key, value))
 
         return items
@@ -148,7 +148,7 @@ class Manifest:
             Any: Possibly cast value
         """
         try:
-            return self.types[field_name](value)
+            return self._types[field_name](value)
         except KeyError:
             return value
 
@@ -271,7 +271,7 @@ class LowLevelRhizome:
         # marshall manifest
         manifest_header = ""
 
-        for (key, value) in dir(manifest):
+        for (key, value) in manifest.fields():
             # Emptystring or None should be ignored
             # The number 0 should be included
             if value or value == 0:
