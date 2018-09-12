@@ -9,7 +9,6 @@ This module contains the means to interact with rhizome, the serval distributed 
 import sys
 
 from pyserval.exceptions import JournalError, InvalidManifestError
-from pyserval.lowlevel.util import autocast
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -106,7 +105,7 @@ class Manifest:
         values = {}
         for line in pure_manifest.splitlines():
             key, value = line.split("=")
-            value = autocast(value)
+            value = self.autocast(key, value)
             values[key] = value
 
         self.__dict__.update(values)

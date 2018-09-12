@@ -2,7 +2,6 @@
 
 from pyserval.client import Client
 from pyserval.exceptions import DuplicateBundleException
-from pyserval.lowlevel.util import autocast
 
 from hypothesis import given
 from hypothesis.strategies import binary
@@ -61,11 +60,11 @@ def test_new_bundle(serval_init, name, payload, service):
     else:
         # manifest fields are automatically cast into their respective data types if they
         # are merely string representations
-        assert test_bundle.manifest.name == autocast(name)
+        assert test_bundle.manifest.name == test_bundle.autocast('name', name)
 
     assert test_bundle.get_payload() == payload
 
     if not service:
         assert test_bundle.manifest.service == 'file'
     else:
-        assert test_bundle.manifest.service == autocast(service)
+        assert test_bundle.manifest.service == test_bundle.autocast('service', service)

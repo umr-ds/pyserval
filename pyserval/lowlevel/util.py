@@ -70,25 +70,6 @@ def boolify(value):
     raise ValueError()
 
 
-def autocast(value):
-    """Tries to automatically cast a string into another type
-    Rhizome HTTP replies for manifests are always strings,
-    but the underlying type might be different
-
-    Args:
-        value (str): String which might represent a value of another type
-
-    Returns:
-        Union[int, float, bool, str]: Cast value (or original String if value can not be cast)
-    """
-    for cast in [int, float, boolify]:
-        try:
-            return cast(value)
-        except ValueError:
-            pass
-    return value
-
-
 def unmarshall(json_table, object_class, **kwargs):
     """Unmarshalls a Json-Table into a list of Python-objects
 
