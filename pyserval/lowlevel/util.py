@@ -29,7 +29,7 @@ def decode_json_table(json):
     """
     data = []
 
-    for row in json['rows']:
+    for row in json["rows"]:
         # transform row of table
         # into dictionary for single object
         data.append(dict(zip(json["header"], row)))
@@ -46,7 +46,7 @@ def generate_secret():
         str: String of 64 random hex-digits (32 bytes of random data)
     """
     randomiser = SystemRandom()
-    secret = ''.join([randomiser.choice('0123456789ABCDEF') for _ in range(64)])
+    secret = "".join([randomiser.choice("0123456789ABCDEF") for _ in range(64)])
     return secret
 
 

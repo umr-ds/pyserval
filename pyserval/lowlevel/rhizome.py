@@ -42,20 +42,23 @@ class Manifest:
         kwargs (str): Additional custom metadata
                     (See examples.rhizome for usage)
     """
-    def __init__(self,
-                 id=None,
-                 version=None,
-                 filesize=None,
-                 service=None,
-                 date=None,
-                 filehash=None,
-                 tail=None,
-                 sender=None,
-                 recipient=None,
-                 name=None,
-                 crypt=None,
-                 BK=None,
-                 **kwargs):
+
+    def __init__(
+        self,
+        id=None,
+        version=None,
+        filesize=None,
+        service=None,
+        date=None,
+        filehash=None,
+        tail=None,
+        sender=None,
+        recipient=None,
+        name=None,
+        crypt=None,
+        BK=None,
+        **kwargs
+    ):
         self.id = id
         self.version = version
         self.filesize = filesize
@@ -71,11 +74,11 @@ class Manifest:
         self.__dict__.update(kwargs)
 
         self.types = {
-            'version': int,
-            'filesize': int,
-            'date': int,
-            'tail': int,
-            'crypt': int,
+            "version": int,
+            "filesize": int,
+            "date": int,
+            "tail": int,
+            "crypt": int,
         }
 
     def __repr__(self):
@@ -123,7 +126,7 @@ class Manifest:
                 raise InvalidManifestError(
                     key="service",
                     value=str(self.service),
-                    reason="Service must be alphanumeric"
+                    reason="Service must be alphanumeric",
                 )
         # TODO: further checks
 
@@ -156,6 +159,7 @@ class LowLevelRhizome:
     Args:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
+
     def __init__(self, connection):
         self._connection = connection
 
@@ -227,11 +231,9 @@ class LowLevelRhizome:
         return self._connection.get("/restful/rhizome/{}/decrypted.bin".format(bid))
 
     @staticmethod
-    def _format_params(manifest,
-                       bundle_id="",
-                       bundle_author="",
-                       bundle_secret="",
-                       payload=""):
+    def _format_params(
+        manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
+    ):
         """Internal method to build parameters
 
         Takes bundle data and constructs parameters for POST-request
@@ -278,7 +280,11 @@ class LowLevelRhizome:
         params.append(
             (
                 "manifest",
-                ("manifest1", manifest_header, "rhizome/manifest;format=\"text+binarysig\"")
+                (
+                    "manifest1",
+                    manifest_header,
+                    'rhizome/manifest;format="text+binarysig"',
+                ),
             )
         )
 
@@ -286,11 +292,9 @@ class LowLevelRhizome:
 
         return params
 
-    def insert(self, manifest,
-               bundle_id="",
-               bundle_author="",
-               bundle_secret="",
-               payload=""):
+    def insert(
+        self, manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
+    ):
         """Inserts a bundle into rhizome
 
         See
@@ -322,19 +326,19 @@ class LowLevelRhizome:
         if manifest.tail is not None:
             raise JournalError(True)
 
-        params = self._format_params(manifest=manifest,
-                                     payload=payload,
-                                     bundle_id=bundle_id,
-                                     bundle_author=bundle_author,
-                                     bundle_secret=bundle_secret)
+        params = self._format_params(
+            manifest=manifest,
+            payload=payload,
+            bundle_id=bundle_id,
+            bundle_author=bundle_author,
+            bundle_secret=bundle_secret,
+        )
 
         return self._connection.post("/restful/rhizome/insert", files=params)
 
-    def append(self, manifest,
-               payload,
-               bundle_id="",
-               bundle_author="",
-               bundle_secret=""):
+    def append(
+        self, manifest, payload, bundle_id="", bundle_author="", bundle_secret=""
+    ):
         """Appends data to a journal
 
         See
@@ -365,10 +369,12 @@ class LowLevelRhizome:
         if manifest.tail is None:
             raise JournalError(False)
 
-        params = self._format_params(manifest=manifest,
-                                     payload=payload,
-                                     bundle_id=bundle_id,
-                                     bundle_author=bundle_author,
-                                     bundle_secret=bundle_secret)
+        params = self._format_params(
+            manifest=manifest,
+            payload=payload,
+            bundle_id=bundle_id,
+            bundle_author=bundle_author,
+            bundle_secret=bundle_secret,
+        )
 
         return self._connection.post("/restful/rhizome/append", files=params)
