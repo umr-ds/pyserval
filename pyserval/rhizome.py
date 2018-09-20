@@ -348,6 +348,8 @@ class Rhizome:
         serval_stream = self._low_level_rhizome.get_manifest_newsince(token)
         if serval_stream.status_code == 404:
             raise InvalidTokenError(token, serval_stream.reason)
+        elif serval_stream.status_code != 200:
+            raise InvalidTokenError(token, "Unhandled status code {}".format(serval_stream.status_code))
 
         serval_reply_bytes = []
         lines = 0
