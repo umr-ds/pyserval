@@ -8,6 +8,7 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 import sys
 import copy
+import json
 
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
@@ -56,7 +57,8 @@ class Bundle:
         bundle_author="",
         bundle_secret="",
         from_here=0,
-        complete=False
+        complete=False,
+        token=None,
     ):
         self._rhizome = rhizome
         self.manifest = manifest
@@ -66,6 +68,7 @@ class Bundle:
         self.bundle_secret = bundle_secret
         self.from_here = from_here
         self.complete = complete
+        self.token = token
 
     def __repr__(self):
         return "Bundle({})".format(repr(self.__dict__))
@@ -182,7 +185,8 @@ class Journal:
         bundle_author="",
         bundle_secret="",
         from_here=0,
-        complete=False
+        complete=False,
+        token=None,
     ):
         self._rhizome = rhizome
         self.manifest = manifest
@@ -192,6 +196,7 @@ class Journal:
         self.bundle_secret = bundle_secret
         self.from_here = from_here
         self.complete = complete
+        self.token = token
 
     def __repr__(self):
         return "Journal({})".format(repr(self.__dict__))
@@ -277,15 +282,8 @@ class Rhizome:
         self._low_level_rhizome = low_level_rhizome
         self._keyring = keyring
 
-    def get_bundlelist(self):
-        """Get list of all bundles in the rhizome store
 
-        Returns:
-            List[Union[Bundle, Journal]]
-        """
-        serval_reply = self._low_level_rhizome.get_manifests()
-        reply_json = serval_reply.json()
-
+    def _parse_bundlelist(self, reply_json):
         bundle_data = decode_json_table(reply_json)
         bundles = []
 
@@ -303,14 +301,16 @@ class Rhizome:
                     self,
                     manifest=manifest,
                     bundle_id=data['id'],
-                    from_here=data['.fromhere']
+                    from_here=data['.fromhere'],
+                    token=data['.token'],
                 )
             else:
                 new_bundle = Journal(
                     self,
                     manifest=manifest,
                     bundle_id=data['id'],
-                    from_here=data['.fromhere']
+                    from_here=data['.fromhere'],
+                    token=data['.token'],
                 )
 
             if data['.author'] is not None:
@@ -319,6 +319,49 @@ class Rhizome:
             bundles.append(new_bundle)
 
         return bundles
+
+    def get_bundlelist(self):
+        """Get list of all bundles in the rhizome store
+
+        Returns:
+            List[Union[Bundle, Journal]]
+        """
+        serval_reply = self._low_level_rhizome.get_manifests()
+        reply_json= serval_reply.json()
+
+        return self._parse_bundlelist(reply_json)
+
+    BUNDLELIST_HEADER_SIZE = 160
+    def get_bundlelist_newsince(self, token):
+        """Get list of the bundles added after a specific token
+
+        Args:
+            token (str): NewSince Token
+
+        Returns:
+            List[Union[Bundle, Journal]]
+        """
+        with self._low_level_rhizome.get_manifest_newsince(token) as serval_stream:
+            serval_reply_bytes = []
+            lines = 0
+
+            for c in serval_stream.iter_content():
+                if c == b'\n': 
+                    lines += 1
+
+                serval_reply_bytes.append(c)
+                
+                if c == b']' and lines == 3 and len(serval_reply_bytes) > Rhizome.BUNDLELIST_HEADER_SIZE:
+                    # complete json manually
+                    serval_reply_bytes += [b'\n', b']', b'\n', b'}']
+                    break
+
+        
+        serval_reply = b''.join(serval_reply_bytes)
+        reply_json = json.loads(serval_reply)
+
+        return self._parse_bundlelist(reply_json)
+
 
     def _get_manifest(self, bid):
         """Get only the manifest for a specific BID

@@ -177,6 +177,19 @@ class LowLevelRhizome:
         """
         return self._connection.get("/restful/rhizome/bundlelist.json")
 
+    def get_manifest_newsince(self, token):
+        """Blocking call, returns first manifest after provided token, none on timeout.
+
+        Endpoint:
+            GET /restful/rhizome/newsince[/TOKEN]/bundlelist.json
+
+        Returns:
+            ...
+        
+        """
+
+        return self._connection.get("/restful/rhizome/newsince/{}/bundlelist.json".format(token), stream=True)
+        
     def get_manifest(self, bid):
         """Gets the manifest for a specified BID
 
