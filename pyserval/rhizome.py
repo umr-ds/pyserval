@@ -14,6 +14,7 @@ from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
 from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
 from pyserval.exceptions import DecryptionError, DuplicateBundleException, RhizomeInsertionError
+from pyserval.exceptions import InvalidTokenError
 from pyserval.keyring import Keyring, ServalIdentity
 
 
@@ -331,7 +332,7 @@ class Rhizome:
 
         return self._parse_bundlelist(reply_json)
 
-    BUNDLELIST_HEADER_SIZE = 160
+    BUNDLELIST_HEADER_SIZE = 157
     def get_bundlelist_newsince(self, token):
         """Get list of the bundles added after a specific token
 
@@ -340,8 +341,14 @@ class Rhizome:
 
         Returns:
             List[Union[Bundle, Journal]]
+
+        Raises:
+            InvalidTokenError: If the token is not found in serval
         """
         with self._low_level_rhizome.get_manifest_newsince(token) as serval_stream:
+            if serval_stream.status_code == 404:
+                raise InvalidTokenError(token, serval_stream.reason)
+
             serval_reply_bytes = []
             lines = 0
 
@@ -352,10 +359,10 @@ class Rhizome:
                 serval_reply_bytes.append(c)
                 
                 if c == b']' and lines == 3 and len(serval_reply_bytes) > Rhizome.BUNDLELIST_HEADER_SIZE:
+
                     # complete json manually
                     serval_reply_bytes += [b'\n', b']', b'\n', b'}']
                     break
-
         
         serval_reply = b''.join(serval_reply_bytes)
         reply_json = json.loads(serval_reply)

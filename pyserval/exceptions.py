@@ -190,3 +190,19 @@ class InvalidManifestError(Exception):
 
     def __str__(self):
         return "Invalid Manifest field: ({}: {}), Reason: {}".format(self.key, self.value, self.reason)
+
+class InvalidTokenError(Exception):
+    """Raised by the rhizome get_bundlelist_newsince method, if the token is invalid
+
+    Args:
+        token (str): invalid token
+        reason (str): Human readable explanation of what is wrong
+    """
+    def __init__(self, token, reason):
+        assert isinstance(reason, basestring)
+
+        self.token = token
+        self.reason = reason
+
+    def __str__(self):
+        return "Invalid token: {}, Reason: {}".format(self.token, self.reason)
