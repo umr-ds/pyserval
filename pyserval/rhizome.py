@@ -345,24 +345,24 @@ class Rhizome:
         Raises:
             InvalidTokenError: If the token is not found in serval
         """
-        with self._low_level_rhizome.get_manifest_newsince(token) as serval_stream:
-            if serval_stream.status_code == 404:
-                raise InvalidTokenError(token, serval_stream.reason)
+        serval_stream = self._low_level_rhizome.get_manifest_newsince(token)
+        if serval_stream.status_code == 404:
+            raise InvalidTokenError(token, serval_stream.reason)
 
-            serval_reply_bytes = []
-            lines = 0
+        serval_reply_bytes = []
+        lines = 0
 
-            for c in serval_stream.iter_content():
-                if c == b'\n': 
-                    lines += 1
+        for c in serval_stream.iter_content():
+            if c == b'\n': 
+                lines += 1
 
-                serval_reply_bytes.append(c)
-                
-                if c == b']' and lines == 3 and len(serval_reply_bytes) > Rhizome.BUNDLELIST_HEADER_SIZE:
+            serval_reply_bytes.append(c)
+            
+            if c == b']' and lines == 3 and len(serval_reply_bytes) > Rhizome.BUNDLELIST_HEADER_SIZE:
 
-                    # complete json manually
-                    serval_reply_bytes += [b'\n', b']', b'\n', b'}']
-                    break
+                # complete json manually
+                serval_reply_bytes += [b'\n', b']', b'\n', b'}']
+                break
         
         serval_reply = b''.join(serval_reply_bytes)
         reply_json = json.loads(serval_reply)
