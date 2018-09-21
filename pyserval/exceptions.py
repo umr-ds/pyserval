@@ -96,6 +96,29 @@ class DecryptionError(Exception):
         return "Can't decrypt bundle payload, BID: {}".format(self.bid)
 
 
+class RhizomeHTTPStatusError(Exception):
+    """Raised for rhizome responses with an unknown HTTP status
+
+    Args:
+        serval_response (requests.models.Response): Response returned by the serval-server
+
+    Attributes:
+        http_status (int): HTTP status code of the response
+        headers (dict)
+    """
+    def __init__(self, serval_response):
+        assert isinstance(serval_response, Response)
+
+        self.http_status = serval_response.status_code
+        self.response = serval_response.json()
+
+    def __str__(self):
+        return "Unknown HTTP status code {}, hint: {}".format(
+            self.http_status,
+            self.response,
+        )
+
+
 class UnknownRhizomeStatusError(Exception):
     """Raised for rhizome responses with an unknown combination of HTTP/Bundle/Payload status
 

@@ -14,7 +14,7 @@ from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
 from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
 from pyserval.exceptions import DecryptionError, DuplicateBundleException, RhizomeInsertionError
-from pyserval.exceptions import InvalidTokenError
+from pyserval.exceptions import InvalidTokenError, RhizomeHTTPStatusError
 from pyserval.keyring import Keyring, ServalIdentity
 
 
@@ -344,10 +344,13 @@ class Rhizome:
 
         Raises:
             InvalidTokenError: If the token is not found in serval
+            RhizomeHTTPStatusError: If the HTTP status code is unknown 
         """
         with self._low_level_rhizome.get_manifest_newsince(token) as serval_stream:
             if serval_stream.status_code == 404:
                 raise InvalidTokenError(token, serval_stream.reason)
+            if serval_stream.status_code != 200:
+                raise RhizomeHTTPStatusError(serval_stream)
 
             serval_reply_bytes = []
             lines = 0
