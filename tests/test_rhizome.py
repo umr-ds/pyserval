@@ -43,6 +43,9 @@ def test_new_bundle(serval_init, name, payload, service):
         )
     except DuplicateBundleException:
         # check, if we actually already created this bundle
+        # FIXME: for some reason, this does not work as expected.
+        # Sometimes, even though the duplicate exception fires, the bundle is not in the list
+        # of previously created bundles...
         assert create_parameters in created_bundles
         return
 
@@ -58,13 +61,11 @@ def test_new_bundle(serval_init, name, payload, service):
     elif not name:
         assert test_bundle.manifest.name is None
     else:
-        # manifest fields are automatically cast into their respective data types if they
-        # are merely string representations
-        assert test_bundle.manifest.name == test_bundle.autocast('name', name)
+        assert test_bundle.manifest.name == name
 
     assert test_bundle.get_payload() == payload
 
     if not service:
         assert test_bundle.manifest.service == 'file'
     else:
-        assert test_bundle.manifest.service == test_bundle.autocast('service', service)
+        assert test_bundle.manifest.service == service
