@@ -24,6 +24,9 @@ if sys.version_info >= (3, 0, 0):
     basestring = str
 
 
+BUNDLELIST_HEADER_SIZE = 157
+
+
 class Bundle:
     """Representation of a (non-journal) Rhizome-bundle
 
@@ -270,6 +273,33 @@ class Journal:
         self.complete = True
 
 
+def _handle_bundle_error(serval_reply):
+    """When the insert/append endpoint fails, check what exactly happened
+
+    Args:
+        serval_reply (requests.models.Response): Faulty response
+
+    Raises:
+        DuplicateBundleException: If the error occured because the bundle is a duplicate
+        RhizomeInsertionError: If it's something else
+    """
+    reply_content = serval_reply.text
+
+    if serval_reply.status_code == 200:
+        manifest = Manifest()
+        manifest.update(reply_content)
+        raise DuplicateBundleException(bid=manifest.id)
+    else:
+        bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
+        bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
+        raise RhizomeInsertionError(
+            http_status=serval_reply.status_code,
+            bundle_status=bundle_status,
+            bundle_message=bundle_message,
+            response_text=reply_content
+        )
+
+
 class Rhizome:
     """Interface for interacting with the serval rhizome API
 
@@ -282,7 +312,6 @@ class Rhizome:
         assert isinstance(keyring, Keyring)
         self._low_level_rhizome = low_level_rhizome
         self._keyring = keyring
-
 
     def _parse_bundlelist(self, reply_json):
         bundle_data = decode_json_table(reply_json)
@@ -332,7 +361,6 @@ class Rhizome:
 
         return self._parse_bundlelist(reply_json)
 
-    BUNDLELIST_HEADER_SIZE = 157
     def get_bundlelist_newsince(self, token):
         """Get list of the bundles added after a specific token
 
@@ -361,8 +389,7 @@ class Rhizome:
 
                 serval_reply_bytes.append(c)
                 
-                if c == b']' and lines == 3 and len(serval_reply_bytes) > Rhizome.BUNDLELIST_HEADER_SIZE:
-
+                if c == b']' and lines == 3 and len(serval_reply_bytes) > BUNDLELIST_HEADER_SIZE:
                     # complete json manually
                     serval_reply_bytes += [b'\n', b']', b'\n', b'}']
                     break
@@ -371,7 +398,6 @@ class Rhizome:
         reply_json = json.loads(serval_reply)
 
         return self._parse_bundlelist(reply_json)
-
 
     def _get_manifest(self, bid):
         """Get only the manifest for a specific BID
@@ -537,11 +563,10 @@ class Rhizome:
             bundle_secret=bundle_secret,
             payload=payload
         )
-        reply_content = serval_reply.text
 
         if serval_reply.status_code == 201:
             manifest = Manifest()
-            manifest.update(reply_content)
+            manifest.update(serval_reply.text)
             return Bundle(
                 rhizome=self,
                 manifest=manifest,
@@ -550,19 +575,8 @@ class Rhizome:
                 bundle_secret=bundle_secret,
                 from_here=2
             )
-        elif serval_reply.status_code == 200:
-            manifest = Manifest()
-            manifest.update(reply_content)
-            raise DuplicateBundleException(bid=manifest.id)
         else:
-            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-            bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
-            raise RhizomeInsertionError(
-                http_status=serval_reply.status_code,
-                bundle_status=bundle_status,
-                bundle_message=bundle_message,
-                response_text=reply_content
-            )
+            _handle_bundle_error(serval_reply)
 
     def new_bundle(
         self,
@@ -653,7 +667,6 @@ class Rhizome:
         Note:
             Don't use for plain bundles, use ''insert'' instead
         """
-        # TODO: This is VERY similar to the insert method - extract the common parts into a separate method
         assert isinstance(manifest, Manifest)
         assert manifest.tail is not None, "For plain bundles, use ''insert''"
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
@@ -678,19 +691,8 @@ class Rhizome:
                 bundle_secret=bundle_secret,
                 from_here=2
             )
-        elif serval_reply.status_code == 200:
-            manifest = Manifest()
-            manifest.update(reply_content)
-            raise DuplicateBundleException(bid=manifest.id)
         else:
-            bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-            bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
-            raise RhizomeInsertionError(
-                http_status=serval_reply.status_code,
-                bundle_status=bundle_status,
-                bundle_message=bundle_message,
-                response_text=reply_content
-            )
+            _handle_bundle_error(serval_reply)
 
     def new_journal(
         self,
