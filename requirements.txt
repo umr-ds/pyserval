@@ -2,3 +2,5 @@ requests
 pytest
 pytest-cov
 hypothesis
+black
+pre-commit

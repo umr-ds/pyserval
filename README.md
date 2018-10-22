@@ -25,7 +25,9 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
 
 `pip install https://github.com/umr-ds/pyserval/releases/download/v0.3.2/pyserval-0.3.2-py2.py3-none-any.whl`
 
-## Running the tests
+## Development
+
+In order to have reasonably well formatted code, a format-checking pre-commit hook is supplied. The tool used for checking/reformatting is [black](https://github.com/ambv/black). Note that the hook itself does not do any reformatting, it merely informs you that a file is not properly formatted. You need to do the reformatting yourself using `black $FILEPATH`.
 
 The tests require you to have `servald` from [serval-dna](https://github.com/servalproject/serval-dna) installed and available in your `PATH`. In order to have a consistent testing enviroment, a directory `/tmp/pyserval-tests/` to be used as the `SERVALINSTANCE_PATH`.
 
@@ -33,5 +35,6 @@ The tests require you to have `servald` from [serval-dna](https://github.com/ser
 2. Install project to python-path
     - You might want to use a virtualenv
     - You might also want to do an editable install with `pip install -e .`
-3. Install testing dependencies with `pip install -r requirements.txt`
-4. In the project root run `pytest --cov=pyserval`
+3. Install development dependencies with `pip install -r requirements.txt`
+4. Install git pre-commit hook with `pre-commit install`
+5. For testing: In the project root run `pytest --cov=pyserval`
