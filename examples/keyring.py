@@ -7,22 +7,27 @@ from pyserval.client import Client
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Example for keyring-endpoints")
-    parser.add_argument('-ho',
-                        '--host',
-                        default='localhost',
-                        help='Host running the servald REST-interface')
-    parser.add_argument('-po',
-                        '--port',
-                        default=4110,
-                        help='Port exposing the servald REST-interface')
-    parser.add_argument('-u',
-                        '--user',
-                        default='pum',
-                        help='Username for authentication to the REST interface')
-    parser.add_argument('-pw',
-                        '--password',
-                        default='pum123',
-                        help='Password for authentication to the REST interface')
+    parser.add_argument(
+        "-ho",
+        "--host",
+        default="localhost",
+        help="Host running the servald REST-interface",
+    )
+    parser.add_argument(
+        "-po", "--port", default=4110, help="Port exposing the servald REST-interface"
+    )
+    parser.add_argument(
+        "-u",
+        "--user",
+        default="pum",
+        help="Username for authentication to the REST interface",
+    )
+    parser.add_argument(
+        "-pw",
+        "--password",
+        default="pum123",
+        help="Password for authentication to the REST interface",
+    )
 
     args = parser.parse_args()
 
@@ -56,7 +61,9 @@ if __name__ == "__main__":
     print("New Identity with name and DID: {}".format(new_identity_name))
 
     # Modify name and did
-    modified_identity = keyring.set(new_identity_name, did="654321", name="Another Name")
+    modified_identity = keyring.set(
+        new_identity_name, did="654321", name="Another Name"
+    )
     print("Modified Identity: {}".format(modified_identity))
 
     # Reset name & did back to empty string

@@ -6,35 +6,40 @@ import argparse
 from pyserval.client import Client
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test rhizome-endpoints")
-    parser.add_argument('-ho',
-                        '--host',
-                        default='localhost',
-                        help='Host running the servald REST-interface')
-    parser.add_argument('-po',
-                        '--port',
-                        default=4110,
-                        help='Port exposing the servald REST-interface')
-    parser.add_argument('-u',
-                        '--user',
-                        default='pum',
-                        help='Username for authentication to the REST interface')
-    parser.add_argument('-p',
-                        '--password',
-                        default='pum123',
-                        help='Password for authentication to the REST interface')
+    parser.add_argument(
+        "-ho",
+        "--host",
+        default="localhost",
+        help="Host running the servald REST-interface",
+    )
+    parser.add_argument(
+        "-po", "--port", default=4110, help="Port exposing the servald REST-interface"
+    )
+    parser.add_argument(
+        "-u",
+        "--user",
+        default="pum",
+        help="Username for authentication to the REST interface",
+    )
+    parser.add_argument(
+        "-p",
+        "--password",
+        default="pum123",
+        help="Password for authentication to the REST interface",
+    )
 
     args = parser.parse_args()
 
-    client = Client(host=args.host, port=args.port, user=args.user, passwd=args.password)
+    client = Client(
+        host=args.host, port=args.port, user=args.user, passwd=args.password
+    )
     rhizome = client.rhizome
 
     # create new bundle with default identity
     new_bundle = rhizome.new_bundle(
-        name="test_default",
-        payload="Batman is no payload",
-        use_default_identity=True
+        name="test_default", payload="Batman is no payload", use_default_identity=True
     )
 
     # get bundle payload
@@ -48,9 +53,7 @@ if __name__ == '__main__':
 
     # create new journal
     new_journal = rhizome.new_journal(
-        name="foo",
-        payload="Batman has no journal",
-        use_default_identity=True
+        name="foo", payload="Batman has no journal", use_default_identity=True
     )
 
     print(new_journal.get_payload())
@@ -89,7 +92,7 @@ if __name__ == '__main__':
     new_bundle_custom = rhizome.new_bundle(
         name="Custom Fields",
         use_default_identity=True,
-        custom_manifest={"foo": "bar", "fizz": "buzz"}
+        custom_manifest={"foo": "bar", "fizz": "buzz"},
     )
     # check custom fields
     bundle_check = rhizome.get_bundle(new_bundle_custom.bundle_id)
