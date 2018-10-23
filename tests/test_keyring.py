@@ -7,12 +7,16 @@ from hypothesis.strategies import text, characters, sampled_from, integers, bool
 from pyserval.keyring import ServalIdentity
 from tests.custom_strategies import unicode_printable
 
-names = text(
-    characters(blacklist_categories=('Cc', 'Cs')), min_size=1
-).map(lambda s: s.strip()).filter(lambda s: len(s.encode("utf-8")) < 64)
+names = (
+    text(characters(blacklist_categories=("Cc", "Cs")), min_size=1)
+    .map(lambda s: s.strip())
+    .filter(lambda s: len(s.encode("utf-8")) < 64)
+)
 
 dids = text(
-    sampled_from(['1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '0', '*']), min_size=5, max_size=31
+    sampled_from(["1", "2", "3", "4", "5", "6", "7", "8", "9", "#", "0", "*"]),
+    min_size=5,
+    max_size=31,
 )
 
 new_keys = integers(min_value=3, max_value=10)
@@ -27,7 +31,7 @@ def test_add(serval_init, pin):
     new_identity = keyring.add(pin)
     identities = keyring.get_identities()
 
-    assert len(identities) == n+1
+    assert len(identities) == n + 1
     assert new_identity in identities
     assert keyring.get_identity(new_identity.sid) == new_identity
 
@@ -118,7 +122,7 @@ def test_remove(serval_init):
         identities = keyring.get_identities()
 
         assert removed_identity == identity
-        assert len(identities) == n-1
+        assert len(identities) == n - 1
         assert identity not in identities
 
         n = len(identities)

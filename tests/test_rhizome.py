@@ -29,18 +29,10 @@ def test_new_bundle(serval_init, name, payload, service):
     rhizome = serval_init.rhizome
     global created_bundles
 
-    create_parameters = {
-        'name': name,
-        'payload': payload,
-        'service': service
-    }
+    create_parameters = {"name": name, "payload": payload, "service": service}
 
     try:
-        new_bundle = rhizome.new_bundle(
-            name=name,
-            payload=payload,
-            service=service
-        )
+        new_bundle = rhizome.new_bundle(name=name, payload=payload, service=service)
     except DuplicateBundleException:
         # check, if we actually already created this bundle
         # FIXME: for some reason, this does not work as expected.
@@ -66,6 +58,6 @@ def test_new_bundle(serval_init, name, payload, service):
     assert test_bundle.get_payload() == payload
 
     if not service:
-        assert test_bundle.manifest.service == 'file'
+        assert test_bundle.manifest.service == "file"
     else:
         assert test_bundle.manifest.service == service
