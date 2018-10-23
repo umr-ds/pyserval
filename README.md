@@ -7,7 +7,7 @@ Provides a client to interact with serval-dna's REST-interface natively in pytho
 The following functionality is implemented:
 
 - Serval Keyring
-- Rhizome (except GET /restful/rhizome/newsince[/TOKEN]/bundlelist.json)
+- Rhizome
 - MeshMS (except GET /restful/meshms/SENDERSID/RECIPIENTSID/newsince[/TOKEN]/messagelist.json)
 - MeshMB
 
@@ -17,7 +17,11 @@ For documentation on the specific enpoints, please consult [The serval-dna socum
 
 This code should run ob both Python 2.7 and 3.4+
 
-The only external dependency is [requests](https://github.com/requests/requests)
+The only external (runtime-)dependency is [requests](https://github.com/requests/requests)
+
+Development dependencies are the following:
+
+Automatic format checking is done using [black](https://github.com/ambv/black) and [pre-commit](https://github.com/pre-commit/pre-commit).
 
 In order to run the tests, you will need [hypothesis](https://github.com/HypothesisWorks/hypothesis-python) and [pytest](https://github.com/pytest-dev/pytest), as well as [pytest-cov](https://github.com/pytest-dev/pytest-cov) for coverage-reports.
 
@@ -29,7 +33,7 @@ In order to run the tests, you will need [hypothesis](https://github.com/Hypothe
 
 In order to have reasonably well formatted code, a format-checking pre-commit hook is supplied. The tool used for checking/reformatting is [black](https://github.com/ambv/black). Note that the hook itself does not do any reformatting, it merely informs you that a file is not properly formatted. You need to do the reformatting yourself using `black $FILEPATH`.
 
-The tests require you to have `servald` from [serval-dna](https://github.com/servalproject/serval-dna) installed and available in your `PATH`. In order to have a consistent testing enviroment, a directory `/tmp/pyserval-tests/` to be used as the `SERVALINSTANCE_PATH`.
+The tests require you to have `servald` from [serval-dna](https://github.com/servalproject/serval-dna) installed and available in your `PATH`. In order to have a consistent testing enviroment, `/tmp/pyserval-tests/` will be used as the `SERVALINSTANCE_PATH`.
 
 1. Clone Project
 2. Install project to python-path
