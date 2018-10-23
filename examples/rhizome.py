@@ -38,9 +38,7 @@ if __name__ == "__main__":
     rhizome = client.rhizome
 
     # create new bundle with default identity
-    new_bundle = rhizome.new_bundle(
-        name="test_default", payload="Batman is no payload", use_default_identity=True
-    )
+    new_bundle = rhizome.new_bundle(name="test_default", payload="Batman is no payload")
 
     # get bundle payload
     print(new_bundle.get_payload())
@@ -52,9 +50,7 @@ if __name__ == "__main__":
     print("")
 
     # create new journal
-    new_journal = rhizome.new_journal(
-        name="foo", payload="Batman has no journal", use_default_identity=True
-    )
+    new_journal = rhizome.new_journal(name="foo", payload="Batman has no journal")
 
     print(new_journal.get_payload())
     print("")
@@ -65,6 +61,7 @@ if __name__ == "__main__":
     print("")
 
     # drop some payload
+    # FIXME: buggy endpoint?
     new_journal.drop_payload(21)
     print(new_journal.payload)
     print("")
