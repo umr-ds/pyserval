@@ -44,6 +44,7 @@ class JournalError(Exception):
         is_journal (bool): True, if a journal was passed to the 'insert'-endpoint
                            False, if a normal bundle was passed to the 'append'-endpoint
     """
+
     def __init__(self, is_journal):
         self.is_journal = is_journal
 
@@ -60,6 +61,7 @@ class ManifestNotFoundError(Exception):
     Args:
         bid (str): Attempted BID
     """
+
     def __init__(self, bid):
         assert isinstance(bid, basestring)
         self.bid = bid
@@ -74,6 +76,7 @@ class PayloadNotFoundError(Exception):
     Args:
         bid (str): Bundle ID of the bundle
     """
+
     def __init__(self, bid):
         assert isinstance(bid, basestring)
         self.bid = bid
@@ -88,6 +91,7 @@ class DecryptionError(Exception):
     Args:
         bid (str): Bundle ID of the bundle
     """
+
     def __init__(self, bid):
         assert isinstance(bid, basestring)
         self.bid = bid
@@ -106,6 +110,7 @@ class RhizomeHTTPStatusError(Exception):
         http_status (int): HTTP status code of the response
         headers (dict)
     """
+
     def __init__(self, serval_response):
         assert isinstance(serval_response, Response)
 
@@ -114,8 +119,7 @@ class RhizomeHTTPStatusError(Exception):
 
     def __str__(self):
         return "Unknown HTTP status code {}, hint: {}".format(
-            self.http_status,
-            self.response,
+            self.http_status, self.response
         )
 
 
@@ -135,18 +139,21 @@ class UnknownRhizomeStatusError(Exception):
         https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#bundle-status-code
         https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#payload-status-code
     """
+
     def __init__(self, serval_response):
         assert isinstance(serval_response, Response)
 
         self.http_status = serval_response.status_code
-        self.bundle_status = serval_response.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-        self.payload_status = serval_response.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+        self.bundle_status = serval_response.headers.get(
+            "Serval-Rhizome-Result-Bundle-Status-Code"
+        )
+        self.payload_status = serval_response.headers.get(
+            "Serval-Rhizome-Result-Payload-Status-Code"
+        )
 
     def __str__(self):
         return "Unknown status code combination (HTTP: {}, Bundle: {}, Payload: {})".format(
-            self.http_status,
-            self.bundle_status,
-            self.payload_status
+            self.http_status, self.bundle_status, self.payload_status
         )
 
 
@@ -161,6 +168,7 @@ class DuplicateBundleException(Exception):
     Args:
         bid (str): BID of the bundle which is being duplicated
     """
+
     def __init__(self, bid):
         assert isinstance(bid, basestring)
         self.bid = bid
@@ -179,6 +187,7 @@ class RhizomeInsertionError(Exception):
         response_text (str): Text of response returned by the server - since we can't always rely on
                              the first two arguments being provided
     """
+
     def __init__(self, http_status, bundle_status, bundle_message, response_text):
         self.http_status = http_status
         self.status = bundle_status
@@ -187,10 +196,7 @@ class RhizomeInsertionError(Exception):
 
     def __str__(self):
         return "Insertion failed with: HTTP-code: {}, bundle-code {}, bundle-Message: {}, server-response: {}".format(
-            self.http_status,
-            self.status,
-            self.message,
-            self.response_text
+            self.http_status, self.status, self.message, self.response_text
         )
 
 
@@ -202,6 +208,7 @@ class InvalidManifestError(Exception):
         value (str): invalid value
         reason (str): Human readable explanation of what is wrong
     """
+
     def __init__(self, key, value, reason):
         assert isinstance(key, basestring)
         assert isinstance(value, basestring)
@@ -212,7 +219,10 @@ class InvalidManifestError(Exception):
         self.reason = reason
 
     def __str__(self):
-        return "Invalid Manifest field: ({}: {}), Reason: {}".format(self.key, self.value, self.reason)
+        return "Invalid Manifest field: ({}: {}), Reason: {}".format(
+            self.key, self.value, self.reason
+        )
+
 
 class InvalidTokenError(Exception):
     """Raised by the rhizome get_bundlelist_newsince method, if the token is invalid
@@ -221,6 +231,7 @@ class InvalidTokenError(Exception):
         token (str): invalid token
         reason (str): Human readable explanation of what is wrong
     """
+
     def __init__(self, token, reason):
         assert isinstance(reason, basestring)
 

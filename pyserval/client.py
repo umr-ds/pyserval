@@ -26,7 +26,10 @@ class Client:
             keyring (keyring.Keyring): Provides access to the 'Keyring'-API, see
                                        https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Keyring.md
         """
+
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
-        self.low_level_client = LowLevelClient(host=host, port=port, user=user, passwd=passwd)
+        self.low_level_client = LowLevelClient(
+            host=host, port=port, user=user, passwd=passwd
+        )
         self.keyring = Keyring(self.low_level_client.keyring)
         self.rhizome = Rhizome(self.low_level_client.rhizome, self.keyring)

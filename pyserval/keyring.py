@@ -39,6 +39,7 @@ class ServalIdentity:
         Both 'sid' and 'identity' are public keys and may be shared
         Both 'did' and 'name' should be set via the 'set'-method
     """
+
     def __init__(self, _keyring, sid, identity="", did="", name=""):
         if did is None:
             did = ""
@@ -57,10 +58,8 @@ class ServalIdentity:
         self.identity = identity
 
     def __repr__(self):
-        return "ServalIdentity(sid={}, did=\"{}\", name=\"{}\")".format(
-            self.sid,
-            self.did,
-            self.name
+        return 'ServalIdentity(sid={}, did="{}", name="{}")'.format(
+            self.sid, self.did, self.name
         )
 
     def __str__(self):
@@ -72,10 +71,12 @@ class ServalIdentity:
     def __eq__(self, other):
         if not type(other) == type(self):
             return False
-        return (self.sid == other.sid and
-                self.did == other.did and
-                self.name == other.name and
-                self.identity == other.identity)
+        return (
+            self.sid == other.sid
+            and self.did == other.did
+            and self.name == other.name
+            and self.identity == other.identity
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -133,6 +134,7 @@ class Keyring:
     Args:
         low_level_keyring (LowLevelKeyring): Instance of the LowLevelKeyring used to perform the basic requests
     """
+
     def __init__(self, low_level_keyring):
         assert isinstance(low_level_keyring, LowLevelKeyring)
         self.low_level_keyring = low_level_keyring
@@ -173,9 +175,8 @@ class Keyring:
         response_json = serval_response.json()
 
         identities = unmarshall(
-            json_table=response_json,
-            object_class=ServalIdentity,
-            _keyring=self)
+            json_table=response_json, object_class=ServalIdentity, _keyring=self
+        )
 
         return identities
 
@@ -281,7 +282,9 @@ class Keyring:
         if not len(name):
             name = None
 
-        serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
+        serval_response = self.low_level_keyring.set(
+            sid=identity.sid, pin=pin, did=did, name=name
+        )
 
         if serval_response.status_code == 404:
             raise IdentityNotFoundError(identity.sid)
@@ -320,7 +323,9 @@ class Keyring:
         else:
             name = None
 
-        serval_response = self.low_level_keyring.set(sid=identity.sid, pin=pin, did=did, name=name)
+        serval_response = self.low_level_keyring.set(
+            sid=identity.sid, pin=pin, did=did, name=name
+        )
 
         if serval_response.status_code == 404:
             raise IdentityNotFoundError(identity.sid)

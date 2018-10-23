@@ -12,8 +12,16 @@ import json
 
 from pyserval.lowlevel.rhizome import LowLevelRhizome, Manifest
 from pyserval.lowlevel.util import decode_json_table
-from pyserval.exceptions import ManifestNotFoundError, PayloadNotFoundError, UnknownRhizomeStatusError
-from pyserval.exceptions import DecryptionError, DuplicateBundleException, RhizomeInsertionError
+from pyserval.exceptions import (
+    ManifestNotFoundError,
+    PayloadNotFoundError,
+    UnknownRhizomeStatusError,
+)
+from pyserval.exceptions import (
+    DecryptionError,
+    DuplicateBundleException,
+    RhizomeInsertionError,
+)
 from pyserval.exceptions import InvalidTokenError, RhizomeHTTPStatusError
 from pyserval.keyring import Keyring, ServalIdentity
 
@@ -52,6 +60,7 @@ class Bundle:
         and stored in the 'bk' field.
         This allows the secret to be recovered if the identity's private key is accessible.
     """
+
     def __init__(
         self,
         rhizome,
@@ -82,7 +91,7 @@ class Bundle:
         
         Two clones share a payload but have different bundle ids. This is possible by choosing another name or service."""
         manifest_copy = copy.copy(self.manifest)
-        
+
         manifest_copy.id = None
         manifest_copy.BK = None
 
@@ -92,8 +101,7 @@ class Bundle:
             manifest_copy.service = service
 
         the_clone = self._rhizome.insert(
-            manifest=manifest_copy,
-            bundle_author=self.bundle_author,
+            manifest=manifest_copy, bundle_author=self.bundle_author
         )
 
         return the_clone
@@ -115,7 +123,7 @@ class Bundle:
             payload=self.payload,
             bundle_id=self.bundle_id,
             bundle_author=self.bundle_author,
-            bundle_secret=self.bundle_secret
+            bundle_secret=self.bundle_secret,
         )
 
         self.manifest = new_self.manifest
@@ -180,6 +188,7 @@ class Journal:
             and stored in the 'bk' field.
             This allows the secret to be recovered if the identity's private key is accessible.
         """
+
     def __init__(
         self,
         rhizome,
@@ -239,7 +248,7 @@ class Journal:
             bundle_id=self.bundle_id,
             bundle_author=self.bundle_author,
             bundle_secret=self.bundle_secret,
-            payload=payload
+            payload=payload,
         )
 
         self.manifest = new_self.manifest
@@ -290,13 +299,17 @@ def _handle_bundle_error(serval_reply):
         manifest.update(reply_content)
         raise DuplicateBundleException(bid=manifest.id)
     else:
-        bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-        bundle_message = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Message")
+        bundle_status = serval_reply.headers.get(
+            "Serval-Rhizome-Result-Bundle-Status-Code"
+        )
+        bundle_message = serval_reply.headers.get(
+            "Serval-Rhizome-Result-Bundle-Status-Message"
+        )
         raise RhizomeInsertionError(
             http_status=serval_reply.status_code,
             bundle_status=bundle_status,
             bundle_message=bundle_message,
-            response_text=reply_content
+            response_text=reply_content,
         )
 
 
@@ -307,6 +320,7 @@ class Rhizome:
         low_level_rhizome (LowLevelRhizome): Used to perform low level requests
         keyring (Keyring): Bundles can be associated with identities
     """
+
     def __init__(self, low_level_rhizome, keyring):
         assert isinstance(low_level_rhizome, LowLevelRhizome)
         assert isinstance(keyring, Keyring)
@@ -321,7 +335,9 @@ class Rhizome:
             manifest = Manifest()
             # take only those values from data which belong into the manifest
             manifest_data = {
-                key: value for (key, value) in data.items() if key in manifest.__dict__.keys()
+                key: value
+                for (key, value) in data.items()
+                if key in manifest.__dict__.keys()
             }
 
             manifest.__dict__.update(**manifest_data)
@@ -330,21 +346,21 @@ class Rhizome:
                 new_bundle = Bundle(
                     self,
                     manifest=manifest,
-                    bundle_id=data['id'],
-                    from_here=data['.fromhere'],
-                    token=data['.token'],
+                    bundle_id=data["id"],
+                    from_here=data[".fromhere"],
+                    token=data[".token"],
                 )
             else:
                 new_bundle = Journal(
                     self,
                     manifest=manifest,
-                    bundle_id=data['id'],
-                    from_here=data['.fromhere'],
-                    token=data['.token'],
+                    bundle_id=data["id"],
+                    from_here=data[".fromhere"],
+                    token=data[".token"],
                 )
 
-            if data['.author'] is not None:
-                new_bundle.bundle_author = data['.author']
+            if data[".author"] is not None:
+                new_bundle.bundle_author = data[".author"]
 
             bundles.append(new_bundle)
 
@@ -357,7 +373,7 @@ class Rhizome:
             List[Union[Bundle, Journal]]
         """
         serval_reply = self._low_level_rhizome.get_manifests()
-        reply_json= serval_reply.json()
+        reply_json = serval_reply.json()
 
         return self._parse_bundlelist(reply_json)
 
@@ -384,17 +400,21 @@ class Rhizome:
             lines = 0
 
             for c in serval_stream.iter_content():
-                if c == b'\n': 
+                if c == b"\n":
                     lines += 1
 
                 serval_reply_bytes.append(c)
-                
-                if c == b']' and lines == 3 and len(serval_reply_bytes) > BUNDLELIST_HEADER_SIZE:
+
+                if (
+                    c == b"]"
+                    and lines == 3
+                    and len(serval_reply_bytes) > BUNDLELIST_HEADER_SIZE
+                ):
                     # complete json manually
-                    serval_reply_bytes += [b'\n', b']', b'\n', b'}']
+                    serval_reply_bytes += [b"\n", b"]", b"\n", b"}"]
                     break
-        
-        serval_reply = b''.join(serval_reply_bytes)
+
+        serval_reply = b"".join(serval_reply_bytes)
         reply_json = json.loads(serval_reply)
 
         return self._parse_bundlelist(reply_json)
@@ -441,17 +461,11 @@ class Rhizome:
 
         if manifest.tail is None:
             bundle = Bundle(
-                self,
-                manifest=manifest,
-                bundle_id=manifest.id,
-                complete=True
+                self, manifest=manifest, bundle_id=manifest.id, complete=True
             )
         else:
             bundle = Journal(
-                self,
-                manifest=manifest,
-                bundle_id=manifest.id,
-                complete=True
+                self, manifest=manifest, bundle_id=manifest.id, complete=True
             )
 
         bundle.get_payload()
@@ -484,17 +498,19 @@ class Rhizome:
                     return serval_reply.content
 
             elif serval_reply.status_code == 404:
-                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+                bundle_status = serval_reply.headers.get(
+                    "Serval-Rhizome-Result-Bundle-Status-Code"
+                )
+                payload_status = serval_reply.headers.get(
+                    "Serval-Rhizome-Result-Payload-Status-Code"
+                )
 
-                if bundle_status == '0':
+                if bundle_status == "0":
                     raise ManifestNotFoundError(bid=bundle.bundle_id)
-                elif bundle_status == '1' and payload_status == '1':
+                elif bundle_status == "1" and payload_status == "1":
                     raise PayloadNotFoundError(bid=bundle.bundle_id)
                 else:
-                    raise UnknownRhizomeStatusError(
-                        serval_response=serval_reply
-                    )
+                    raise UnknownRhizomeStatusError(serval_response=serval_reply)
 
             elif serval_reply.status_code == 419:
                 raise DecryptionError(bid=bundle.bundle_id)
@@ -509,30 +525,25 @@ class Rhizome:
                     return serval_reply.content
 
             elif serval_reply.status_code == 404:
-                bundle_status = serval_reply.headers.get("Serval-Rhizome-Result-Bundle-Status-Code")
-                payload_status = serval_reply.headers.get("Serval-Rhizome-Result-Payload-Status-Code")
+                bundle_status = serval_reply.headers.get(
+                    "Serval-Rhizome-Result-Bundle-Status-Code"
+                )
+                payload_status = serval_reply.headers.get(
+                    "Serval-Rhizome-Result-Payload-Status-Code"
+                )
 
-                if bundle_status == '0':
+                if bundle_status == "0":
                     raise ManifestNotFoundError(bid=bundle.bundle_id)
-                elif bundle_status == '1' and payload_status == '1':
+                elif bundle_status == "1" and payload_status == "1":
                     raise PayloadNotFoundError(bid=bundle.bundle_id)
                 else:
-                    raise UnknownRhizomeStatusError(
-                        serval_response=serval_reply
-                    )
+                    raise UnknownRhizomeStatusError(serval_response=serval_reply)
 
         # if we don't recognise the status code combination, raise the appropriate error
-        raise UnknownRhizomeStatusError(
-            serval_response=serval_reply
-        )
+        raise UnknownRhizomeStatusError(serval_response=serval_reply)
 
     def insert(
-        self,
-        manifest,
-        bundle_id="",
-        bundle_author="",
-        bundle_secret="",
-        payload=""
+        self, manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
     ):
         """Creates/Updates a bundle
 
@@ -561,7 +572,7 @@ class Rhizome:
             bundle_id=bundle_id,
             bundle_author=bundle_author,
             bundle_secret=bundle_secret,
-            payload=payload
+            payload=payload,
         )
 
         if serval_reply.status_code == 201:
@@ -573,7 +584,7 @@ class Rhizome:
                 bundle_id=manifest.id,
                 bundle_author=bundle_author,
                 bundle_secret=bundle_secret,
-                from_here=2
+                from_here=2,
             )
         else:
             _handle_bundle_error(serval_reply)
@@ -585,7 +596,7 @@ class Rhizome:
         identity=None,
         recipient="",
         service="",
-        custom_manifest=None
+        custom_manifest=None,
     ):
         """Creates a new bundle
 
@@ -625,7 +636,7 @@ class Rhizome:
             service=service,
             sender=identity.sid,
             recipient=recipient,
-            crypt=encryption
+            crypt=encryption,
         )
 
         if custom_manifest:
@@ -634,9 +645,7 @@ class Rhizome:
         bundle_author = identity.sid
 
         new_bundle = self.insert(
-            manifest=manifest,
-            bundle_author=bundle_author,
-            payload=payload,
+            manifest=manifest, bundle_author=bundle_author, payload=payload
         )
 
         new_bundle.payload = payload
@@ -645,12 +654,7 @@ class Rhizome:
         return new_bundle
 
     def append(
-        self,
-        manifest,
-        bundle_id="",
-        bundle_author="",
-        bundle_secret="",
-        payload=""
+        self, manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
     ):
         """Creates/updates a journal
 
@@ -676,7 +680,7 @@ class Rhizome:
             bundle_id=bundle_id,
             bundle_author=bundle_author,
             bundle_secret=bundle_secret,
-            payload=payload
+            payload=payload,
         )
         reply_content = serval_reply.text
 
@@ -689,7 +693,7 @@ class Rhizome:
                 bundle_id=manifest.id,
                 bundle_author=bundle_author,
                 bundle_secret=bundle_secret,
-                from_here=2
+                from_here=2,
             )
         else:
             _handle_bundle_error(serval_reply)
@@ -701,7 +705,7 @@ class Rhizome:
         identity=None,
         recipient="",
         service="",
-        custom_manifest=None
+        custom_manifest=None,
     ):
         """Creates a new journal
 
@@ -743,7 +747,7 @@ class Rhizome:
             sender=identity.sid,
             recipient=recipient,
             crypt=encryption,
-            tail=0
+            tail=0,
         )
 
         if custom_manifest:
@@ -752,9 +756,7 @@ class Rhizome:
         bundle_author = identity.sid
 
         new_journal = self.append(
-            manifest=manifest,
-            bundle_author=bundle_author,
-            payload=payload
+            manifest=manifest, bundle_author=bundle_author, payload=payload
         )
 
         new_journal.payload = payload
