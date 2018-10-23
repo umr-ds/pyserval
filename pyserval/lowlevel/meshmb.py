@@ -32,15 +32,18 @@ class BroadcastMessage:
         text (str): Text of the message
         timestamp (int): UNIX-timestamp of when the message was sent
     """
-    def __init__(self,
-                 id=None,
-                 author=None,
-                 name=None,
-                 offset=None,
-                 ack_offset=None,
-                 token=None,
-                 text=None,
-                 timestamp=None):
+
+    def __init__(
+        self,
+        id=None,
+        author=None,
+        name=None,
+        offset=None,
+        ack_offset=None,
+        token=None,
+        text=None,
+        timestamp=None,
+    ):
         self.offset = offset
         self.token = token
         self.text = text
@@ -78,14 +81,8 @@ class Feed:
         last_message (str): Content of the last message
 
     """
-    def __init__(self,
-                 meshmb,
-                 id,
-                 author,
-                 blocked,
-                 name,
-                 timestamp,
-                 last_message):
+
+    def __init__(self, meshmb, id, author, blocked, name, timestamp, last_message):
         self._meshmb = meshmb
         self.id = id
         self.author = author
@@ -129,13 +126,13 @@ class MeshMB:
     Args:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
+
     def __init__(self, connection):
         self._connection = connection
 
-    def send_message(self, identity,
-                     message,
-                     message_type="text/plain",
-                     charset="utf-8"):
+    def send_message(
+        self, identity, message, message_type="text/plain", charset="utf-8"
+    ):
         """Sends a message to a feed
 
         Endpoint:
@@ -151,10 +148,12 @@ class MeshMB:
         multipart = [
             (
                 "message",
-                ("message1", message, "{};charset={}".format(message_type, charset))
+                ("message1", message, "{};charset={}".format(message_type, charset)),
             )
         ]
-        self._connection.post("/restful/meshmb/{}/sendmessage".format(identity), files=multipart)
+        self._connection.post(
+            "/restful/meshmb/{}/sendmessage".format(identity), files=multipart
+        )
 
     def get_messages(self, feedid):
         """Get all the messages of a feed
@@ -168,7 +167,9 @@ class MeshMB:
         Returns:
             List[BroadcastMessage]: All the messages sent to this feed
         """
-        result = self._connection.get("/restful/meshmb/{}/messagelist.json".format(feedid)).json()
+        result = self._connection.get(
+            "/restful/meshmb/{}/messagelist.json".format(feedid)
+        ).json()
         messages = unmarshall(json_table=result, object_class=BroadcastMessage)
         return messages
 
@@ -210,7 +211,9 @@ class MeshMB:
         Returns:
             List[Feed]: List of all feeds that the specified identity is currently following
         """
-        result = self._connection.get("/restful/meshmb/{}/feedlist.json".format(identity)).json()
+        result = self._connection.get(
+            "/restful/meshmb/{}/feedlist.json".format(identity)
+        ).json()
         feeds = unmarshall(json_table=result, object_class=Feed, meshmb=self)
         return feeds
 
@@ -228,10 +231,12 @@ class MeshMB:
                                     the specified identity is currently following
                                     (in chronological order)
         """
-        result = self._connection.get("/restful/meshmb/{}/activity.json".format(identity)).json()
+        result = self._connection.get(
+            "/restful/meshmb/{}/activity.json".format(identity)
+        ).json()
         message_data = decode_json_table(result)
         for data in message_data:
-            data['token'] = data.pop('.token')
-            data['text'] = data.pop('message')
+            data["token"] = data.pop(".token")
+            data["text"] = data.pop("message")
         messages = [BroadcastMessage(**data) for data in message_data]
         return messages

@@ -35,8 +35,11 @@ class LowLevelClient:
         meshmb (meshmb.MeshMB): Provides access to the 'MeshMB'-API, see
                                 https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMB.md
     """
+
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
-        self._connection = RestfulConnection(host=host, port=port, user=user, passwd=passwd)
+        self._connection = RestfulConnection(
+            host=host, port=port, user=user, passwd=passwd
+        )
         self.keyring = LowLevelKeyring(self._connection)
         self.rhizome = LowLevelRhizome(self._connection)
         self.meshms = MeshMS(self._connection)

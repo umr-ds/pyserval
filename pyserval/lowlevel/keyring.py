@@ -22,9 +22,11 @@ class LowLevelKeyring:
     Args:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
+
     def __init__(self, connection):
-        assert isinstance(connection, RestfulConnection), \
-            "connection must be a RestfulConnection (from pyserval.lowlevel.connection)"
+        assert isinstance(
+            connection, RestfulConnection
+        ), "connection must be a RestfulConnection (from pyserval.lowlevel.connection)"
 
         self._connection = connection
 
@@ -46,8 +48,7 @@ class LowLevelKeyring:
         assert isinstance(params, dict), "params must be a dictionary"
 
         return self._connection.get(
-            "/restful/keyring/{}/{}".format(sid, operation),
-            params=params
+            "/restful/keyring/{}/{}".format(sid, operation), params=params
         )
 
     def get_identities(self, pin=""):
@@ -66,7 +67,7 @@ class LowLevelKeyring:
 
         params = {}
         if pin:
-            params['pin'] = pin
+            params["pin"] = pin
 
         return self._connection.get("/restful/keyring/identities.json", params=params)
 
@@ -87,7 +88,7 @@ class LowLevelKeyring:
 
         params = {}
         if pin:
-            params['pin'] = pin
+            params["pin"] = pin
 
         return self._connection.get("/restful/keyring/{}".format(sid), params=params)
 
@@ -117,17 +118,19 @@ class LowLevelKeyring:
         assert isinstance(did, basestring), "did must be a string"
         assert isinstance(name, basestring), "name must be a string"
 
-        assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
+        assert len(did) > 4 or not len(did), "did should be at least 5 digits"
         assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
-        assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
+        assert (
+            len(name.encode("utf-8")) < 64
+        ), "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
         if pin:
-            params['pin'] = pin
+            params["pin"] = pin
         if name:
-            params['name'] = name
+            params["name"] = name
         if did:
-            params['did'] = did
+            params["did"] = did
 
         return self._connection.post("/restful/keyring/add", params=params)
 
@@ -149,7 +152,7 @@ class LowLevelKeyring:
 
         params = {}
         if pin:
-            params['pin'] = pin
+            params["pin"] = pin
 
         return self._connection.delete("/restful/keyring/{}".format(sid), params=params)
 
@@ -188,21 +191,25 @@ class LowLevelKeyring:
         """
         assert isinstance(sid, basestring), "sid must be a string"
         assert isinstance(sid, basestring), "sid must be a string"
-        assert (did is None or isinstance(did, basestring)), "did must be a string"
+        assert did is None or isinstance(did, basestring), "did must be a string"
         if did is not None:
-            assert (len(did) > 4 or not len(did)), "did should be at least 5 digits"
-            assert len(did.encode("utf-8")) < 32, "did may have at most 31 bytes (as UTF-8)"
+            assert len(did) > 4 or not len(did), "did should be at least 5 digits"
+            assert (
+                len(did.encode("utf-8")) < 32
+            ), "did may have at most 31 bytes (as UTF-8)"
 
-        assert (name is None or isinstance(name, basestring)), "name must be a string"
+        assert name is None or isinstance(name, basestring), "name must be a string"
         if name is not None:
-            assert len(name.encode("utf-8")) < 64, "name may have at most 63 bytes (as UTF-8)"
+            assert (
+                len(name.encode("utf-8")) < 64
+            ), "name may have at most 63 bytes (as UTF-8)"
 
         params = {}
         if pin:
-            params['pin'] = pin
+            params["pin"] = pin
         if did is not None:
-            params['did'] = did
+            params["did"] = did
         if name is not None:
-            params['name'] = name
+            params["name"] = name
 
         return self._connection.patch("/restful/keyring/{}".format(sid), params=params)

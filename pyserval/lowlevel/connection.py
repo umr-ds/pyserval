@@ -20,12 +20,13 @@ class RestfulConnection:
         user (str): Username for HTTP basic auth
         passwd (str): Password for HTTP basic auth
     """
+
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
         self._AUTH = (user, passwd)
         self._BASE = "http://{}:{}".format(host, port)
 
     def __repr__(self):
-        return "RestfulConnection(\"{}\")".format(self._BASE)
+        return 'RestfulConnection("{}")'.format(self._BASE)
 
     def get(self, path, **params):
         """Sends GET-request to REST-API
@@ -41,7 +42,7 @@ class RestfulConnection:
         response = requests.get(self._BASE + path, auth=self._AUTH, **params)
 
         if response.encoding is None:
-            response.encoding = 'utf-8'
+            response.encoding = "utf-8"
 
         return response
 
@@ -58,7 +59,7 @@ class RestfulConnection:
         response = requests.post(self._BASE + path, auth=self._AUTH, **params)
 
         if response.encoding is None:
-            response.encoding = 'utf-8'
+            response.encoding = "utf-8"
 
         return response
 
@@ -75,7 +76,7 @@ class RestfulConnection:
         response = requests.put(self._BASE + path, auth=self._AUTH, **params)
 
         if response.encoding is None:
-            response.encoding = 'utf-8'
+            response.encoding = "utf-8"
 
         return response
 
@@ -89,10 +90,12 @@ class RestfulConnection:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        response = requests.delete("{}{}".format(self._BASE, path), auth=self._AUTH, **params)
+        response = requests.delete(
+            "{}{}".format(self._BASE, path), auth=self._AUTH, **params
+        )
 
         if response.encoding is None:
-            response.encoding = 'utf-8'
+            response.encoding = "utf-8"
 
         return response
 
@@ -109,6 +112,6 @@ class RestfulConnection:
         response = requests.patch(self._BASE + path, auth=self._AUTH, **params)
 
         if response.encoding is None:
-            response.encoding = 'utf-8'
+            response.encoding = "utf-8"
 
         return response

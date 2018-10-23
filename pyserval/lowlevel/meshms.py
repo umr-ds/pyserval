@@ -38,23 +38,26 @@ class Message:
         timestamp (int): UNIX-timestamp of when the message was sent
         ack_offset (int): (?)
     """
+
     # TODO: Find the exact menaing of 'my' and 'their'
-    def __init__(self,
-                 type,
-                 my_sid,
-                 their_sid,
-                 my_offset,
-                 their_offset,
-                 token,
-                 text,
-                 delivered,
-                 read,
-                 timestamp,
-                 ack_offset):
+    def __init__(
+        self,
+        type,
+        my_sid,
+        their_sid,
+        my_offset,
+        their_offset,
+        token,
+        text,
+        delivered,
+        read,
+        timestamp,
+        ack_offset,
+    ):
         self.type = type
         self.my_sid = my_sid
         self.their_sid = their_sid
-        self.my_offset= my_offset
+        self.my_offset = my_offset
         self.their_offset = their_offset
         self.token = token
         self.text = text
@@ -89,13 +92,8 @@ class Conversation:
         read_offset (int): Offset of the latest read message (?)
 
     """
-    def __init__(self,
-                 _id,
-                 my_sid,
-                 their_sid,
-                 read,
-                 last_message,
-                 read_offset):
+
+    def __init__(self, _id, my_sid, their_sid, read, last_message, read_offset):
         self._id = _id
         self.my_sid = my_sid
         self.their_sid = their_sid
@@ -116,6 +114,7 @@ class MeshMS:
     Args:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
+
     def __init__(self, connection):
         self._connection = connection
 
@@ -129,7 +128,9 @@ class MeshMS:
             List[Conversation]: List of all the conversations
                                 that the specified identity is taking part in
         """
-        result = self._connection.get("/restful/meshms/{}/conversationlist.json".format(sid)).json()
+        result = self._connection.get(
+            "/restful/meshms/{}/conversationlist.json".format(sid)
+        ).json()
         conversations = unmarshall(json_table=result, object_class=Conversation)
         return conversations
 
@@ -154,12 +155,9 @@ class MeshMS:
         messages = unmarshall(json_table=result, object_class=Message)
         return messages
 
-    def send_message(self,
-                     sender,
-                     recipient,
-                     message,
-                     message_type="text/plain",
-                     charset="utf-8"):
+    def send_message(
+        self, sender, recipient, message, message_type="text/plain", charset="utf-8"
+    ):
         """Send a message via MeshMS
 
         Args:
@@ -172,11 +170,11 @@ class MeshMS:
         multipart = [
             (
                 "message",
-                ("message1", message, "{};charset={}".format(message_type, charset))
+                ("message1", message, "{};charset={}".format(message_type, charset)),
             )
         ]
 
         self._connection.post(
             "/restful/meshms/{}/{}/sendmessage".format(sender, recipient),
-            files=multipart
+            files=multipart,
         )

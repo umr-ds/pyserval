@@ -92,7 +92,7 @@ class Manifest:
         """
         items = []
         for key, value in self.__dict__.items():
-            if value is not None and not key.startswith('_'):
+            if value is not None and not key.startswith("_"):
                 items.append((key, value))
 
         return items
@@ -188,8 +188,10 @@ class LowLevelRhizome:
         
         """
 
-        return self._connection.get("/restful/rhizome/newsince/{}/bundlelist.json".format(token), stream=True)
-        
+        return self._connection.get(
+            "/restful/rhizome/newsince/{}/bundlelist.json".format(token), stream=True
+        )
+
     def get_manifest(self, bid):
         """Gets the manifest for a specified BID
 
