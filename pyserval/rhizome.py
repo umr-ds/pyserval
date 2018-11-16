@@ -727,6 +727,7 @@ class Rhizome:
         # TODO: this is also very similar to new_bundle - refactor and extract common components
         assert isinstance(name, basestring)
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert payload, "Journals may not have an empty payload"
 
         if identity is None:
             identity = self._keyring.default_identity()

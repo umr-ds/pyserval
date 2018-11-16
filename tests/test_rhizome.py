@@ -4,11 +4,13 @@ from pyserval.client import Client
 from pyserval.exceptions import DuplicateBundleException
 
 from hypothesis import given
-from hypothesis.strategies import binary
 
-from tests.custom_strategies import unicode_printable, ascii_alphanum
-
-payloads = binary()
+from tests.custom_strategies import (
+    unicode_printable,
+    ascii_alphanum,
+    payloads,
+    payloads_nonempty,
+)
 
 
 # if we try to create a bundle which is a 'duplicate' of an existing bundle, it will cause an exception
@@ -45,8 +47,9 @@ def test_new_bundle(serval_init, name, payload, service):
 
     test_bundle = rhizome.get_bundle(new_bundle.bundle_id)
 
-    # as it turns out, if no name is provided, serval will will set it to the payload filename
+    # as it turns out, if no name is provided, serval will set it to the payload filename
     # but as it further turns out, this only happen, if the 'service' field is unset...
+    # don't ask me for the logic behind this
     if not name and not service:
         assert test_bundle.manifest.name == "file"
     # if service is set, then the name will be None...
@@ -61,3 +64,42 @@ def test_new_bundle(serval_init, name, payload, service):
         assert test_bundle.manifest.service == "file"
     else:
         assert test_bundle.manifest.service == service
+
+
+@given(name=unicode_printable, payload=payloads_nonempty, service=ascii_alphanum)
+def test_new_journal(serval_init, name, payload, service):
+    """Test adding of new journals
+
+    Args:
+        serval_init (Client): Serval client created by test init
+        name (str): Semi-random test names created by hypothesis
+        payload (bytes): Random bytes for test payload
+        service (str): Semi-random service name
+    """
+
+    rhizome = serval_init.rhizome
+    try:
+        new_journal = rhizome.new_journal(name=name, payload=payload, service=service)
+    except DuplicateBundleException:
+        # check, if we actually already created this bundle
+        # FIXME: for some reason, this does not work as expected.
+        return
+
+    test_journal = rhizome.get_bundle(new_journal.bundle_id)
+
+    # see test_new_bundle for an explanation of this madness
+    if not name and not service:
+        assert test_journal.manifest.name == "file"
+
+    # if service is set, then the name will be None...
+    elif not name:
+        assert test_journal.manifest.name is None
+    else:
+        assert test_journal.manifest.name == name
+
+    assert test_journal.get_payload() == payload
+
+    if not service:
+        assert test_journal.manifest.service == "file"
+    else:
+        assert test_journal.manifest.service == service
