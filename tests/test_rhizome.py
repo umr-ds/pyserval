@@ -10,6 +10,7 @@ from tests.custom_strategies import (
     ascii_alphanum,
     payloads,
     payloads_nonempty,
+    custom_fields,
 )
 
 
@@ -64,6 +65,39 @@ def test_new_bundle(serval_init, name, payload, service):
         assert test_bundle.manifest.service == "file"
     else:
         assert test_bundle.manifest.service == service
+
+
+@given(
+    name=unicode_printable,
+    payload=payloads_nonempty,
+    service=ascii_alphanum,
+    custom_fields=custom_fields,
+)
+def test_new_bundle_custom_fields(serval_init, name, payload, service, custom_fields):
+    """Test creation of a new bundle with custom fields
+
+    Args:
+        serval_init (Client): Serval client created by test init
+        name (str): Semi-random test names created by hypothesis
+        payload (bytes): Random bytes for test payload
+        service (str): Semi-random service name
+        custom_fields (Dictionary[str, str]): Key-Value pairs for custom fields
+    """
+    rhizome = serval_init.rhizome
+    try:
+        new_bundle = rhizome.new_journal(
+            name=name, payload=payload, service=service, custom_manifest=custom_fields
+        )
+    except DuplicateBundleException:
+        # check, if we actually already created this bundle
+        # FIXME: for some reason, this does not work as expected.
+        return
+
+    test_bundle = rhizome.get_bundle(new_bundle.bundle_id)
+
+    for key in custom_fields.keys():
+        assert new_bundle.manifest.__dict__[key] == custom_fields[key]
+        assert test_bundle.manifest.__dict__[key] == custom_fields[key]
 
 
 @given(name=unicode_printable, payload=payloads_nonempty, service=ascii_alphanum)
