@@ -100,6 +100,65 @@ def test_new_bundle_custom_fields(serval_init, name, payload, service, custom_fi
         assert test_bundle.manifest.__dict__[key] == custom_fields[key]
 
 
+@given(
+    name=unicode_printable,
+    new_name=unicode_printable,
+    payload=payloads,
+    new_payload=payloads,
+    service=ascii_alphanum,
+    new_service=ascii_alphanum,
+)
+def test_bundle_update(
+    serval_init, name, new_name, payload, new_payload, service, new_service
+):
+    """Test bundle data update
+
+    Args:
+        serval_init (Client): Serval client created by test init
+        name (str): Semi-random test names created by hypothesis
+        new_name (str): Updated name
+        payload (bytes): Random bytes for test payload
+        new_payload (bytes): Updated payload
+        service (str): Semi-random service name
+        new_service (str): Updated service
+    """
+    rhizome = serval_init.rhizome
+    try:
+        new_bundle = rhizome.new_bundle(name=name, payload=payload, service=service)
+    except DuplicateBundleException:
+        # check, if we actually already created this bundle
+        # FIXME: for some reason, this does not work as expected.
+        return
+
+    new_bundle.manifest.name = new_name
+    new_bundle.manifest.service = new_service
+    new_bundle.payload = new_payload
+    new_bundle.update()
+
+    test_bundle = rhizome.get_bundle(new_bundle.bundle_id)
+
+    # as it turns out, if we have set a name/service and we try to update is to empty string
+    # serval just quietly drops our changes...
+    if not name and not new_name and not service and not new_service:
+        assert test_bundle.manifest.name == "file"
+    # if service is set, then the name will be None...
+    elif not new_name and not name:
+        assert test_bundle.manifest.name is None
+    elif name and not new_name:
+        assert test_bundle.manifest.name == name
+    else:
+        assert test_bundle.manifest.name == new_name
+
+    assert test_bundle.get_payload() == new_payload
+
+    if not new_service and not service:
+        assert test_bundle.manifest.service == "file"
+    elif service and not new_service:
+        assert test_bundle.manifest.service == service
+    else:
+        assert test_bundle.manifest.service == new_service
+
+
 @given(name=unicode_printable, payload=payloads_nonempty, service=ascii_alphanum)
 def test_new_journal(serval_init, name, payload, service):
     """Test adding of new journals
