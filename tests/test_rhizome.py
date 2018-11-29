@@ -130,10 +130,8 @@ def test_bundle_update(
         # FIXME: for some reason, this does not work as expected.
         return
 
-    new_bundle.manifest.name = new_name
-    new_bundle.manifest.service = new_service
-    new_bundle.payload = new_payload
-    new_bundle.update()
+    new_bundle.update_manifest(name=new_name, service=new_service)
+    new_bundle.update_payload(payload=new_payload)
 
     test_bundle = rhizome.get_bundle(new_bundle.bundle_id)
 
@@ -157,6 +155,38 @@ def test_bundle_update(
         assert test_bundle.manifest.service == service
     else:
         assert test_bundle.manifest.service == new_service
+
+
+@given(
+    name=unicode_printable,
+    new_name=unicode_printable,
+    payload=payloads,
+    new_payload=payloads,
+    service=ascii_alphanum,
+    new_service=ascii_alphanum,
+)
+def test_bundle_refresh(
+    serval_init, name, new_name, payload, new_payload, service, new_service
+):
+    """Test bundle refresh"""
+    rhizome = serval_init.rhizome
+    try:
+        new_bundle = rhizome.new_bundle(name=name, payload=payload, service=service)
+    except DuplicateBundleException:
+        # check, if we actually already created this bundle
+        # FIXME: for some reason, this does not work as expected.
+        return
+
+    got_bundle = rhizome.get_bundle(bid=new_bundle.bundle_id)
+
+    assert new_bundle == got_bundle
+
+    new_bundle.update_manifest(name=new_name, service=new_service)
+    new_bundle.update_payload(payload=new_payload)
+
+    got_bundle.refresh()
+
+    assert new_bundle == got_bundle
 
 
 @given(name=unicode_printable, payload=payloads_nonempty, service=ascii_alphanum)
