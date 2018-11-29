@@ -84,6 +84,20 @@ class Manifest:
     def __repr__(self):
         return str(self.__dict__)
 
+    def __eq__(self, other):
+        if not isinstance(other, Manifest):
+            return False
+
+        # two manifests are equal, if all their fields (including custom fields) are equal
+        for key, value in self.__dict__.items():
+            try:
+                if not other.__dict__[key] == value:
+                    return False
+            except KeyError:
+                return False
+
+        return True
+
     def fields(self):
         """Get List of (fieldname, value) tuples of all relevant manifest fields
 
