@@ -86,6 +86,16 @@ class Bundle:
     def __repr__(self):
         return "Bundle({})".format(repr(self.__dict__))
 
+    def __eq__(self, other):
+        if not isinstance(other, Bundle):
+            return False
+
+        return (
+            self.manifest == other.manifest
+            and self.payload == other.payload
+            and self.bundle_id == other.bundle_id
+        )
+
     def clone(self, name=None, service=None):
         """Creates a clone of the bundle in rhizome.
         
@@ -213,6 +223,16 @@ class Journal:
 
     def __repr__(self):
         return "Journal({})".format(repr(self.__dict__))
+
+    def __eq__(self, other):
+        if not isinstance(other, Journal):
+            return False
+
+        return (
+            self.manifest == other.manifest
+            and self.payload == other.payload
+            and self.bundle_id == other.bundle_id
+        )
 
     def get_payload(self):
         """Get the bundle's payload from the rhizome store
