@@ -50,26 +50,6 @@ def generate_secret():
     return secret
 
 
-def boolify(value):
-    """Checks if a string represents a boolean value
-
-    Args:
-        value (str): String which might represent a boolean value
-
-    Returns:
-        bool: True for "True" and "true",
-              False for "False" and "false"
-
-    Raises:
-        ValueError: If string does not contain boolean value
-    """
-    if value == "true" or value == "True":
-        return True
-    elif value == "false" or value == "False":
-        return False
-    raise ValueError()
-
-
 def unmarshall(json_table, object_class, **kwargs):
     """Unmarshalls a Json-Table into a list of Python-objects
 
