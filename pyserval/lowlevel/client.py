@@ -9,7 +9,7 @@ Collection of API-objects
 from pyserval.lowlevel.connection import RestfulConnection
 from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.rhizome import LowLevelRhizome
-from pyserval.lowlevel.meshms import MeshMS
+from pyserval.lowlevel.meshms import LowLevelMeshMS
 from pyserval.lowlevel.meshmb import MeshMB
 
 
@@ -42,5 +42,5 @@ class LowLevelClient:
         )
         self.keyring = LowLevelKeyring(self._connection)
         self.rhizome = LowLevelRhizome(self._connection)
-        self.meshms = MeshMS(self._connection)
+        self.meshms = LowLevelMeshMS(self._connection)
         self.meshmb = MeshMB(self._connection)

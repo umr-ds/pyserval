@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ["lowlevel", "exceptions", "client", "keyring", "rhizome"]
+__all__ = ["lowlevel", "exceptions", "client", "keyring", "rhizome", "meshms"]
 
 __title__ = "pyserval"
 __version__ = "0.3.3"
