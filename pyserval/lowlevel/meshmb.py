@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.meshmb
+pyserval.lowlevel.meshmb
 ~~~~~~~~~~~~~~~
 
 This module contains the means to publish and subscribe MeshMB feeds

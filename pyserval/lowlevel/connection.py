@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.connection
+pyserval.lowlevel.connection
 ~~~~~~~~~~~~~~~~~~~
 
 This module contains the means to interact directly with the REST-interface

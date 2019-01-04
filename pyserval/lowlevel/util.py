@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.util
+pyserval.lowlevel.util
 ~~~~~~~~~~~~~
 
 This module contains utility-methods

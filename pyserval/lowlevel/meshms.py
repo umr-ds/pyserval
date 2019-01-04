@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pyserval.meshms
+pyserval.lowlevel.meshms
 ~~~~~~~~~~~~~~~
 
 This module contains the means to send and receive MeshMS-messages
