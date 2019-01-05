@@ -8,6 +8,7 @@ High level interface for meshms-messaging
 
 from pyserval.lowlevel.util import unmarshall
 from pyserval.lowlevel.meshms import LowLevelMeshMS
+from pyserval.keyring import ServalIdentity
 
 
 class Message:
@@ -119,36 +120,43 @@ class MeshMS:
     def __init__(self, low_level):
         self._low_level = low_level
 
-    def conversation_list(self, sid):
-        """Gets the list of all conversations for a given SID
+    def conversation_list(self, identity):
+        """Gets the list of all conversations for a given Identity
 
         Args:
-            sid (str): SID of a serval identity
+            identity (ServalIdentity)
 
         Returns:
             List[Conversation]: List of all the conversations
                                 that the specified identity is taking part in
         """
-        result = self._low_level.conversation_list(sid)
+        assert isinstance(identity, ServalIdentity)
+
+        result = self._low_level.conversation_list(identity.sid)
         # TODO: Check return code
         conversations = unmarshall(json_table=result.json(), object_class=Conversation)
         return conversations
 
     def message_list(self, sender, recipient):
-        """Gets all the messages sent between two SIDs
+        """Gets all the messages sent between two identities
 
         Args:
-            sender (str): SID of the message sender
-            recipient (str): SID of message recipient
+            sender (ServalIdentity)
+            recipient (ServalIdentity)
 
         Note:
-            At least one of the SIDs needs to refer to a local unlocken identity in the keyring
+            At least one of the identities needs to be local and unlocked
 
         Returns:
-            List[Message]: List of all the messages sent between the two identitites
+            List[Message]: List of all the messages sent between the two identities
         """
+        assert isinstance(sender, ServalIdentity)
+        assert isinstance(recipient, ServalIdentity)
+
         # TODO: Is this one- or two-way?
-        result = self._low_level.message_list(sender=sender, recipient=recipient)
+        result = self._low_level.message_list(
+            sender=sender.sid, recipient=recipient.sid
+        )
         # TODO: Check return code
         messages = unmarshall(json_table=result.json(), object_class=Message)
         return messages
