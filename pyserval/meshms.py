@@ -23,12 +23,12 @@ class Message:
         token (str): Token for real-time access (not implemented)
         text (str): Content of the message
         delivered (bool): Whether the message has been successfully delivered
-        read (bool): Whether the recipient has read the message
+        read (bool): Whether the recipient has read the message TODO: This field is apparently never updated...
         timestamp (int): UNIX-timestamp of when the message was sent
         ack_offset (int): (?)
 
     Attributes:
-        type (str): Was the message sent ('>'), or received ('<')
+        type (str): Was the message sent ('>'), or received ('<'), or ACK
         my_sid (str): SID of the sender (?)
         their_sid (str): SID of the recipient (?)
         my_offset (int): Offset of the sender (?)
@@ -92,6 +92,8 @@ class Conversation:
         read (bool): Whether the latest message has been read (?)
         last_message (str): Content of the latest message (?)
         read_offset (int): Offset of the latest read message (?)
+        _meshms (MeshMS): Interface for future Interactions
+        messages (List[Message]): Messages associated with this conversation
 
     """
 
@@ -102,12 +104,40 @@ class Conversation:
         self.read = read
         self.last_message = last_message
         self.read_offset = read_offset
+        self._meshms = None
+        self.messages = []
 
     def __str__(self):
         return str(self.__dict__)
 
     def __repr__(self):
         return str(self.__dict__)
+
+    def get_messages(self):
+        """Update the message list"""
+        self.messages = self._meshms.message_list(
+            sender=self.my_sid, recipient=self.their_sid
+        )
+
+    def received_messages(self):
+        """Returns all messages received by this identity in this conversation"""
+        self.get_messages()
+        received = [message for message in self.messages if message.type == "<"]
+        return received
+
+    def sent_messages(self):
+        """Returns all messages sent by this identity in this conversation"""
+        self.get_messages()
+        sent = [message for message in self.messages if message.type == ">"]
+        return sent
+
+    def unread(self):
+        """Returns all received messages which have not been read yet"""
+        # TODO: serval seems to never update the 'read' field,
+        #  even if there exists an ACK and the messages have been queried...
+        received = self.received_messages()
+        unread = [message for message in received if not message.read]
+        return unread
 
 
 class MeshMS:
@@ -135,6 +165,8 @@ class MeshMS:
         result = self._low_level.conversation_list(identity.sid)
         # TODO: Check return code
         conversations = unmarshall(json_table=result.json(), object_class=Conversation)
+        for conversation in conversations:
+            conversation._meshms = self
         return conversations
 
     def message_list(self, sender, recipient):
