@@ -6,9 +6,17 @@ pyserval.meshms
 High level interface for meshms-messaging
 """
 
+import sys
+
 from pyserval.lowlevel.util import unmarshall
 from pyserval.lowlevel.meshms import LowLevelMeshMS
 from pyserval.keyring import ServalIdentity
+from pyserval.exceptions import ConversationNotFoundError
+
+# python3 does not have the basestring type, since it does not have the unicode type
+# if we are running under python3, we just test for str
+if sys.version_info >= (3, 0, 0):
+    basestring = str
 
 
 class Message:
@@ -139,6 +147,16 @@ class Conversation:
         unread = [message for message in received if not message.read]
         return unread
 
+    def send_message(self, message):
+        """Sends a message to them
+
+        Args:
+            message (basestring)
+        """
+        self._meshms.send_message(
+            sender=self.my_sid, recipient=self.their_sid, message=message
+        )
+
 
 class MeshMS:
     """Interface to send & receive meshms-messages
@@ -154,20 +172,57 @@ class MeshMS:
         """Gets the list of all conversations for a given Identity
 
         Args:
-            identity (ServalIdentity)
+            identity (Union[ServalIdentity, str])
 
         Returns:
             List[Conversation]: List of all the conversations
                                 that the specified identity is taking part in
         """
-        assert isinstance(identity, ServalIdentity)
+        if isinstance(identity, ServalIdentity):
+            identity = identity.sid
 
-        result = self._low_level.conversation_list(identity.sid)
+        assert isinstance(
+            identity, basestring
+        ), "identity has to be either a string or ServalIdentity"
+
+        result = self._low_level.conversation_list(identity)
         # TODO: Check return code
         conversations = unmarshall(json_table=result.json(), object_class=Conversation)
         for conversation in conversations:
             conversation._meshms = self
         return conversations
+
+    def get_conversation(self, identity, other_identity):
+        """Gets the conversation between the two identities, if it exists
+
+        Args:
+            identity (Union[ServalIdentity, str])
+            other_identity (Union[ServalIdentity, str])
+
+        Returns:
+            Conversation
+
+        Raises:
+            ConversationNotFoundError: If no conversation between the two SIDs exists
+        """
+        if isinstance(identity, ServalIdentity):
+            identity = identity.sid
+        if isinstance(other_identity, ServalIdentity):
+            other_identity = other_identity.sid
+
+        assert isinstance(
+            identity, basestring
+        ), "identity has to be either a string or ServalIdentity"
+        assert isinstance(
+            other_identity, basestring
+        ), "other_identity has to be either a string or ServalIdentity"
+
+        conversations = self.conversation_list(identity)
+        for conversation in conversations:
+            if conversation.their_sid == other_identity:
+                return conversation
+
+        raise ConversationNotFoundError(sid=identity, other_sid=other_identity)
 
     def message_list(self, sender, recipient):
         """Gets all the messages sent between two identities
@@ -192,3 +247,46 @@ class MeshMS:
         # TODO: Check return code
         messages = unmarshall(json_table=result.json(), object_class=Message)
         return messages
+
+    def send_message(self, sender, recipient, message):
+        """Sends a message
+
+        Args:
+            sender (Union[ServalIdentity, str]): Either a ServalIdentity, or the SID of one
+            recipient (Union[ServalIdentity, str]): Either a ServalIdentity, or the SID of one
+            message (basestring)
+        """
+        if isinstance(sender, ServalIdentity):
+            sender = sender.sid
+        if isinstance(recipient, ServalIdentity):
+            recipient = recipient.sid
+
+        assert isinstance(
+            sender, basestring
+        ), "sender needs to be either a string or a ServalIdentity"
+        assert isinstance(
+            recipient, basestring
+        ), "recipient needs to be either a string or a ServalIdentity"
+        assert isinstance(message, basestring)
+
+        self._low_level.send_message(
+            sender=sender, recipient=recipient, message=message
+        )
+
+    def new_conversation(self, identity, other_identity, message):
+        """Establishes a new conversation between two identities
+
+        Args:
+            identity (ServalIdentity)
+            other_identity (ServalIdentity)
+            message (basestring)
+
+        Returns:
+            Conversation
+        """
+        assert isinstance(identity, ServalIdentity)
+        assert isinstance(other_identity, ServalIdentity)
+        assert isinstance(message, basestring)
+
+        self.send_message(sender=identity, recipient=other_identity, message=message)
+        return self.get_conversation(identity=identity, other_identity=other_identity)

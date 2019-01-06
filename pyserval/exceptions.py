@@ -240,3 +240,22 @@ class InvalidTokenError(Exception):
 
     def __str__(self):
         return "Invalid token: {}, Reason: {}".format(self.token, self.reason)
+
+
+class ConversationNotFoundError(Exception):
+    """Raised if trying to get a conversation which does not exist
+
+    Args:
+        sid (basestring)
+        other_sid (basestring)
+    """
+
+    def __init__(self, sid, other_sid):
+        assert isinstance(sid, basestring)
+        assert isinstance(other_sid, basestring)
+
+        self.sid = sid
+        self.other_sid = other_sid
+
+    def __str__(self):
+        return "No conversation between {} and {}".format(self.sid, self.other_sid)
