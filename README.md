@@ -15,7 +15,7 @@ For documentation on the specific enpoints, please consult [The serval-dna socum
 
 ## Dependencies
 
-This code should run ob both Python 2.7 and 3.4+
+This code should run on both Python 2.7 and 3.4+
 
 The only external (runtime-)dependency is [requests](https://github.com/requests/requests)
 
