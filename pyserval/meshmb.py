@@ -6,7 +6,16 @@ pyserval.meshmb
 This module contains the means to publish and subscribe MeshMB feeds
 """
 
+import sys
+
 from pyserval.lowlevel.meshmb import LowLevelMeshMB
+from pyserval.keyring import ServalIdentity
+
+
+# python3 does not have the basestring type, since it does not have the unicode type
+# if we are running under python3, we just test for str
+if sys.version_info >= (3, 0, 0):
+    basestring = str
 
 
 class BroadcastMessage:
@@ -129,3 +138,31 @@ class MeshMB:
 
     def __init__(self, low_level_meshmb):
         self._low_level_meshmb = low_level_meshmb
+
+    def send_message(self, identity, message):
+        """Sends a message to a feed
+
+        Args:
+            identity (Union[ServalIdentity, str]): Keyring identity or corresponding SID
+            message (Union[bytes, str]): Message payload
+        """
+        if isinstance(identity, ServalIdentity):
+            identity = identity.sid
+
+        assert isinstance(
+            identity, basestring
+        ), "identity must be either a ServalIdentity or SID-string"
+
+        if isinstance(message, basestring):
+            message_type = "text/plain"
+            charset = "utf-8"
+        else:
+            message_type = "application/octet-stream"
+            charset = None
+
+        self._low_level_meshmb.send_message(
+            identity=identity,
+            message=message,
+            message_type=message_type,
+            charset=charset,
+        )
