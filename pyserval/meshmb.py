@@ -10,6 +10,7 @@ import sys
 
 from pyserval.lowlevel.meshmb import LowLevelMeshMB
 from pyserval.keyring import ServalIdentity
+from pyserval.lowlevel.util import unmarshall
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -166,3 +167,26 @@ class MeshMB:
             message_type=message_type,
             charset=charset,
         )
+
+    def get_messages(self, feedid):
+        """Get all the messages of a feed
+
+        Args:
+            feedid (Union[ServalIdentity, str]): Keyring identity or corresponding Signing-ID
+                                                 NOTE: This is NOT the same as the SID
+
+        Returns:
+            List[BroadcastMessage]: All the messages sent to this feed
+        """
+        if isinstance(feedid, ServalIdentity):
+            feedid = feedid.identity
+
+        assert isinstance(
+            feedid, basestring
+        ), "identity must be either a ServalIdentity or Identity-string"
+
+        result = self._low_level_meshmb.get_messages(feedid=feedid)
+        # TODO: Check return value for errors
+        result_json = result.json()
+        messages = unmarshall(json_table=result_json, object_class=BroadcastMessage)
+        return messages

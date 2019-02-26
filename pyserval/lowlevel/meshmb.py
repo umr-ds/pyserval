@@ -54,13 +54,11 @@ class LowLevelMeshMB:
             feedid (str): Feed ID (is also Signing ID of the feed author)
 
         Returns:
-            List[BroadcastMessage]: All the messages sent to this feed
+            requests.models.Response: Response returned by the serval-server
         """
-        result = self._connection.get(
+        return self._connection.get(
             "/restful/meshmb/{}/messagelist.json".format(feedid)
-        ).json()
-        messages = unmarshall(json_table=result, object_class=BroadcastMessage)
-        return messages
+        )
 
     def follow_feed(self, identity, feedid):
         """Follows a feed
