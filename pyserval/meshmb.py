@@ -183,10 +183,33 @@ class MeshMB:
 
         assert isinstance(
             feedid, basestring
-        ), "identity must be either a ServalIdentity or Identity-string"
+        ), "feedid must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_messages(feedid=feedid)
         # TODO: Check return value for errors
         result_json = result.json()
         messages = unmarshall(json_table=result_json, object_class=BroadcastMessage)
         return messages
+
+    def get_feedlist(self, identity):
+        """Get a list of all followed identities
+
+        Args:
+            identity (Union[ServalIdentity, str]): Keyring identity or corresponding Signing-ID
+                                                   NOTE: This is NOT the same as the SID
+
+        Returns:
+            List[Feed]: List of all feeds that the specified identity is currently following
+        """
+        if isinstance(identity, ServalIdentity):
+            identity = identity.identity
+
+        assert isinstance(
+            identity, basestring
+        ), "identity must be either a ServalIdentity or Identity-string"
+
+        result = self._low_level_meshmb.get_feedlist(identity=identity)
+        # TODO: Check return value for errors
+        result_json = result.json()
+        feeds = unmarshall(json_table=result_json, object_class=Feed, meshmb=self)
+        return feeds

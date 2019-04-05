@@ -96,13 +96,9 @@ class LowLevelMeshMB:
             identity (str): Signing ID of an (unlocked) identity in the keyring
 
         Returns:
-            List[Feed]: List of all feeds that the specified identity is currently following
+            requests.models.Response: Response returned by the serval-server
         """
-        result = self._connection.get(
-            "/restful/meshmb/{}/feedlist.json".format(identity)
-        ).json()
-        feeds = unmarshall(json_table=result, object_class=Feed, meshmb=self)
-        return feeds
+        return self._connection.get("/restful/meshmb/{}/feedlist.json".format(identity))
 
     def get_activity(self, identity):
         """Get all the messages from followed feeds
