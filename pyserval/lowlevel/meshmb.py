@@ -110,16 +110,6 @@ class LowLevelMeshMB:
             identity (str): Signing ID of an (unlocked) identity in the keyring
 
         Returns:
-            List[BroadcastMessage]: List of all messages from all feeds that
-                                    the specified identity is currently following
-                                    (in chronological order)
+            requests.models.Response: Response returned by the serval-server
         """
-        result = self._connection.get(
-            "/restful/meshmb/{}/activity.json".format(identity)
-        ).json()
-        message_data = decode_json_table(result)
-        for data in message_data:
-            data["token"] = data.pop(".token")
-            data["text"] = data.pop("message")
-        messages = [BroadcastMessage(**data) for data in message_data]
-        return messages
+        return self._connection.get("/restful/meshmb/{}/activity.json".format(identity))

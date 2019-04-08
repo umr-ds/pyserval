@@ -10,7 +10,7 @@ import sys
 
 from pyserval.lowlevel.meshmb import LowLevelMeshMB
 from pyserval.keyring import ServalIdentity
-from pyserval.lowlevel.util import unmarshall
+from pyserval.lowlevel.util import unmarshall, decode_json_table
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -213,3 +213,31 @@ class MeshMB:
         result_json = result.json()
         feeds = unmarshall(json_table=result_json, object_class=Feed, meshmb=self)
         return feeds
+
+    def get_activity(self, identity):
+        """Get all the messages from followed feeds
+
+        Args:
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+
+        Returns:
+            List[BroadcastMessage]: List of all messages from all feeds that
+                                    the specified identity is currently following
+                                    (in chronological order)
+        """
+        if isinstance(identity, ServalIdentity):
+            identity = identity.identity
+
+        assert isinstance(
+            identity, basestring
+        ), "identity must be either a ServalIdentity or Identity-string"
+
+        result = self._low_level_meshmb.get_activity(identity=identity)
+        # TODO: Check return value for errors
+        result_json = result.json()
+        message_data = decode_json_table(result_json)
+        for data in message_data:
+            data["token"] = data.pop(".token")
+            data["text"] = data.pop("message")
+        messages = [BroadcastMessage(**data) for data in message_data]
+        return messages
