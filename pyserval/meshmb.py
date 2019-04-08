@@ -241,3 +241,43 @@ class MeshMB:
             data["text"] = data.pop("message")
         messages = [BroadcastMessage(**data) for data in message_data]
         return messages
+
+    def follow_feed(self, identity, feedid):
+        """Follows a feed
+
+        Endpoint:
+            POST /restful/meshmb/ID/follow/FEEDID
+
+        Args:
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+                            which should follow the feed
+            feedid (str): Feed ID
+        """
+        if isinstance(identity, ServalIdentity):
+            identity = identity.identity
+
+        assert isinstance(
+            identity, basestring
+        ), "identity must be either a ServalIdentity or Identity-string"
+
+        self._low_level_meshmb.follow_feed(identity=identity, feedid=feedid)
+
+    def unfollow_feed(self, identity, feedid):
+        """Unfollows a feed
+
+        Endpoint:
+            POST /restful/meshmb/ID/ignore/FEEDID
+
+        Args:
+            identity (str): Signing ID of an (unlocked) identity in the keyring
+                            which should unfollow the feed
+            feedid (str): Feed ID
+        """
+        if isinstance(identity, ServalIdentity):
+            identity = identity.identity
+
+        assert isinstance(
+            identity, basestring
+        ), "identity must be either a ServalIdentity or Identity-string"
+
+        self._low_level_meshmb.unfollow_feed(identity=identity, feedid=feedid)
