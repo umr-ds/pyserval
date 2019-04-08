@@ -10,7 +10,7 @@ from pyserval.lowlevel.connection import RestfulConnection
 from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.rhizome import LowLevelRhizome
 from pyserval.lowlevel.meshms import LowLevelMeshMS
-from pyserval.lowlevel.meshmb import MeshMB
+from pyserval.lowlevel.meshmb import LowLevelMeshMB
 
 
 class LowLevelClient:
@@ -43,4 +43,4 @@ class LowLevelClient:
         self.keyring = LowLevelKeyring(self._connection)
         self.rhizome = LowLevelRhizome(self._connection)
         self.meshms = LowLevelMeshMS(self._connection)
-        self.meshmb = MeshMB(self._connection)
+        self.meshmb = LowLevelMeshMB(self._connection)
