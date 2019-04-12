@@ -7,6 +7,7 @@ This module provides a high-level way to interact with serval
 """
 
 from pyserval.lowlevel.client import LowLevelClient
+from pyserval.connection import CheckedConnection
 from pyserval.keyring import Keyring
 from pyserval.rhizome import Rhizome
 from pyserval.meshms import MeshMS
@@ -25,15 +26,22 @@ class Client:
             passwd (str): Password for HTTP basic auth
 
         Attributes:
-            keyring (keyring.Keyring): Provides access to the 'Keyring'-API, see
-                                       https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Keyring.md
+            keyring (Keyring): Provides access to the 'Keyring'-API, see
+                               https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Keyring.md
+            rhizome (Rhizome): Provides access to the 'Rhizome'-API, see
+                               https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md
+            meshms (MeshMS): Provides access to the 'MeshMS'-API, see
+                             https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMS.md
+            meshmb (MeshMB): Provides access to the 'MeshMB'-API, see
+                             https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMB.md
         """
 
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
-        self.low_level_client = LowLevelClient(
+        self._connection = CheckedConnection(
             host=host, port=port, user=user, passwd=passwd
         )
-        self.keyring = Keyring(self.low_level_client.keyring)
-        self.rhizome = Rhizome(self.low_level_client.rhizome, self.keyring)
-        self.meshms = MeshMS(self.low_level_client.meshms)
-        self.meshmb = MeshMB(self.low_level_client.meshmb)
+        self._low_level_client = LowLevelClient(self._connection)
+        self.keyring = Keyring(self._low_level_client.keyring)
+        self.rhizome = Rhizome(self._low_level_client.rhizome, self.keyring)
+        self.meshms = MeshMS(self._low_level_client.meshms)
+        self.meshmb = MeshMB(self._low_level_client.meshmb)

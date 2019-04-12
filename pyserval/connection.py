@@ -35,7 +35,7 @@ class CheckedConnection(RestfulConnection):
             UnauthorizedError: If username/password is wrong
         """
 
-        response = RestfulConnection.get(self, path=path, params=params)
+        response = RestfulConnection.get(self, path, **params)
 
         if response.status_code == 401:
             raise UnauthorizedError()
@@ -55,7 +55,7 @@ class CheckedConnection(RestfulConnection):
         Throws:
             UnauthorizedError: If username/password is wrong
         """
-        response = RestfulConnection.post(self, path=path, params=params)
+        response = RestfulConnection.post(self, path, **params)
 
         if response.status_code == 401:
             raise UnauthorizedError()
@@ -75,7 +75,7 @@ class CheckedConnection(RestfulConnection):
         Throws:
             UnauthorizedError: If username/password is wrong
         """
-        response = RestfulConnection.put(self, path=path, params=params)
+        response = RestfulConnection.put(self, path, **params)
 
         if response.status_code == 401:
             raise UnauthorizedError()
@@ -95,7 +95,7 @@ class CheckedConnection(RestfulConnection):
         Throws:
             UnauthorizedError: If username/password is wrong
         """
-        response = RestfulConnection.delete(self, path=path, params=params)
+        response = RestfulConnection.delete(self, path, **params)
 
         if response.status_code == 401:
             raise UnauthorizedError()
@@ -115,7 +115,7 @@ class CheckedConnection(RestfulConnection):
         Throws:
             UnauthorizedError: If username/password is wrong
         """
-        response = RestfulConnection.patch(self, path=path, params=params)
+        response = RestfulConnection.patch(self, path, **params)
 
         if response.status_code == 401:
             raise UnauthorizedError()

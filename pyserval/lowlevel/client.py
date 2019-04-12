@@ -20,27 +20,38 @@ class LowLevelClient:
     you should probably go with the high-level client
 
     Args:
-        host (str): Hostname to connect to
-        port (int): Port to connect to
-        user (str): Username for HTTP basic auth
-        passwd (str): Password for HTTP basic auth
+        connection (RestfulConnection): Connection-object for communication with the REST-endpoints
 
     Attributes:
-        keyring (keyring.Keyring): Provides access to the 'Keyring'-API, see
+        keyring (LowLevelKeyring): Provides access to the 'Keyring'-API, see
                                    https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Keyring.md
-        rhizome (rhizome.Rhizome): Provides access to the 'Rhizome'-API, see
+        rhizome (LowLevelRhizome): Provides access to the 'Rhizome'-API, see
                                    https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md
-        meshms (meshms.MeshMS): Provides access to the 'MeshMS'-API, see
-                                https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMS.md
-        meshmb (meshmb.MeshMB): Provides access to the 'MeshMB'-API, see
-                                https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMB.md
+        meshms (LowLevelMeshMS): Provides access to the 'MeshMS'-API, see
+                                 https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMS.md
+        meshmb (LowLevelMeshMB): Provides access to the 'MeshMB'-API, see
+                                 https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMB.md
     """
 
-    def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
-        self._connection = RestfulConnection(
-            host=host, port=port, user=user, passwd=passwd
-        )
+    def __init__(self, connection):
+        self._connection = connection
         self.keyring = LowLevelKeyring(self._connection)
         self.rhizome = LowLevelRhizome(self._connection)
         self.meshms = LowLevelMeshMS(self._connection)
         self.meshmb = LowLevelMeshMB(self._connection)
+
+    @staticmethod
+    def new(host="localhost", port=4110, user="pyserval", passwd="pyserval"):
+        """Utility-method that creates a connection-object and then a lient from it
+
+        Args:
+            host (str): Hostname to connect to
+            port (int): Port to connect to
+            user (str): Username for HTTP basic auth
+            passwd (str): Password for HTTP basic auth
+
+        Returns:
+            LowLevelClient: Fully instantiated client
+        """
+        connection = RestfulConnection(host=host, port=port, user=user, passwd=passwd)
+        return LowLevelClient(connection=connection)
