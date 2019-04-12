@@ -259,3 +259,10 @@ class ConversationNotFoundError(Exception):
 
     def __str__(self):
         return "No conversation between {} and {}".format(self.sid, self.other_sid)
+
+
+class UnauthorizedError(Exception):
+    """Raised if username/password is wrong"""
+
+    def __str__(self):
+        return "Server returned unauthorized-error"
