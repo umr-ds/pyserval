@@ -11,6 +11,7 @@ from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.rhizome import LowLevelRhizome
 from pyserval.lowlevel.meshms import LowLevelMeshMS
 from pyserval.lowlevel.meshmb import LowLevelMeshMB
+from pyserval.lowlevel.route import LowLevelRoute
 
 
 class LowLevelClient:
@@ -31,14 +32,18 @@ class LowLevelClient:
                                  https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMS.md
         meshmb (LowLevelMeshMB): Provides access to the 'MeshMB'-API, see
                                  https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMB.md
+        route (LowLevelRoute): Provides access to the 'Route'-API, see
+                               https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Route.md
     """
 
     def __init__(self, connection):
+        assert isinstance(connection, RestfulConnection)
         self._connection = connection
         self.keyring = LowLevelKeyring(self._connection)
         self.rhizome = LowLevelRhizome(self._connection)
         self.meshms = LowLevelMeshMS(self._connection)
         self.meshmb = LowLevelMeshMB(self._connection)
+        self.route = LowLevelRoute(self._connection)
 
     @staticmethod
     def new(host="localhost", port=4110, user="pyserval", passwd="pyserval"):

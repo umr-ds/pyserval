@@ -12,6 +12,7 @@ from pyserval.keyring import Keyring
 from pyserval.rhizome import Rhizome
 from pyserval.meshms import MeshMS
 from pyserval.meshmb import MeshMB
+from pyserval.route import Route
 
 
 class Client:
@@ -34,6 +35,8 @@ class Client:
                              https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMS.md
             meshmb (MeshMB): Provides access to the 'MeshMB'-API, see
                              https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-MeshMB.md
+            route (Route): Provides access to the 'Route'-API, see
+                           https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Route.md
         """
 
     def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
@@ -45,3 +48,4 @@ class Client:
         self.rhizome = Rhizome(self._low_level_client.rhizome, self.keyring)
         self.meshms = MeshMS(self._low_level_client.meshms)
         self.meshmb = MeshMB(self._low_level_client.meshmb)
+        self.route = Route(self._low_level_client.route)
