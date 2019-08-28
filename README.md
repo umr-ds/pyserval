@@ -8,8 +8,9 @@ The following functionality is implemented:
 
 - Serval Keyring
 - Rhizome
-- MeshMS (except GET /restful/meshms/SENDERSID/RECIPIENTSID/newsince[/TOKEN]/messagelist.json)
+- MeshMS
 - MeshMB
+- Route
 
 For documentation on the specific enpoints, please consult [The serval-dna socumentation](https://github.com/servalproject/serval-dna/blob/development/doc/REST-API.md)
 
