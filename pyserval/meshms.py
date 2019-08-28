@@ -248,6 +248,29 @@ class MeshMS:
         messages = unmarshall(json_table=result.json(), object_class=Message)
         return messages
 
+    def message_list_newsince(self, sender, recipient, token):
+        """Gets all the messages sent between two identities since the token was generated
+
+        Args:
+            sender (ServalIdentity)
+            recipient (ServalIdentity)
+            token (str)
+
+        Note:
+            At least one of the identities needs to be local and unlocked
+
+        Returns:
+            List[Message]: List of all the messages sent between the two identities
+        """
+        assert isinstance(sender, ServalIdentity)
+        assert isinstance(recipient, ServalIdentity)
+        assert isinstance(token, basestring)
+
+        reply = self._low_level.message_list_newsince(
+            sender=sender.sid, recipient=recipient.sid, token=token
+        )
+        # TODO: Implement partial json parsing... it would be easier if the upstream documentation wasn't complete shit
+
     def send_message(self, sender, recipient, message):
         """Sends a message
 

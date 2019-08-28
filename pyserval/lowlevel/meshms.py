@@ -58,6 +58,27 @@ class LowLevelMeshMS:
             "/restful/meshms/{}/{}/messagelist.json".format(sender, recipient)
         )
 
+    def message_list_newsince(self, sender, recipient, token):
+        """Blocking call, returns first message after provided token, none on timeout.
+
+        Endpoint:
+            GET /restful/meshms/SENDERSID/RECIPIENTSID/newsince[/TOKEN]/messagelist.json
+
+        Args:
+            sender (str): SID of sending participant
+            recipient (str): SID of receiving participant
+            token (str): Token denoting the last time the message list was updated
+        """
+        assert isinstance(sender, basestring)
+        assert isinstance(recipient, basestring)
+        assert isinstance(token, basestring)
+        return self._connection.get(
+            "/restful/meshms/{}/{}}/newsince/{}/messagelist.json".format(
+                sender, recipient, token
+            ),
+            stream=True,
+        )
+
     def send_message(
         self, sender, recipient, message, message_type="text/plain", charset="utf-8"
     ):
