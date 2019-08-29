@@ -7,16 +7,24 @@ High level interface for meshms-messaging
 """
 
 import sys
+import json
 
 from pyserval.lowlevel.util import unmarshall
 from pyserval.lowlevel.meshms import LowLevelMeshMS
 from pyserval.keyring import ServalIdentity
-from pyserval.exceptions import ConversationNotFoundError
+from pyserval.exceptions import (
+    ConversationNotFoundError,
+    InvalidTokenError,
+    RhizomeHTTPStatusError,
+)
 
 # python3 does not have the basestring type, since it does not have the unicode type
 # if we are running under python3, we just test for str
 if sys.version_info >= (3, 0, 0):
     basestring = str
+
+MESSAGELIST_HEADER_SIZE = 178
+MESSAGELIST_HEADER_NEWLINES = 5
 
 
 class Message:
@@ -31,7 +39,7 @@ class Message:
         token (str): Token for real-time access (not implemented)
         text (str): Content of the message
         delivered (bool): Whether the message has been successfully delivered
-        read (bool): Whether the recipient has read the message TODO: This field is apparently never updated...
+        read (bool): Whether the recipient has read the message
         timestamp (int): UNIX-timestamp of when the message was sent
         ack_offset (int): (?)
 
@@ -141,8 +149,8 @@ class Conversation:
 
     def unread(self):
         """Returns all received messages which have not been read yet"""
-        # TODO: serval seems to never update the 'read' field,
-        #  even if there exists an ACK and the messages have been queried...
+        # FIXME: serval seems to never update the 'read' field,
+        #        even if there exists an ACK and the messages have been queried...
         received = self.received_messages()
         unread = [message for message in received if not message.read]
         return unread
@@ -245,7 +253,8 @@ class MeshMS:
             sender=sender.sid, recipient=recipient.sid
         )
         # TODO: Check return code
-        messages = unmarshall(json_table=result.json(), object_class=Message)
+        result_json = result.json()
+        messages = unmarshall(json_table=result_json, object_class=Message)
         return messages
 
     def message_list_newsince(self, sender, recipient, token):
@@ -266,10 +275,38 @@ class MeshMS:
         assert isinstance(recipient, ServalIdentity)
         assert isinstance(token, basestring)
 
-        reply = self._low_level.message_list_newsince(
+        with self._low_level.message_list_newsince(
             sender=sender.sid, recipient=recipient.sid, token=token
-        )
-        # TODO: Implement partial json parsing... it would be easier if the upstream documentation wasn't complete shit
+        ) as serval_stream:
+
+            if serval_stream.status_code == 404:
+                raise InvalidTokenError(token, serval_stream.reason)
+            if serval_stream.status_code != 200:
+                raise RhizomeHTTPStatusError(serval_stream)
+
+            serval_reply_bytes = []
+            lines = 0
+
+            for c in serval_stream.iter_content():
+                if c == b"\n":
+                    lines += 1
+
+                serval_reply_bytes.append(c)
+
+                if (
+                    c == b"]"
+                    and lines == MESSAGELIST_HEADER_NEWLINES
+                    and len(serval_reply_bytes) > MESSAGELIST_HEADER_SIZE
+                ):
+                    # complete json manually
+                    serval_reply_bytes += [b"\n", b"]", b"\n", b"}"]
+                    break
+
+            serval_reply = b"".join(serval_reply_bytes)
+            reply_json = json.loads(serval_reply)
+
+            messages = unmarshall(json_table=reply_json, object_class=Message)
+            return messages
 
     def send_message(self, sender, recipient, message):
         """Sends a message
