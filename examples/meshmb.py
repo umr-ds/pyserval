@@ -29,7 +29,7 @@ args = parser.parse_args()
 client = Client(host=args.host, port=args.port, user=args.user, passwd=args.password)
 meshmb = client.meshmb
 
-identities = [identity.identity for identity in client.keyring.get_or_create(2)]
+identities = client.keyring.get_or_create(2)
 
 meshmb.send_message(identity=identities[0], message="This is a test broadcast")
 

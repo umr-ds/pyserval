@@ -148,7 +148,7 @@ class MeshMB:
             message (Union[bytes, str]): Message payload
         """
         if isinstance(identity, ServalIdentity):
-            identity = identity.sid
+            identity = identity.identity
 
         assert isinstance(
             identity, basestring
