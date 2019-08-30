@@ -128,6 +128,20 @@ class Manifest:
 
         self.__dict__.update(values)
 
+    def update_manual(self, **kwargs):
+        """Update the manifest's data
+
+        Args:
+            kwargs (Union[str, int]): names & updated values for the manifest
+        """
+        for key in kwargs:
+            # Serval does not allow the '_'-character for custom fields,
+            # but I don't know if there are any other restrictions - the documentation doesn't say
+            # which is why I chose to restrict it to alphanumerics - to b on the safe side
+            assert key.isalnum(), "Custom fields must be alphanumeric"
+
+        self.__dict__.update(kwargs)
+
     def is_valid(self):
         """Checks whether the manifest is valid
 

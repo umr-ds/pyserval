@@ -98,7 +98,7 @@ class Bundle:
 
     def clone(self, name=None, service=None):
         """Creates a clone of the bundle in rhizome.
-        
+
         Two clones share a payload but have different bundle ids. This is possible by choosing another name or service."""
         manifest_copy = copy.copy(self.manifest)
 
@@ -163,7 +163,7 @@ class Bundle:
         Args:
             kwargs (Union[str, int]): names & updated values for the manifest
         """
-        self.manifest.__dict__.update(kwargs)
+        self.manifest.update_manual(**kwargs)
         self.update()
 
     def refresh(self):
@@ -408,7 +408,7 @@ class Rhizome:
 
         Raises:
             InvalidTokenError: If the token is not found in serval
-            RhizomeHTTPStatusError: If the HTTP status code is unknown 
+            RhizomeHTTPStatusError: If the HTTP status code is unknown
         """
         with self._low_level_rhizome.get_manifest_newsince(token) as serval_stream:
             if serval_stream.status_code == 404:
@@ -660,7 +660,7 @@ class Rhizome:
         )
 
         if custom_manifest:
-            manifest.__dict__.update(custom_manifest)
+            manifest.update_manual(**custom_manifest)
 
         bundle_author = identity.sid
 
@@ -756,6 +756,13 @@ class Rhizome:
         assert isinstance(recipient, basestring)
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
+
+        if isinstance(custom_manifest, dict):
+            for key in custom_manifest:
+                # Serval does not allow the '_'-character for custom fields,
+                # but I don't know if there are any other restrictions - the documentation doesn't say
+                # which is why I chose to restrict it to alphanumerics - to b on the safe side
+                assert key.isalnum(), "Custom fields must be alphanumeric"
 
         if recipient:
             encryption = 1
