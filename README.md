@@ -30,7 +30,9 @@ To install all dependencies (both runtime and development/testing) run `pip inst
 
 ## Installation
 
-`pip install https://github.com/umr-ds/pyserval/releases/download/v0.3.4/pyserval-0.3.4-py2.py3-none-any.whl`
+As of `v0.4`, releases are uploaded to [PyPi](https://pypi.org/project/pyserval/), so you can just install it by name
+
+`pip install pyserval`
 
 ## Development
 
