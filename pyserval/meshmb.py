@@ -11,6 +11,7 @@ import sys
 from pyserval.lowlevel.meshmb import LowLevelMeshMB
 from pyserval.keyring import ServalIdentity
 from pyserval.lowlevel.util import unmarshall, decode_json_table
+from pyserval.exceptions import RhizomeHTTPStatusError
 
 
 # python3 does not have the basestring type, since it does not have the unicode type
@@ -186,7 +187,12 @@ class MeshMB:
         ), "feedid must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_messages(feedid=feedid)
-        # TODO: Check return value for errors
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
+
         result_json = result.json()
         messages = unmarshall(json_table=result_json, object_class=BroadcastMessage)
         return messages
@@ -209,7 +215,12 @@ class MeshMB:
         ), "identity must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_feedlist(identity=identity)
-        # TODO: Check return value for errors
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
+
         result_json = result.json()
         feeds = unmarshall(json_table=result_json, object_class=Feed, meshmb=self)
         return feeds
@@ -233,7 +244,12 @@ class MeshMB:
         ), "identity must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_activity(identity=identity)
-        # TODO: Check return value for errors
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
+
         result_json = result.json()
         message_data = decode_json_table(result_json)
         for data in message_data:

@@ -194,7 +194,12 @@ class MeshMS:
         ), "identity has to be either a string or ServalIdentity"
 
         result = self._low_level.conversation_list(identity)
-        # TODO: Check return code
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
+
         conversations = unmarshall(json_table=result.json(), object_class=Conversation)
         for conversation in conversations:
             conversation._meshms = self
@@ -252,7 +257,12 @@ class MeshMS:
         result = self._low_level.message_list(
             sender=sender.sid, recipient=recipient.sid
         )
-        # TODO: Check return code
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
+
         result_json = result.json()
         messages = unmarshall(json_table=result_json, object_class=Message)
         return messages

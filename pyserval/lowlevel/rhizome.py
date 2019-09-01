@@ -157,8 +157,6 @@ class Manifest:
                     value=str(self.service),
                     reason="Service must be alphanumeric",
                 )
-        # TODO: further checks
-
         return True
 
     def autocast(self, field_name, value):
