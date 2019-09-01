@@ -563,7 +563,13 @@ class Rhizome:
         raise UnknownRhizomeStatusError(serval_response=serval_reply)
 
     def insert(
-        self, manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
+        self,
+        manifest,
+        bundle_id="",
+        bundle_author="",
+        bundle_secret="",
+        payload="",
+        filename="",
     ):
         """Creates/Updates a bundle
 
@@ -576,6 +582,8 @@ class Rhizome:
                                  Note that this will not be saved anywhere, you need to save it yourself
                                  or lose access to the bundle
             payload (Union[str, bytes]): Optional payload
+            filename (str): Optional alternative to payload
+                            If set, the file will be opened (in binary mode) and the content used as payload
 
         Returns:
             Bundle: New Bundle-object which contains the reply's data
@@ -586,6 +594,11 @@ class Rhizome:
         assert isinstance(manifest, Manifest)
         assert manifest.tail is None, "For journals, use ''append''"
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert isinstance(filename, basestring)
+
+        if filename:
+            with open(filename, "rb") as f:
+                payload = f.read()
 
         serval_reply = self._low_level_rhizome.insert(
             manifest=manifest,
@@ -613,6 +626,7 @@ class Rhizome:
         self,
         name="",
         payload="",
+        filename="",
         identity=None,
         recipient="",
         service="",
@@ -623,6 +637,8 @@ class Rhizome:
         Args:
             name (str): Human readable name for the bundle
             payload (Union[str, bytes]): Initial payload
+            filename (str): Optional alternative to payload
+                            If set, the file will be opened (in binary mode) and the content used as payload
             identity (ServalIdentity): If set, then this identity's SID will be set as the bundle author
                                        If unset, the keyring's default identity will be used
             recipient (str): Optional SID of the bundle's recipient
@@ -665,16 +681,25 @@ class Rhizome:
         bundle_author = identity.sid
 
         new_bundle = self.insert(
-            manifest=manifest, bundle_author=bundle_author, payload=payload
+            manifest=manifest,
+            bundle_author=bundle_author,
+            payload=payload,
+            filename=filename,
         )
 
-        new_bundle.payload = payload
-        new_bundle.complete = True
+        # the bunlde returned by the insert endpoint comes with the payload field empty
+        new_bundle.refresh()
 
         return new_bundle
 
     def append(
-        self, manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
+        self,
+        manifest,
+        bundle_id="",
+        bundle_author="",
+        bundle_secret="",
+        payload="",
+        filename="",
     ):
         """Creates/updates a journal
 
@@ -687,6 +712,8 @@ class Rhizome:
                                  Note that this will not be saved anywhere, you need to save it yourself
                                  or lose access to the bundle
             payload (Union[str, bytes]): Optional payload
+            filename (str): Optional alternative to payload
+                            If set, the file will be opened (in binary mode) and the content used as payload
 
         Note:
             Don't use for plain bundles, use ''insert'' instead
@@ -694,6 +721,11 @@ class Rhizome:
         assert isinstance(manifest, Manifest)
         assert manifest.tail is not None, "For plain bundles, use ''insert''"
         assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert isinstance(filename, basestring)
+
+        if filename:
+            with open(filename, "rb") as f:
+                payload = f.read()
 
         serval_reply = self._low_level_rhizome.append(
             manifest=manifest,
@@ -722,6 +754,7 @@ class Rhizome:
         self,
         name="",
         payload="",
+        filename="",
         identity=None,
         recipient="",
         service="",
@@ -732,6 +765,8 @@ class Rhizome:
         Args:
             payload (Union[str, bytes]): Initial payload - must be non-empty
             name (str): Human readable name for the journal
+            filename (str): Optional alternative to payload
+                            If set, the file will be opened (in binary mode) and the content used as payload
             identity (ServalIdentity): If set, then this identity's SID will be set as the journal author
                                        If unset, the keyring's default identity will be used
             recipient (str): Optional SID of the bundle's recipient
@@ -757,13 +792,6 @@ class Rhizome:
         assert isinstance(service, basestring)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
 
-        if isinstance(custom_manifest, dict):
-            for key in custom_manifest:
-                # Serval does not allow the '_'-character for custom fields,
-                # but I don't know if there are any other restrictions - the documentation doesn't say
-                # which is why I chose to restrict it to alphanumerics - to b on the safe side
-                assert key.isalnum(), "Custom fields must be alphanumeric"
-
         if recipient:
             encryption = 1
         else:
@@ -779,15 +807,18 @@ class Rhizome:
         )
 
         if custom_manifest:
-            manifest.__dict__.update(custom_manifest)
+            manifest.update_manual(**custom_manifest)
 
         bundle_author = identity.sid
 
         new_journal = self.append(
-            manifest=manifest, bundle_author=bundle_author, payload=payload
+            manifest=manifest,
+            bundle_author=bundle_author,
+            payload=payload,
+            filename=filename,
         )
 
-        new_journal.payload = payload
-        new_journal.complete = True
+        # the journal returned by the append endpoint also has no payload set
+        new_journal.refresh()
 
         return new_journal
