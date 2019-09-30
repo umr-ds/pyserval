@@ -16,6 +16,10 @@ if sys.version_info >= (3, 0, 0):
     basestring = str
 
 
+class MalformedRequestError(Exception):
+    """General error when serval server response to a malformed request"""
+
+
 class IdentityNotFoundError(Exception):
     """Error raised when trying to operate on a non-available identity
 

@@ -40,7 +40,7 @@ class LowLevelMeshMB:
                 ("message1", message, "{};charset={}".format(message_type, charset)),
             )
         ]
-        self._connection.post(
+        return self._connection.post(
             "/restful/meshmb/{}/sendmessage".format(identity), files=multipart
         )
 
@@ -71,7 +71,9 @@ class LowLevelMeshMB:
                             which should follow the feed
             feedid (str): Feed ID
         """
-        self._connection.post("/restful/meshmb/{}/follow/{}".format(identity, feedid))
+        return self._connection.post(
+            "/restful/meshmb/{}/follow/{}".format(identity, feedid)
+        )
 
     def unfollow_feed(self, identity, feedid):
         """Unfollows a feed
@@ -84,7 +86,9 @@ class LowLevelMeshMB:
                             which should unfollow the feed
             feedid (str): Feed ID
         """
-        self._connection.post("/restful/meshmb/{}/ignore/{}".format(identity, feedid))
+        return self._connection.post(
+            "/restful/meshmb/{}/ignore/{}".format(identity, feedid)
+        )
 
     def get_feedlist(self, identity):
         """Get a list of all followed identities

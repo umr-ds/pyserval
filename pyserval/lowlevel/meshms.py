@@ -103,7 +103,7 @@ class LowLevelMeshMS:
             )
         ]
 
-        self._connection.post(
+        return self._connection.post(
             "/restful/meshms/{}/{}/sendmessage".format(sender, recipient),
             files=multipart,
         )

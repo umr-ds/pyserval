@@ -162,12 +162,17 @@ class MeshMB:
             message_type = "application/octet-stream"
             charset = None
 
-        self._low_level_meshmb.send_message(
+        result = self._low_level_meshmb.send_message(
             identity=identity,
             message=message,
             message_type=message_type,
             charset=charset,
         )
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
 
     def get_messages(self, feedid):
         """Get all the messages of a feed
@@ -276,7 +281,12 @@ class MeshMB:
             identity, basestring
         ), "identity must be either a ServalIdentity or Identity-string"
 
-        self._low_level_meshmb.follow_feed(identity=identity, feedid=feedid)
+        result = self._low_level_meshmb.follow_feed(identity=identity, feedid=feedid)
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
 
     def unfollow_feed(self, identity, feedid):
         """Unfollows a feed
@@ -296,4 +306,9 @@ class MeshMB:
             identity, basestring
         ), "identity must be either a ServalIdentity or Identity-string"
 
-        self._low_level_meshmb.unfollow_feed(identity=identity, feedid=feedid)
+        result = self._low_level_meshmb.unfollow_feed(identity=identity, feedid=feedid)
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)

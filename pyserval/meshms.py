@@ -339,9 +339,14 @@ class MeshMS:
         ), "recipient needs to be either a string or a ServalIdentity"
         assert isinstance(message, basestring)
 
-        self._low_level.send_message(
+        result = self._low_level.send_message(
             sender=sender, recipient=recipient, message=message
         )
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
 
     def new_conversation(self, identity, other_identity, message):
         """Establishes a new conversation between two identities
@@ -358,5 +363,13 @@ class MeshMS:
         assert isinstance(other_identity, ServalIdentity)
         assert isinstance(message, basestring)
 
-        self.send_message(sender=identity, recipient=other_identity, message=message)
+        result = self.send_message(
+            sender=identity, recipient=other_identity, message=message
+        )
+
+        # I would like to make a better distinction here, but unfortunately the upstream docs
+        # do not specify any status codes for specific errors
+        if result.status_code != 200:
+            raise RhizomeHTTPStatusError(result)
+
         return self.get_conversation(identity=identity, other_identity=other_identity)

@@ -8,7 +8,7 @@ High level API for accessing the serval keyring
 
 import sys
 
-from pyserval.exceptions import IdentityNotFoundError
+from pyserval.exceptions import IdentityNotFoundError, MalformedRequestError
 from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.util import unmarshall
 
@@ -157,8 +157,15 @@ class Keyring:
 
         Returns:
             ServalIdentity: Object of the newly created identity
+
+        Raises:
+            MalformedRequestError: If arguments are invalid values
         """
         serval_reply = self.low_level_keyring.add(pin=pin, did=did, name=name)
+
+        if serval_reply.status_code == 400:
+            raise MalformedRequestError()
+
         reply_json = serval_reply.json()
         return ServalIdentity(self, **reply_json["identity"])
 
