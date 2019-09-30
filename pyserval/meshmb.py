@@ -162,6 +162,8 @@ class MeshMB:
             message_type = "application/octet-stream"
             charset = None
 
+        assert message, "message must be non-empty"
+
         result = self._low_level_meshmb.send_message(
             identity=identity,
             message=message,
@@ -171,7 +173,7 @@ class MeshMB:
 
         # I would like to make a better distinction here, but unfortunately the upstream docs
         # do not specify any status codes for specific errors
-        if result.status_code != 200:
+        if result.status_code != 200 and result.status_code != 201:
             raise RhizomeHTTPStatusError(result)
 
     def get_messages(self, feedid):
