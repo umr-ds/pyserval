@@ -16,7 +16,7 @@ For documentation on the specific endpoints, please consult [The serval-dna docu
 
 ## Dependencies
 
-This code requires on Python 3.5+
+This code requires on Python 3.6+
 
 The only external runtime-dependency is [requests](https://github.com/requests/requests). This should be automatically installed by pip based on the package metadata.
 

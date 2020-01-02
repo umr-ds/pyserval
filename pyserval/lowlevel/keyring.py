@@ -6,6 +6,8 @@ This module contains the means to interact with the serval keyring
 """
 
 from pyserval.lowlevel.connection import RestfulConnection
+from requests.models import Response
+from typing import Any, Dict, Union
 
 
 class LowLevelKeyring:
@@ -15,14 +17,14 @@ class LowLevelKeyring:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection: RestfulConnection) -> None:
         assert isinstance(
             connection, RestfulConnection
         ), "connection must be a RestfulConnection (from pyserval.lowlevel.connection)"
 
         self._connection = connection
 
-    def _modify(self, sid, operation, params):
+    def _modify(self, sid: str, operation: str, params: Dict[str, Any]) -> Response:
         """Utility method for the manipulation of identities
 
         Reduces boilerplate-code for common operations.
@@ -30,7 +32,7 @@ class LowLevelKeyring:
         Args:
             sid (str): SID of the identity to be manipulated
             operation (str): Kind of operation to be executed on the identity
-            params (dict[str, Any]): Additional parameters for the operation
+            params (Dict[str, Any]): Additional parameters for the operation
 
         Returns:
              requests.models.Response: Response returned by the serval-server
@@ -40,10 +42,10 @@ class LowLevelKeyring:
         assert isinstance(params, dict), "params must be a dictionary"
 
         return self._connection.get(
-            "/restful/keyring/{}/{}".format(sid, operation), params=params
+            f"/restful/keyring/{sid}/{operation}", params=params
         )
 
-    def get_identities(self, pin=""):
+    def get_identities(self, pin: str = "") -> Response:
         """List of all currently unlocked identities
 
         Endpoint:
@@ -63,7 +65,7 @@ class LowLevelKeyring:
 
         return self._connection.get("/restful/keyring/identities.json", params=params)
 
-    def get_identity(self, sid, pin=""):
+    def get_identity(self, sid: str, pin: str = "") -> Response:
         """Get the details of a specific identity
 
         Endpoint:
@@ -82,9 +84,9 @@ class LowLevelKeyring:
         if pin:
             params["pin"] = pin
 
-        return self._connection.get("/restful/keyring/{}".format(sid), params=params)
+        return self._connection.get(f"/restful/keyring/{sid}", params=params)
 
-    def add(self, pin="", did="", name=""):
+    def add(self, pin: str = "", did: str = "", name: str = "") -> Response:
         """Creates a new identity with a random SID
 
         Endpoint:
@@ -126,7 +128,7 @@ class LowLevelKeyring:
 
         return self._connection.post("/restful/keyring/add", params=params)
 
-    def delete(self, sid, pin=""):
+    def delete(self, sid: str, pin: str = "") -> Response:
         """Deletes an existing identity with a given SID
 
         Endpoint:
@@ -146,9 +148,9 @@ class LowLevelKeyring:
         if pin:
             params["pin"] = pin
 
-        return self._connection.delete("/restful/keyring/{}".format(sid), params=params)
+        return self._connection.delete(f"/restful/keyring/{sid}", params=params)
 
-    def lock(self, sid):
+    def lock(self, sid: str) -> Response:
         """Locks an existing identity with a given SID
 
         Endpoint:
@@ -161,9 +163,15 @@ class LowLevelKeyring:
             requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, str), "sid must be a string"
-        return self._connection.put("/restful/keyring/{}/lock".format(sid))
+        return self._connection.put(f"/restful/keyring/{sid}/lock")
 
-    def set(self, sid, pin="", did=None, name=None):
+    def set(
+        self,
+        sid: str,
+        pin: str = "",
+        did: Union[str, None] = None,
+        name: Union[str, None] = None,
+    ) -> Response:
         """Sets the DID and/or name of the unlocked identity that has the given SID
 
         Endpoint:
@@ -204,4 +212,4 @@ class LowLevelKeyring:
         if name is not None:
             params["name"] = name
 
-        return self._connection.patch("/restful/keyring/{}".format(sid), params=params)
+        return self._connection.patch(f"/restful/keyring/{sid}", params=params)

@@ -6,6 +6,7 @@ This module contains the means to interact directly with the REST-interface
 """
 
 import requests
+from typing import Any
 
 
 class RestfulConnection:
@@ -20,19 +21,25 @@ class RestfulConnection:
         passwd (str): Password for HTTP basic auth
     """
 
-    def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 4110,
+        user: str = "pyserval",
+        passwd: str = "pyserval",
+    ) -> None:
         self._AUTH = (user, passwd)
-        self._BASE = "http://{}:{}".format(host, port)
+        self._BASE = f"http://{host}:{port}"
 
-    def __repr__(self):
-        return 'RestfulConnection("{}")'.format(self._BASE)
+    def __repr__(self) -> str:
+        return f'RestfulConnection("{self._BASE}")'
 
-    def get(self, path, **params):
+    def get(self, path: str, **params: Any) -> requests.models.Response:
         """Sends GET-request to REST-API
 
         Args:
             path (str): (relative) path to the REST-endpoint
-            params (dict[str, Any]): Additional parameters to be sent with the request
+            params (Any): Additional parameters to be sent with the request
 
         Returns:
             requests.models.Response: Response returned by the serval-server
@@ -45,12 +52,12 @@ class RestfulConnection:
 
         return response
 
-    def post(self, path, **params):
+    def post(self, path: str, **params: Any) -> requests.models.Response:
         """Sends POST-request to REST-API
 
         Args:
             path (str): (relative) path to the REST-endpoint
-            params (dict[str, Any]): Additional parameters to be sent with the request
+            params (Any): Additional parameters to be sent with the request
 
         Returns:
             requests.models.Response: Response returned by the serval-server
@@ -62,12 +69,12 @@ class RestfulConnection:
 
         return response
 
-    def put(self, path, **params):
+    def put(self, path: str, **params: Any) -> requests.models.Response:
         """Sends PUT-request to REST-API
 
         Args:
             path (str): (relative) path to the REST-endpoint
-            params (dict[str, Any]): Additional parameters to be sent with the request
+            params (Any): Additional parameters to be sent with the request
 
         Returns:
             requests.models.Response: Response returned by the serval-server
@@ -79,26 +86,24 @@ class RestfulConnection:
 
         return response
 
-    def delete(self, path, **params):
+    def delete(self, path: str, **params: Any) -> requests.models.Response:
         """Sends DELETE-request to REST-API
 
         Args:
             path (str): (relative) path to the REST-endpoint
-            params (dict[str, Any]): Additional parameters to be sent with the request
+            params (Any): Additional parameters to be sent with the request
 
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        response = requests.delete(
-            "{}{}".format(self._BASE, path), auth=self._AUTH, **params
-        )
+        response = requests.delete(self._BASE + path, auth=self._AUTH, **params)
 
         if response.encoding is None:
             response.encoding = "utf-8"
 
         return response
 
-    def patch(self, path, **params):
+    def patch(self, path: str, **params: Any) -> requests.models.Response:
         """Sends PATCH-request to REST-API
 
         Args:

@@ -35,7 +35,7 @@ class LowLevelClient:
                                https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Route.md
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection: RestfulConnection) -> None:
         assert isinstance(connection, RestfulConnection)
         self._connection = connection
         self.keyring = LowLevelKeyring(self._connection)
@@ -45,7 +45,12 @@ class LowLevelClient:
         self.route = LowLevelRoute(self._connection)
 
     @staticmethod
-    def new(host="localhost", port=4110, user="pyserval", passwd="pyserval"):
+    def new(
+        host: str = "localhost",
+        port: int = 4110,
+        user: str = "pyserval",
+        passwd: str = "pyserval",
+    ):
         """Utility-method that creates a connection-object and then a lient from it
 
         Args:

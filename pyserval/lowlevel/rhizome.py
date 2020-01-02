@@ -7,6 +7,8 @@ This module contains the means to interact with rhizome, the serval distributed 
 
 from pyserval.exceptions import JournalError, InvalidManifestError
 from pyserval.lowlevel.connection import RestfulConnection
+from typing import Union, Any, List, Tuple
+from requests.models import Response
 
 
 class Manifest:
@@ -37,20 +39,20 @@ class Manifest:
 
     def __init__(
         self,
-        id=None,
-        version=None,
-        filesize=None,
-        service=None,
-        date=None,
-        filehash=None,
-        tail=None,
-        sender=None,
-        recipient=None,
-        name=None,
-        crypt=None,
-        BK=None,
-        **kwargs
-    ):
+        id: Union[str, None] = None,
+        version: Union[int, None] = None,
+        filesize: Union[int, None] = None,
+        service: Union[str, None] = None,
+        date: Union[int, None] = None,
+        filehash: Union[str, None] = None,
+        tail: Union[int, None] = None,
+        sender: Union[str, None] = None,
+        recipient: Union[str, None] = None,
+        name: Union[str, None] = None,
+        crypt: Union[int, None] = None,
+        BK: Union[str, None] = None,
+        **kwargs: Union[str, int],
+    ) -> None:
         self.id = id
         self.version = version
         self.filesize = filesize
@@ -73,10 +75,10 @@ class Manifest:
             "crypt": int,
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.__dict__)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Manifest):
             return False
 
@@ -90,7 +92,7 @@ class Manifest:
 
         return True
 
-    def fields(self):
+    def fields(self) -> List[Tuple[str, Any]]:
         """Get List of (fieldname, value) tuples of all relevant manifest fields
 
         Returns:
@@ -103,7 +105,7 @@ class Manifest:
 
         return items
 
-    def update(self, response_data):
+    def update(self, response_data: str) -> None:
         """Updates the Manifest with data from a Rhizome HTTP response
 
         Args:
@@ -119,7 +121,7 @@ class Manifest:
 
         self.__dict__.update(values)
 
-    def update_manual(self, **kwargs):
+    def update_manual(self, **kwargs: Union[str, int]):
         """Update the manifest's data
 
         Args:
@@ -133,7 +135,7 @@ class Manifest:
 
         self.__dict__.update(kwargs)
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Checks whether the manifest is valid
 
         Raises:
@@ -150,7 +152,7 @@ class Manifest:
                 )
         return True
 
-    def autocast(self, field_name, value):
+    def autocast(self, field_name: str, value: str) -> Any:
         """Tries to automatically cast a string into another type
         Rhizome HTTP replies for manifests are always strings,
         but the underlying type might be different
@@ -178,11 +180,11 @@ class LowLevelRhizome:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection: RestfulConnection) -> None:
         assert isinstance(connection, RestfulConnection)
         self._connection = connection
 
-    def get_manifests(self):
+    def get_manifests(self) -> Response:
         """Returns list of all bundles stored in rhizome
 
         Endpoint:
@@ -196,7 +198,7 @@ class LowLevelRhizome:
         """
         return self._connection.get("/restful/rhizome/bundlelist.json")
 
-    def get_manifest_newsince(self, token):
+    def get_manifest_newsince(self, token: str) -> Response:
         """Blocking call, returns first manifest after provided token, none on timeout.
 
         Endpoint:
@@ -208,10 +210,10 @@ class LowLevelRhizome:
         """
 
         return self._connection.get(
-            "/restful/rhizome/newsince/{}/bundlelist.json".format(token), stream=True
+            f"/restful/rhizome/newsince/{token}/bundlelist.json", stream=True
         )
 
-    def get_manifest(self, bid):
+    def get_manifest(self, bid: str) -> Response:
         """Gets the manifest for a specified BID
 
         Endpoint:
@@ -223,9 +225,9 @@ class LowLevelRhizome:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return self._connection.get("/restful/rhizome/{}.rhm".format(bid))
+        return self._connection.get(f"/restful/rhizome/{bid}.rhm")
 
-    def get_raw(self, bid):
+    def get_raw(self, bid: str) -> Response:
         """Gets the raw payload of a bundle
 
         Endpoint:
@@ -240,9 +242,9 @@ class LowLevelRhizome:
         Note:
             If the payload is encrypted, this method will return the ciphertext
         """
-        return self._connection.get("/restful/rhizome/{}/raw.bin".format(bid))
+        return self._connection.get(f"/restful/rhizome/{bid}/raw.bin")
 
-    def get_decrypted(self, bid):
+    def get_decrypted(self, bid: str) -> Response:
         """Gets the decrypted payload of a bundle
 
         Endpoint:
@@ -262,12 +264,16 @@ class LowLevelRhizome:
 
             If the payload is encrypted and the decryption key is unknown, the call will fail
         """
-        return self._connection.get("/restful/rhizome/{}/decrypted.bin".format(bid))
+        return self._connection.get(f"/restful/rhizome/{bid}/decrypted.bin")
 
     @staticmethod
     def _format_params(
-        manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
-    ):
+        manifest: Manifest,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+        payload: str = "",
+    ) -> List[Tuple[str, Any]]:
         """Internal method to build parameters
 
         Takes bundle data and constructs parameters for POST-request
@@ -309,7 +315,7 @@ class LowLevelRhizome:
             # Emptystring or None should be ignored
             # The number 0 should be included
             if value or value == 0:
-                manifest_header += "{}={}\n".format(key, value)
+                manifest_header += f"{key}={value}\n"
 
         params.append(
             (
@@ -327,8 +333,13 @@ class LowLevelRhizome:
         return params
 
     def insert(
-        self, manifest, bundle_id="", bundle_author="", bundle_secret="", payload=""
-    ):
+        self,
+        manifest: Manifest,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+        payload: Any = "",
+    ) -> Response:
         """Inserts a bundle into rhizome
 
         See
@@ -371,8 +382,13 @@ class LowLevelRhizome:
         return self._connection.post("/restful/rhizome/insert", files=params)
 
     def append(
-        self, manifest, payload, bundle_id="", bundle_author="", bundle_secret=""
-    ):
+        self,
+        manifest: Manifest,
+        payload: Any,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+    ) -> Response:
         """Appends data to a journal
 
         See

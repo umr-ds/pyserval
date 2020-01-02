@@ -5,6 +5,9 @@ pyserval.lowlevel.meshms
 This module contains the means to send and receive MeshMS-messages
 """
 
+from pyserval.connection import RestfulConnection
+from requests.models import Response
+
 
 class LowLevelMeshMS:
     """Interface to access MeshMS-related endpoints of the REST-interface
@@ -13,10 +16,11 @@ class LowLevelMeshMS:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection: RestfulConnection) -> None:
+        assert isinstance(connection, RestfulConnection)
         self._connection = connection
 
-    def conversation_list(self, sid):
+    def conversation_list(self, sid: str) -> Response:
         """Gets the list of all conversations for a given SID
 
         Args:
@@ -26,11 +30,9 @@ class LowLevelMeshMS:
             requests.models.Response: Response returned by the serval-server
         """
         assert isinstance(sid, str)
-        return self._connection.get(
-            "/restful/meshms/{}/conversationlist.json".format(sid)
-        )
+        return self._connection.get(f"/restful/meshms/{sid}/conversationlist.json")
 
-    def message_list(self, sender, recipient):
+    def message_list(self, sender: str, recipient: str) -> Response:
         """Gets all the messages sent between two SIDs
 
         Args:
@@ -47,10 +49,12 @@ class LowLevelMeshMS:
         assert isinstance(recipient, str)
         # TODO: Is this one- or two-way?
         return self._connection.get(
-            "/restful/meshms/{}/{}/messagelist.json".format(sender, recipient)
+            f"/restful/meshms/{sender}/{recipient}/messagelist.json"
         )
 
-    def message_list_newsince(self, sender, recipient, token):
+    def message_list_newsince(
+        self, sender: str, recipient: str, token: str
+    ) -> Response:
         """Blocking call, returns first message after provided token, none on timeout.
 
         Endpoint:
@@ -65,15 +69,18 @@ class LowLevelMeshMS:
         assert isinstance(recipient, str)
         assert isinstance(token, str)
         return self._connection.get(
-            "/restful/meshms/{}/{}}/newsince/{}/messagelist.json".format(
-                sender, recipient, token
-            ),
+            f"/restful/meshms/{sender}/{recipient}/newsince/{token}/messagelist.json",
             stream=True,
         )
 
     def send_message(
-        self, sender, recipient, message, message_type="text/plain", charset="utf-8"
-    ):
+        self,
+        sender: str,
+        recipient: str,
+        message: str,
+        message_type: str = "text/plain",
+        charset: str = "utf-8",
+    ) -> Response:
         """Send a message via MeshMS
 
         Args:
@@ -89,13 +96,9 @@ class LowLevelMeshMS:
         assert isinstance(charset, str)
 
         multipart = [
-            (
-                "message",
-                ("message1", message, "{};charset={}".format(message_type, charset)),
-            )
+            ("message", ("message1", message, f"{message_type};charset={charset}"),)
         ]
 
         return self._connection.post(
-            "/restful/meshms/{}/{}/sendmessage".format(sender, recipient),
-            files=multipart,
+            f"/restful/meshms/{sender}/{recipient}/sendmessage", files=multipart,
         )

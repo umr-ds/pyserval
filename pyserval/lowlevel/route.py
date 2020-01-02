@@ -6,6 +6,7 @@ This module contains the means to interact with the serval routing-interface
 """
 
 from pyserval.lowlevel.connection import RestfulConnection
+from requests.models import Response
 
 
 class LowLevelRoute:
@@ -15,11 +16,11 @@ class LowLevelRoute:
         connection (RestfulConnection): Used for HTTP-communication
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection: RestfulConnection) -> None:
         assert isinstance(connection, RestfulConnection)
         self._connection = connection
 
-    def get_all(self):
+    def get_all(self) -> Response:
         """Returns a list of all currently known identities
 
         Endpoint:

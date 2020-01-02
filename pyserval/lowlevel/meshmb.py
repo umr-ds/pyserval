@@ -5,6 +5,9 @@ pyserval.lowlevel.meshmb
 This module contains the means to publish and subscribe MeshMB feeds
 """
 
+from pyserval.connection import RestfulConnection
+from requests.models import Response
+
 
 class LowLevelMeshMB:
     """Interface to interact with the MeshMB REST-interface
@@ -13,12 +16,17 @@ class LowLevelMeshMB:
         connection (connection.RestfulConnection): Used for HTTP-communication
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection: RestfulConnection) -> None:
+        assert isinstance(connection, RestfulConnection)
         self._connection = connection
 
     def send_message(
-        self, identity, message, message_type="text/plain", charset="utf-8"
-    ):
+        self,
+        identity: str,
+        message: str,
+        message_type: str = "text/plain",
+        charset: str = "utf-8",
+    ) -> Response:
         """Sends a message to a feed
 
         Endpoint:
@@ -32,16 +40,13 @@ class LowLevelMeshMB:
             charset (str): Character encoding (default: utf-8)
         """
         multipart = [
-            (
-                "message",
-                ("message1", message, "{};charset={}".format(message_type, charset)),
-            )
+            ("message", ("message1", message, f"{message_type};charset={charset}"),)
         ]
         return self._connection.post(
-            "/restful/meshmb/{}/sendmessage".format(identity), files=multipart
+            f"/restful/meshmb/{identity}/sendmessage", files=multipart
         )
 
-    def get_messages(self, feedid):
+    def get_messages(self, feedid: str) -> Response:
         """Get all the messages of a feed
 
         Endpoint:
@@ -53,11 +58,9 @@ class LowLevelMeshMB:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return self._connection.get(
-            "/restful/meshmb/{}/messagelist.json".format(feedid)
-        )
+        return self._connection.get(f"/restful/meshmb/{feedid}/messagelist.json")
 
-    def follow_feed(self, identity, feedid):
+    def follow_feed(self, identity: str, feedid: str) -> Response:
         """Follows a feed
 
         Endpoint:
@@ -68,11 +71,9 @@ class LowLevelMeshMB:
                             which should follow the feed
             feedid (str): Feed ID
         """
-        return self._connection.post(
-            "/restful/meshmb/{}/follow/{}".format(identity, feedid)
-        )
+        return self._connection.post(f"/restful/meshmb/{identity}/follow/{feedid}")
 
-    def unfollow_feed(self, identity, feedid):
+    def unfollow_feed(self, identity: str, feedid: str) -> Response:
         """Unfollows a feed
 
         Endpoint:
@@ -83,11 +84,9 @@ class LowLevelMeshMB:
                             which should unfollow the feed
             feedid (str): Feed ID
         """
-        return self._connection.post(
-            "/restful/meshmb/{}/ignore/{}".format(identity, feedid)
-        )
+        return self._connection.post(f"/restful/meshmb/{identity}/ignore/{feedid}")
 
-    def get_feedlist(self, identity):
+    def get_feedlist(self, identity: str) -> Response:
         """Get a list of all followed identities
 
         Endpoint:
@@ -99,9 +98,9 @@ class LowLevelMeshMB:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return self._connection.get("/restful/meshmb/{}/feedlist.json".format(identity))
+        return self._connection.get(f"/restful/meshmb/{identity}/feedlist.json")
 
-    def get_activity(self, identity):
+    def get_activity(self, identity: str) -> Response:
         """Get all the messages from followed feeds
 
         Endpoint:
@@ -113,4 +112,4 @@ class LowLevelMeshMB:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        return self._connection.get("/restful/meshmb/{}/activity.json".format(identity))
+        return self._connection.get(f"/restful/meshmb/{identity}/activity.json")

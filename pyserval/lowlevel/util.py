@@ -6,9 +6,10 @@ This module contains utility-methods
 """
 
 from random import SystemRandom
+from typing import Dict, List, Union, Type, Any
 
 
-def decode_json_table(json):
+def decode_json_table(json: Dict[str, List[Union[str, List[str]]]]) -> List[dict]:
     """Transforms a 'JSON-table' (of the format below) into a List[dict], with each dict containing
     the data for a single object.
 
@@ -36,7 +37,7 @@ def decode_json_table(json):
     return data
 
 
-def generate_secret():
+def generate_secret() -> str:
     """Generate a (secure) 64 digit hey secret
 
     Can be used for bundle-secret
@@ -49,7 +50,11 @@ def generate_secret():
     return secret
 
 
-def unmarshall(json_table, object_class, **kwargs):
+def unmarshall(
+    json_table: Dict[str, List[Union[str, List[str]]]],
+    object_class: Type,
+    **kwargs: Any
+) -> object:
     """Unmarshalls a Json-Table into a list of Python-objects
 
     Args:
