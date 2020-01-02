@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.exceptions
 ~~~~~~~~~~~~~~~~
@@ -6,14 +5,7 @@ pyserval.exceptions
 Collected exceptions
 """
 
-import sys
-
 from requests.models import Response
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 
 class MalformedRequestError(Exception):
@@ -32,7 +24,7 @@ class IdentityNotFoundError(Exception):
     """
 
     def __init__(self, sid):
-        assert isinstance(sid, basestring)
+        assert isinstance(sid, str)
         self.sid = sid
 
     def __str__(self):
@@ -67,7 +59,7 @@ class ManifestNotFoundError(Exception):
     """
 
     def __init__(self, bid):
-        assert isinstance(bid, basestring)
+        assert isinstance(bid, str)
         self.bid = bid
 
     def __str__(self):
@@ -82,7 +74,7 @@ class PayloadNotFoundError(Exception):
     """
 
     def __init__(self, bid):
-        assert isinstance(bid, basestring)
+        assert isinstance(bid, str)
         self.bid = bid
 
     def __str__(self):
@@ -97,7 +89,7 @@ class DecryptionError(Exception):
     """
 
     def __init__(self, bid):
-        assert isinstance(bid, basestring)
+        assert isinstance(bid, str)
         self.bid = bid
 
     def __str__(self):
@@ -174,7 +166,7 @@ class DuplicateBundleException(Exception):
     """
 
     def __init__(self, bid):
-        assert isinstance(bid, basestring)
+        assert isinstance(bid, str)
         self.bid = bid
 
     def __str__(self):
@@ -214,9 +206,9 @@ class InvalidManifestError(Exception):
     """
 
     def __init__(self, key, value, reason):
-        assert isinstance(key, basestring)
-        assert isinstance(value, basestring)
-        assert isinstance(reason, basestring)
+        assert isinstance(key, str)
+        assert isinstance(value, str)
+        assert isinstance(reason, str)
 
         self.key = key
         self.value = value
@@ -237,7 +229,7 @@ class InvalidTokenError(Exception):
     """
 
     def __init__(self, token, reason):
-        assert isinstance(reason, basestring)
+        assert isinstance(reason, str)
 
         self.token = token
         self.reason = reason
@@ -250,13 +242,13 @@ class ConversationNotFoundError(Exception):
     """Raised if trying to get a conversation which does not exist
 
     Args:
-        sid (basestring)
-        other_sid (basestring)
+        sid (str)
+        other_sid (str)
     """
 
     def __init__(self, sid, other_sid):
-        assert isinstance(sid, basestring)
-        assert isinstance(other_sid, basestring)
+        assert isinstance(sid, str)
+        assert isinstance(other_sid, str)
 
         self.sid = sid
         self.other_sid = other_sid

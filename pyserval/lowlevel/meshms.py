@@ -1,17 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.lowlevel.meshms
 ~~~~~~~~~~~~~~~
 
 This module contains the means to send and receive MeshMS-messages
 """
-
-import sys
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 
 class LowLevelMeshMS:
@@ -33,7 +25,7 @@ class LowLevelMeshMS:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        assert isinstance(sid, basestring)
+        assert isinstance(sid, str)
         return self._connection.get(
             "/restful/meshms/{}/conversationlist.json".format(sid)
         )
@@ -51,8 +43,8 @@ class LowLevelMeshMS:
         Returns:
             requests.models.Response: Response returned by the serval-server
         """
-        assert isinstance(sender, basestring)
-        assert isinstance(recipient, basestring)
+        assert isinstance(sender, str)
+        assert isinstance(recipient, str)
         # TODO: Is this one- or two-way?
         return self._connection.get(
             "/restful/meshms/{}/{}/messagelist.json".format(sender, recipient)
@@ -69,9 +61,9 @@ class LowLevelMeshMS:
             recipient (str): SID of receiving participant
             token (str): Token denoting the last time the message list was updated
         """
-        assert isinstance(sender, basestring)
-        assert isinstance(recipient, basestring)
-        assert isinstance(token, basestring)
+        assert isinstance(sender, str)
+        assert isinstance(recipient, str)
+        assert isinstance(token, str)
         return self._connection.get(
             "/restful/meshms/{}/{}}/newsince/{}/messagelist.json".format(
                 sender, recipient, token
@@ -91,10 +83,10 @@ class LowLevelMeshMS:
             message_type (str): MIME-type of the message (default: text/plain)
             charset (str): Character encoding (default: utf-8)
         """
-        assert isinstance(sender, basestring)
-        assert isinstance(recipient, basestring)
-        assert isinstance(message_type, basestring)
-        assert isinstance(charset, basestring)
+        assert isinstance(sender, str)
+        assert isinstance(recipient, str)
+        assert isinstance(message_type, str)
+        assert isinstance(charset, str)
 
         multipart = [
             (

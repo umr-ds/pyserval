@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.meshms
 ~~~~~~~~~~~~~~~~
@@ -6,7 +5,6 @@ pyserval.meshms
 High level interface for meshms-messaging
 """
 
-import sys
 import json
 
 from pyserval.lowlevel.util import unmarshall
@@ -17,11 +15,6 @@ from pyserval.exceptions import (
     InvalidTokenError,
     RhizomeHTTPStatusError,
 )
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 MESSAGELIST_HEADER_SIZE = 178
 MESSAGELIST_HEADER_NEWLINES = 5
@@ -159,7 +152,7 @@ class Conversation:
         """Sends a message to them
 
         Args:
-            message (basestring)
+            message (str)
         """
         self._meshms.send_message(
             sender=self.my_sid, recipient=self.their_sid, message=message
@@ -190,7 +183,7 @@ class MeshMS:
             identity = identity.sid
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity has to be either a string or ServalIdentity"
 
         result = self._low_level.conversation_list(identity)
@@ -224,10 +217,10 @@ class MeshMS:
             other_identity = other_identity.sid
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity has to be either a string or ServalIdentity"
         assert isinstance(
-            other_identity, basestring
+            other_identity, str
         ), "other_identity has to be either a string or ServalIdentity"
 
         conversations = self.conversation_list(identity)
@@ -283,7 +276,7 @@ class MeshMS:
         """
         assert isinstance(sender, ServalIdentity)
         assert isinstance(recipient, ServalIdentity)
-        assert isinstance(token, basestring)
+        assert isinstance(token, str)
 
         with self._low_level.message_list_newsince(
             sender=sender.sid, recipient=recipient.sid, token=token
@@ -324,7 +317,7 @@ class MeshMS:
         Args:
             sender (Union[ServalIdentity, str]): Either a ServalIdentity, or the SID of one
             recipient (Union[ServalIdentity, str]): Either a ServalIdentity, or the SID of one
-            message (basestring)
+            message (str)
         """
         if isinstance(sender, ServalIdentity):
             sender = sender.sid
@@ -332,12 +325,12 @@ class MeshMS:
             recipient = recipient.sid
 
         assert isinstance(
-            sender, basestring
+            sender, str
         ), "sender needs to be either a string or a ServalIdentity"
         assert isinstance(
-            recipient, basestring
+            recipient, str
         ), "recipient needs to be either a string or a ServalIdentity"
-        assert isinstance(message, basestring)
+        assert isinstance(message, str)
         assert message, "message must be non-empty"
 
         result = self._low_level.send_message(
@@ -355,14 +348,14 @@ class MeshMS:
         Args:
             identity (ServalIdentity)
             other_identity (ServalIdentity)
-            message (basestring)
+            message (str)
 
         Returns:
             Conversation
         """
         assert isinstance(identity, ServalIdentity)
         assert isinstance(other_identity, ServalIdentity)
-        assert isinstance(message, basestring)
+        assert isinstance(message, str)
         assert message, "message must be non-empty"
 
         result = self.send_message(

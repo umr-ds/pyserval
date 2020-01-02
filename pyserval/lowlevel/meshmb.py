@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.lowlevel.meshmb
 ~~~~~~~~~~~~~~~
 
 This module contains the means to publish and subscribe MeshMB feeds
 """
-
-from pyserval.lowlevel.util import decode_json_table, unmarshall
 
 
 class LowLevelMeshMB:

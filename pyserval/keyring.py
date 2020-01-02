@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.keyring
 ~~~~~~~~~~~~~~~~
@@ -6,17 +5,9 @@ pyserval.keyring
 High level API for accessing the serval keyring
 """
 
-import sys
-
 from pyserval.exceptions import IdentityNotFoundError, MalformedRequestError
 from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.util import unmarshall
-
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 
 class ServalIdentity:
@@ -47,9 +38,9 @@ class ServalIdentity:
             name = ""
 
         assert isinstance(_keyring, Keyring), "_keyring must be a HighLevelKeyring"
-        assert isinstance(sid, basestring), "sid must be a string"
-        assert isinstance(did, basestring), "did must be a string"
-        assert isinstance(name, basestring), "name must be a string"
+        assert isinstance(sid, str), "sid must be a string"
+        assert isinstance(did, str), "did must be a string"
+        assert isinstance(name, str), "name must be a string"
 
         self._keyring = _keyring
         self.sid = sid
@@ -101,8 +92,8 @@ class ServalIdentity:
         Raises:
             NoSuchIdentityException: If this identity is no longer available
         """
-        assert isinstance(did, basestring), "did must be a string"
-        assert isinstance(name, basestring), "name must be a string"
+        assert isinstance(did, str), "did must be a string"
+        assert isinstance(name, str), "name must be a string"
 
         # make sure that we have the current state
         self.refresh()
@@ -200,7 +191,7 @@ class Keyring:
         Raises:
             NoSuchIdentityException: If no identity with the specified SID is available
         """
-        assert isinstance(sid, basestring), "sid must be a string"
+        assert isinstance(sid, str), "sid must be a string"
 
         serval_response = self.low_level_keyring.get_identity(sid=sid, pin=pin)
 
@@ -279,9 +270,9 @@ class Keyring:
              ServalIdentity: Object of the updated identity if successful
         """
         assert isinstance(identity, ServalIdentity), "identity must be a ServalIdentity"
-        assert isinstance(pin, basestring), "PIN must be a string"
-        assert isinstance(did, basestring), "did must be a string"
-        assert isinstance(name, basestring), "name must be a string"
+        assert isinstance(pin, str), "PIN must be a string"
+        assert isinstance(did, str), "did must be a string"
+        assert isinstance(name, str), "name must be a string"
 
         # If you want to reset did and/or name, use the reset-method
         if not len(did):
@@ -316,7 +307,7 @@ class Keyring:
              ServalIdentity: Object of the updated identity if successful
         """
         assert isinstance(identity, ServalIdentity), "identity must be a ServalIdentity"
-        assert isinstance(pin, basestring), "PIN must be a string"
+        assert isinstance(pin, str), "PIN must be a string"
         assert isinstance(did, bool), "did must be a boolean"
         assert isinstance(name, bool), "name must be a boolean"
 

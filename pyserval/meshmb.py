@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.meshmb
 ~~~~~~~~~~~~~~~
@@ -6,18 +5,10 @@ pyserval.meshmb
 This module contains the means to publish and subscribe MeshMB feeds
 """
 
-import sys
-
 from pyserval.lowlevel.meshmb import LowLevelMeshMB
 from pyserval.keyring import ServalIdentity
 from pyserval.lowlevel.util import unmarshall, decode_json_table
 from pyserval.exceptions import RhizomeHTTPStatusError
-
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 
 class BroadcastMessage:
@@ -152,10 +143,10 @@ class MeshMB:
             identity = identity.identity
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity must be either a ServalIdentity or SID-string"
 
-        if isinstance(message, basestring):
+        if isinstance(message, str):
             message_type = "text/plain"
             charset = "utf-8"
         else:
@@ -190,7 +181,7 @@ class MeshMB:
             feedid = feedid.identity
 
         assert isinstance(
-            feedid, basestring
+            feedid, str
         ), "feedid must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_messages(feedid=feedid)
@@ -218,7 +209,7 @@ class MeshMB:
             identity = identity.identity
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_feedlist(identity=identity)
@@ -247,7 +238,7 @@ class MeshMB:
             identity = identity.identity
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.get_activity(identity=identity)
@@ -280,7 +271,7 @@ class MeshMB:
             identity = identity.identity
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.follow_feed(identity=identity, feedid=feedid)
@@ -305,7 +296,7 @@ class MeshMB:
             identity = identity.identity
 
         assert isinstance(
-            identity, basestring
+            identity, str
         ), "identity must be either a ServalIdentity or Identity-string"
 
         result = self._low_level_meshmb.unfollow_feed(identity=identity, feedid=feedid)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.lowlevel.rhizome
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -6,16 +5,8 @@ pyserval.lowlevel.rhizome
 This module contains the means to interact with rhizome, the serval distributed file-store
 """
 
-import sys
-
 from pyserval.exceptions import JournalError, InvalidManifestError
 from pyserval.lowlevel.connection import RestfulConnection
-
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 
 class Manifest:

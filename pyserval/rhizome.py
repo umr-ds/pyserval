@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyserval.rhizome
 ~~~~~~~~~~~~~~~~
@@ -6,7 +5,6 @@ pyserval.rhizome
 This module contains the means to interact with rhizome, the serval distributed file-store
 """
 
-import sys
 import copy
 import json
 
@@ -24,12 +22,6 @@ from pyserval.exceptions import (
 )
 from pyserval.exceptions import InvalidTokenError, RhizomeHTTPStatusError
 from pyserval.keyring import Keyring, ServalIdentity
-
-
-# python3 does not have the basestring type, since it does not have the unicode type
-# if we are running under python3, we just test for str
-if sys.version_info >= (3, 0, 0):
-    basestring = str
 
 
 BUNDLELIST_HEADER_SIZE = 157
@@ -451,7 +443,7 @@ class Rhizome:
         Raises:
             NoSuchIdentityException: If no bundle with the specified BID is available
         """
-        assert isinstance(bid, basestring)
+        assert isinstance(bid, str)
 
         serval_reply = self._low_level_rhizome.get_manifest(bid=bid)
 
@@ -593,8 +585,8 @@ class Rhizome:
         """
         assert isinstance(manifest, Manifest)
         assert manifest.tail is None, "For journals, use ''append''"
-        assert isinstance(payload, basestring) or isinstance(payload, bytes)
-        assert isinstance(filename, basestring)
+        assert isinstance(payload, str) or isinstance(payload, bytes)
+        assert isinstance(filename, str)
 
         if filename:
             with open(filename, "rb") as f:
@@ -651,15 +643,15 @@ class Rhizome:
         Returns:
             Bundle: New Bundle-object containing all relevant data
         """
-        assert isinstance(name, basestring)
-        assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert isinstance(name, str)
+        assert isinstance(payload, str) or isinstance(payload, bytes)
 
         if identity is None:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity)
-        assert isinstance(recipient, basestring)
-        assert isinstance(service, basestring)
+        assert isinstance(recipient, str)
+        assert isinstance(service, str)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
 
         if recipient:
@@ -720,8 +712,8 @@ class Rhizome:
         """
         assert isinstance(manifest, Manifest)
         assert manifest.tail is not None, "For plain bundles, use ''insert''"
-        assert isinstance(payload, basestring) or isinstance(payload, bytes)
-        assert isinstance(filename, basestring)
+        assert isinstance(payload, str) or isinstance(payload, bytes)
+        assert isinstance(filename, str)
 
         if filename:
             with open(filename, "rb") as f:
@@ -780,16 +772,16 @@ class Rhizome:
             Journal: New journal object containing all relevant data
         """
         # TODO: this is also very similar to new_bundle - refactor and extract common components
-        assert isinstance(name, basestring)
-        assert isinstance(payload, basestring) or isinstance(payload, bytes)
+        assert isinstance(name, str)
+        assert isinstance(payload, str) or isinstance(payload, bytes)
         assert payload, "Journals may not have an empty payload"
 
         if identity is None:
             identity = self._keyring.default_identity()
 
         assert isinstance(identity, ServalIdentity)
-        assert isinstance(recipient, basestring)
-        assert isinstance(service, basestring)
+        assert isinstance(recipient, str)
+        assert isinstance(service, str)
         assert custom_manifest is None or isinstance(custom_manifest, dict)
 
         if recipient:
