@@ -22,6 +22,8 @@ from pyserval.exceptions import (
 )
 from pyserval.exceptions import InvalidTokenError, RhizomeHTTPStatusError
 from pyserval.keyring import Keyring, ServalIdentity
+from typing import Any, Union, Dict, List
+from requests.models import Response
 
 
 BUNDLELIST_HEADER_SIZE = 157
@@ -56,15 +58,15 @@ class Bundle:
     def __init__(
         self,
         rhizome,
-        manifest,
-        payload=None,
-        bundle_id="",
-        bundle_author="",
-        bundle_secret="",
-        from_here=0,
-        complete=False,
-        token=None,
-    ):
+        manifest: Manifest,
+        payload: Any = None,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+        from_here: int = 0,
+        complete: bool = False,
+        token: Union[str, None] = None,
+    ) -> None:
         self._rhizome = rhizome
         self.manifest = manifest
         self.payload = payload
@@ -75,10 +77,10 @@ class Bundle:
         self.complete = complete
         self.token = token
 
-    def __repr__(self):
-        return "Bundle({})".format(repr(self.__dict__))
+    def __repr__(self) -> str:
+        return f"Bundle({repr(self.__dict__)})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Bundle):
             return False
 
@@ -88,7 +90,7 @@ class Bundle:
             and self.bundle_id == other.bundle_id
         )
 
-    def clone(self, name=None, service=None):
+    def clone(self, name: Union[str, None] = None, service: Union[str, None] = None):
         """Creates a clone of the bundle in rhizome.
 
         Two clones share a payload but have different bundle ids. This is possible by choosing another name or service."""
@@ -108,7 +110,7 @@ class Bundle:
 
         return the_clone
 
-    def update(self):
+    def update(self) -> None:
         """Updates the bundle's content in rhizome"""
         assert self.complete, "Pleas call 'refresh' before trying to update"
 
@@ -130,7 +132,7 @@ class Bundle:
 
         self.manifest = new_self.manifest
 
-    def get_payload(self):
+    def get_payload(self) -> bytes:
         """Get the bundle's payload from the rhizome store
 
         Returns:
@@ -140,7 +142,7 @@ class Bundle:
         self.payload = payload
         return payload
 
-    def update_payload(self, payload):
+    def update_payload(self, payload: Union[str, bytes]) -> None:
         """Update the bundle's payload
 
         Args:
@@ -149,7 +151,7 @@ class Bundle:
         self.payload = payload
         self.update()
 
-    def update_manifest(self, **kwargs):
+    def update_manifest(self, **kwargs: Union[str, int]) -> None:
         """Update the bundle's manifest's contents
 
         Args:
@@ -158,7 +160,7 @@ class Bundle:
         self.manifest.update_manual(**kwargs)
         self.update()
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Refresh the bundle's metadata & payload to be certain that we have the complete current state"""
         self.manifest = self._rhizome._get_manifest(self.bundle_id)
         self.get_payload()
@@ -194,15 +196,15 @@ class Journal:
     def __init__(
         self,
         rhizome,
-        manifest,
-        payload=None,
-        bundle_id="",
-        bundle_author="",
-        bundle_secret="",
-        from_here=0,
-        complete=False,
-        token=None,
-    ):
+        manifest: Manifest,
+        payload: Any = None,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+        from_here: int = 0,
+        complete: bool = False,
+        token: Union[str, None] = None,
+    ) -> None:
         self._rhizome = rhizome
         self.manifest = manifest
         self.payload = payload
@@ -213,10 +215,10 @@ class Journal:
         self.complete = complete
         self.token = token
 
-    def __repr__(self):
-        return "Journal({})".format(repr(self.__dict__))
+    def __repr__(self) -> str:
+        return f"Journal({repr(self.__dict__)})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Journal):
             return False
 
@@ -226,21 +228,21 @@ class Journal:
             and self.bundle_id == other.bundle_id
         )
 
-    def get_payload(self):
+    def get_payload(self) -> bytes:
         """Get the bundle's payload from the rhizome store
 
         Returns:
-            str: The new payload
+            bytes: The new payload
         """
         payload = self._rhizome.get_payload(self)
         self.payload = payload
         return payload
 
-    def update(self, payload=None):
+    def update(self, payload: Union[str, bytes]) -> None:
         """Updates the journal's content in the rhizome store
 
         Args:
-            payload (Union[None, str, bytes]):
+            payload (Union[str, bytes]):
 
         Note:
             While for a normal bundle, the updated payload will replace the previos payload,
@@ -265,7 +267,7 @@ class Journal:
 
         self.manifest = new_self.manifest
 
-    def append_payload(self, payload):
+    def append_payload(self, payload: Union[str, bytes]) -> None:
         """Append additional payload to the bundle
 
         Args:
@@ -275,7 +277,7 @@ class Journal:
         # since payload is appended wen then need to get the new complete payload
         self.get_payload()
 
-    def drop_payload(self, n_bytes):
+    def drop_payload(self, n_bytes: int) -> None:
         """Drop parts of the payload
 
         Args:
@@ -287,14 +289,14 @@ class Journal:
         # get new, shrunk payload
         self.get_payload()
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Refresh the bundle's metadata & payload to be certain that we have the complete current state"""
         self.manifest = self._rhizome._get_manifest(self.bundle_id)
         self.get_payload()
         self.complete = True
 
 
-def _handle_bundle_error(serval_reply):
+def _handle_bundle_error(serval_reply: Response) -> None:
     """When the insert/append endpoint fails, check what exactly happened
 
     Args:
@@ -333,13 +335,15 @@ class Rhizome:
         keyring (Keyring): Bundles can be associated with identities
     """
 
-    def __init__(self, low_level_rhizome, keyring):
+    def __init__(self, low_level_rhizome: LowLevelRhizome, keyring: Keyring) -> None:
         assert isinstance(low_level_rhizome, LowLevelRhizome)
         assert isinstance(keyring, Keyring)
         self._low_level_rhizome = low_level_rhizome
         self._keyring = keyring
 
-    def _parse_bundlelist(self, reply_json):
+    def _parse_bundlelist(
+        self, reply_json: Dict[str, List[Union[str, List[str]]]]
+    ) -> List[Union[Bundle, Journal]]:
         bundle_data = decode_json_table(reply_json)
         bundles = []
 
@@ -378,7 +382,7 @@ class Rhizome:
 
         return bundles
 
-    def get_bundlelist(self):
+    def get_bundlelist(self) -> List[Union[Bundle, Journal]]:
         """Get list of all bundles in the rhizome store
 
         Returns:
@@ -389,7 +393,7 @@ class Rhizome:
 
         return self._parse_bundlelist(reply_json)
 
-    def get_bundlelist_newsince(self, token):
+    def get_bundlelist_newsince(self, token: str) -> List[Union[Bundle, Journal]]:
         """Get list of the bundles added after a specific token
 
         Args:
@@ -431,7 +435,7 @@ class Rhizome:
 
         return self._parse_bundlelist(reply_json)
 
-    def _get_manifest(self, bid):
+    def _get_manifest(self, bid: str) -> Manifest:
         """Get only the manifest for a specific BID
 
         Args:
@@ -457,7 +461,7 @@ class Rhizome:
 
         return manifest
 
-    def get_bundle(self, bid):
+    def get_bundle(self, bid: str) -> Union[Bundle, Journal]:
         """Get the bundle for a specific BID
 
         Args:
@@ -483,7 +487,9 @@ class Rhizome:
         bundle.get_payload()
         return bundle
 
-    def get_payload(self, bundle, decode=False):
+    def get_payload(
+        self, bundle: Union[Bundle, Journal], decode: bool = False
+    ) -> Union[bytes, str]:
         """Get the payload for a bundle
 
         Args:
@@ -556,13 +562,13 @@ class Rhizome:
 
     def insert(
         self,
-        manifest,
-        bundle_id="",
-        bundle_author="",
-        bundle_secret="",
-        payload="",
-        filename="",
-    ):
+        manifest: Manifest,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+        payload: Union[str, bytes] = "",
+        filename: str = "",
+    ) -> Bundle:
         """Creates/Updates a bundle
 
         Args:
@@ -616,14 +622,14 @@ class Rhizome:
 
     def new_bundle(
         self,
-        name="",
-        payload="",
-        filename="",
-        identity=None,
-        recipient="",
-        service="",
-        custom_manifest=None,
-    ):
+        name: str = "",
+        payload: Union[str, bytes] = "",
+        filename: str = "",
+        identity: Union[ServalIdentity, None] = None,
+        recipient: str = "",
+        service: str = "",
+        custom_manifest: Union[Dict[str, str], None] = None,
+    ) -> Bundle:
         """Creates a new bundle
 
         Args:
@@ -686,13 +692,13 @@ class Rhizome:
 
     def append(
         self,
-        manifest,
-        bundle_id="",
-        bundle_author="",
-        bundle_secret="",
-        payload="",
-        filename="",
-    ):
+        manifest: Manifest,
+        bundle_id: str = "",
+        bundle_author: str = "",
+        bundle_secret: str = "",
+        payload: Union[str, bytes] = "",
+        filename: str = "",
+    ) -> Journal:
         """Creates/updates a journal
 
         Args:
@@ -744,14 +750,14 @@ class Rhizome:
 
     def new_journal(
         self,
-        name="",
-        payload="",
-        filename="",
-        identity=None,
-        recipient="",
-        service="",
-        custom_manifest=None,
-    ):
+        name: str = "",
+        payload: Union[str, bytes] = "",
+        filename: str = "",
+        identity: Union[ServalIdentity, None] = None,
+        recipient: str = "",
+        service: str = "",
+        custom_manifest: Union[Dict[str, str], None] = None,
+    ) -> Journal:
         """Creates a new journal
 
         Args:
@@ -765,7 +771,7 @@ class Rhizome:
                              If unset, bundle will be public and readable by anyone
                              If set, bundle will be encrypted
             service (str): (Optional) Service this journal belongs to
-            custom_manifest (Union[None, Dictionary[str, str]): A dictionary whose key-value pairs will be added
+            custom_manifest (Union[None, Dict[str, str]): A dictionary whose key-value pairs will be added
                                                                 as custom fields in the new bundle's manifest
 
         Returns:

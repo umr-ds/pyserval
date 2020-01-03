@@ -8,6 +8,7 @@ High level API for accessing the serval keyring
 from pyserval.exceptions import IdentityNotFoundError, MalformedRequestError
 from pyserval.lowlevel.keyring import LowLevelKeyring
 from pyserval.lowlevel.util import unmarshall
+from typing import Any, List
 
 
 class ServalIdentity:
@@ -31,7 +32,9 @@ class ServalIdentity:
         Both 'did' and 'name' should be set via the 'set'-method
     """
 
-    def __init__(self, _keyring, sid, identity="", did="", name=""):
+    def __init__(
+        self, _keyring, sid: str, identity: str = "", did: str = "", name: str = ""
+    ) -> None:
         if did is None:
             did = ""
         if name is None:
@@ -48,18 +51,16 @@ class ServalIdentity:
         self.name = name
         self.identity = identity
 
-    def __repr__(self):
-        return 'ServalIdentity(sid={}, did="{}", name="{}")'.format(
-            self.sid, self.did, self.name
-        )
+    def __repr__(self) -> str:
+        return f'ServalIdentity(sid="{self.sid}", did="{self.did}", name="{self.name}")'
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.name or self.did:
-            return "(Name: {}, DID: {})".format(self.name, self.did)
+            return f"(Name: {self.name}, DID: {self.did})"
         else:
-            return "{}*".format(self.sid[:16])
+            return f"{self.sid[:16]}*"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not type(other) == type(self):
             return False
         return (
@@ -69,10 +70,10 @@ class ServalIdentity:
             and self.identity == other.identity
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Refreshes Information for the Identity
 
         Raises:
@@ -81,7 +82,7 @@ class ServalIdentity:
         refreshed = self._keyring.get_identity(sid=self.sid)
         self.__dict__.update(refreshed.__dict__)
 
-    def set(self, did="", name=""):
+    def set(self, did: str = "", name: str = "") -> None:
         """Sets the DID and/or name of this identity
 
         Args:
@@ -102,7 +103,7 @@ class ServalIdentity:
         self.did = did
         self.name = name
 
-    def delete(self):
+    def delete(self) -> None:
         """Removes this Identity from the Keyring
 
         Raises:
@@ -110,7 +111,7 @@ class ServalIdentity:
         """
         self._keyring.delete(identity=self)
 
-    def lock(self):
+    def lock(self) -> None:
         """Locks this identity - can be unlocked again with its pin
 
         Raises:
@@ -126,11 +127,11 @@ class Keyring:
         low_level_keyring (LowLevelKeyring): Instance of the LowLevelKeyring used to perform the basic requests
     """
 
-    def __init__(self, low_level_keyring):
+    def __init__(self, low_level_keyring: LowLevelKeyring) -> None:
         assert isinstance(low_level_keyring, LowLevelKeyring)
         self.low_level_keyring = low_level_keyring
 
-    def add(self, pin="", did="", name=""):
+    def add(self, pin: str = "", did: str = "", name: str = "") -> ServalIdentity:
         """Creates a new identity with a random SID
 
         Args:
@@ -160,7 +161,7 @@ class Keyring:
         reply_json = serval_reply.json()
         return ServalIdentity(self, **reply_json["identity"])
 
-    def get_identities(self, pin=""):
+    def get_identities(self, pin: str = "") -> List[ServalIdentity]:
         """List of all currently unlocked identities
 
         Args:
@@ -178,7 +179,7 @@ class Keyring:
 
         return identities
 
-    def get_identity(self, sid, pin=""):
+    def get_identity(self, sid: str, pin: str = "") -> ServalIdentity:
         """Gets the identity for a given sid
 
         Args:
@@ -202,7 +203,7 @@ class Keyring:
 
         return ServalIdentity(self, **response_json["identity"])
 
-    def get_or_create(self, n):
+    def get_or_create(self, n: int) -> List[ServalIdentity]:
         """Returns the first n unlocked identities in the keyring
         If there are fewer than n, new identities will be created
 
@@ -222,7 +223,7 @@ class Keyring:
                 identities.append(self.add())
         return identities[:n]
 
-    def default_identity(self):
+    def default_identity(self) -> ServalIdentity:
         """Returns the first unlocked identity (or creates one, if none exist)
 
         Returns:
@@ -230,7 +231,7 @@ class Keyring:
         """
         return self.get_or_create(1)[0]
 
-    def delete(self, identity, pin=""):
+    def delete(self, identity: ServalIdentity, pin: str = "") -> ServalIdentity:
         """Removes an existing identity
 
         Args:
@@ -251,7 +252,9 @@ class Keyring:
         reply_json = serval_response.json()
         return ServalIdentity(self, **reply_json["identity"])
 
-    def set(self, identity, pin="", did="", name=""):
+    def set(
+        self, identity: ServalIdentity, pin: str = "", did: str = "", name: str = ""
+    ) -> ServalIdentity:
         """Sets the DID and/or name of an unlocked identity
 
         Args:
@@ -291,7 +294,13 @@ class Keyring:
 
         return ServalIdentity(self, **response_json["identity"])
 
-    def reset(self, identity, pin="", did=False, name=False):
+    def reset(
+        self,
+        identity: ServalIdentity,
+        pin: str = "",
+        did: bool = False,
+        name: bool = False,
+    ) -> ServalIdentity:
         """Reset Name and/or DID of an identity
 
         Args:
@@ -332,7 +341,7 @@ class Keyring:
 
         return ServalIdentity(self, **response_json["identity"])
 
-    def lock(self, identity):
+    def lock(self, identity: ServalIdentity) -> ServalIdentity:
         """Locks an identity - you will need the pin to unlock it again
 
         Args:

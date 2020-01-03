@@ -54,7 +54,7 @@ def unmarshall(
     json_table: Dict[str, List[Union[str, List[str]]]],
     object_class: Type,
     **kwargs: Any
-) -> object:
+):
     """Unmarshalls a Json-Table into a list of Python-objects
 
     Args:

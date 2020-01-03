@@ -38,7 +38,13 @@ class Client:
                            https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Route.md
         """
 
-    def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 4110,
+        user: str = "pyserval",
+        passwd: str = "pyserval",
+    ) -> None:
         self._connection = CheckedConnection(
             host=host, port=port, user=user, passwd=passwd
         )

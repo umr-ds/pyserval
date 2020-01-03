@@ -23,12 +23,12 @@ class IdentityNotFoundError(Exception):
         sid (str): SID of the identity
     """
 
-    def __init__(self, sid):
+    def __init__(self, sid: str) -> None:
         assert isinstance(sid, str)
         self.sid = sid
 
-    def __str__(self):
-        return "No Identity with SID {} available".format(self.sid)
+    def __str__(self) -> str:
+        return f"No Identity with SID {self.sid} available"
 
 
 class JournalError(Exception):
@@ -41,10 +41,11 @@ class JournalError(Exception):
                            False, if a normal bundle was passed to the 'append'-endpoint
     """
 
-    def __init__(self, is_journal):
+    def __init__(self, is_journal: bool) -> None:
+        assert isinstance(is_journal, bool)
         self.is_journal = is_journal
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.is_journal:
             return "Bundle is a journal; please use 'append'-endpoint"
         else:
@@ -58,12 +59,12 @@ class ManifestNotFoundError(Exception):
         bid (str): Attempted BID
     """
 
-    def __init__(self, bid):
+    def __init__(self, bid: str) -> None:
         assert isinstance(bid, str)
         self.bid = bid
 
-    def __str__(self):
-        return "No Manifest for BID {} available".format(self.bid)
+    def __str__(self) -> str:
+        return f"No Manifest for BID {self.bid} available"
 
 
 class PayloadNotFoundError(Exception):
@@ -73,12 +74,12 @@ class PayloadNotFoundError(Exception):
         bid (str): Bundle ID of the bundle
     """
 
-    def __init__(self, bid):
+    def __init__(self, bid: str) -> None:
         assert isinstance(bid, str)
         self.bid = bid
 
-    def __str__(self):
-        return "Bundle {} appears to have no payload".format(self.bid)
+    def __str__(self) -> str:
+        return f"Bundle {self.bid} appears to have no payload"
 
 
 class DecryptionError(Exception):
@@ -88,12 +89,12 @@ class DecryptionError(Exception):
         bid (str): Bundle ID of the bundle
     """
 
-    def __init__(self, bid):
+    def __init__(self, bid: str) -> None:
         assert isinstance(bid, str)
         self.bid = bid
 
-    def __str__(self):
-        return "Can't decrypt bundle payload, BID: {}".format(self.bid)
+    def __str__(self) -> str:
+        return f"Can't decrypt bundle payload, BID: {self.bid}"
 
 
 class RhizomeHTTPStatusError(Exception):
@@ -104,19 +105,16 @@ class RhizomeHTTPStatusError(Exception):
 
     Attributes:
         http_status (int): HTTP status code of the response
-        headers (dict)
     """
 
-    def __init__(self, serval_response):
+    def __init__(self, serval_response: Response) -> None:
         assert isinstance(serval_response, Response)
 
-        self.http_status = serval_response.status_code
-        self.response = serval_response.json()
+        self.http_status: int = serval_response.status_code
+        self.response: str = serval_response.json()
 
-    def __str__(self):
-        return "Unknown HTTP status code {}, hint: {}".format(
-            self.http_status, self.response
-        )
+    def __str__(self) -> str:
+        return f"Unknown HTTP status code {self.http_status}, hint: {self.response}"
 
 
 class UnknownRhizomeStatusError(Exception):
@@ -136,21 +134,19 @@ class UnknownRhizomeStatusError(Exception):
         https://github.com/servalproject/serval-dna/blob/development/doc/REST-API-Rhizome.md#payload-status-code
     """
 
-    def __init__(self, serval_response):
+    def __init__(self, serval_response: Response) -> None:
         assert isinstance(serval_response, Response)
 
-        self.http_status = serval_response.status_code
-        self.bundle_status = serval_response.headers.get(
+        self.http_status: int = serval_response.status_code
+        self.bundle_status: int = serval_response.headers.get(
             "Serval-Rhizome-Result-Bundle-Status-Code"
         )
-        self.payload_status = serval_response.headers.get(
+        self.payload_status: int = serval_response.headers.get(
             "Serval-Rhizome-Result-Payload-Status-Code"
         )
 
-    def __str__(self):
-        return "Unknown status code combination (HTTP: {}, Bundle: {}, Payload: {})".format(
-            self.http_status, self.bundle_status, self.payload_status
-        )
+    def __str__(self) -> str:
+        return f"Unknown status code combination (HTTP: {self.http_status}, Bundle: {self.bundle_status}, Payload: {self.payload_status})"
 
 
 class DuplicateBundleException(Exception):
@@ -165,12 +161,12 @@ class DuplicateBundleException(Exception):
         bid (str): BID of the bundle which is being duplicated
     """
 
-    def __init__(self, bid):
+    def __init__(self, bid: str) -> None:
         assert isinstance(bid, str)
         self.bid = bid
 
-    def __str__(self):
-        return "Bundle is duplicate of BID {}".format(self.bid)
+    def __str__(self) -> str:
+        return f"Bundle is duplicate of BID {self.bid}"
 
 
 class RhizomeInsertionError(Exception):
@@ -184,16 +180,20 @@ class RhizomeInsertionError(Exception):
                              the first two arguments being provided
     """
 
-    def __init__(self, http_status, bundle_status, bundle_message, response_text):
+    def __init__(
+        self,
+        http_status: int,
+        bundle_status: int,
+        bundle_message: str,
+        response_text: str,
+    ) -> None:
         self.http_status = http_status
         self.status = bundle_status
         self.message = bundle_message
         self.response_text = response_text
 
-    def __str__(self):
-        return "Insertion failed with: HTTP-code: {}, bundle-code {}, bundle-Message: {}, server-response: {}".format(
-            self.http_status, self.status, self.message, self.response_text
-        )
+    def __str__(self) -> str:
+        return f"Insertion failed with: HTTP-code: {self.http_status}, bundle-code {self.status}, bundle-Message: {self.message}, server-response: {self.response_text}"
 
 
 class InvalidManifestError(Exception):
@@ -205,7 +205,7 @@ class InvalidManifestError(Exception):
         reason (str): Human readable explanation of what is wrong
     """
 
-    def __init__(self, key, value, reason):
+    def __init__(self, key: str, value: str, reason: str) -> None:
         assert isinstance(key, str)
         assert isinstance(value, str)
         assert isinstance(reason, str)
@@ -214,9 +214,9 @@ class InvalidManifestError(Exception):
         self.value = value
         self.reason = reason
 
-    def __str__(self):
-        return "Invalid Manifest field: ({}: {}), Reason: {}".format(
-            self.key, self.value, self.reason
+    def __str__(self) -> str:
+        return (
+            f"Invalid Manifest field: ({self.key}: {self.value}), Reason: {self.reason}"
         )
 
 
@@ -228,14 +228,14 @@ class InvalidTokenError(Exception):
         reason (str): Human readable explanation of what is wrong
     """
 
-    def __init__(self, token, reason):
+    def __init__(self, token: str, reason: str) -> None:
         assert isinstance(reason, str)
 
         self.token = token
         self.reason = reason
 
-    def __str__(self):
-        return "Invalid token: {}, Reason: {}".format(self.token, self.reason)
+    def __str__(self) -> str:
+        return f"Invalid token: {self.token}, Reason: {self.reason}"
 
 
 class ConversationNotFoundError(Exception):
@@ -246,19 +246,19 @@ class ConversationNotFoundError(Exception):
         other_sid (str)
     """
 
-    def __init__(self, sid, other_sid):
+    def __init__(self, sid: str, other_sid: str) -> None:
         assert isinstance(sid, str)
         assert isinstance(other_sid, str)
 
         self.sid = sid
         self.other_sid = other_sid
 
-    def __str__(self):
-        return "No conversation between {} and {}".format(self.sid, self.other_sid)
+    def __str__(self) -> str:
+        return f"No conversation between {self.sid} and {self.other_sid}"
 
 
 class UnauthorizedError(Exception):
     """Raised if username/password is wrong"""
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Server returned unauthorized-error"

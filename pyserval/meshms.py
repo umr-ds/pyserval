@@ -15,6 +15,7 @@ from pyserval.exceptions import (
     InvalidTokenError,
     RhizomeHTTPStatusError,
 )
+from typing import List, Union
 
 MESSAGELIST_HEADER_SIZE = 178
 MESSAGELIST_HEADER_NEWLINES = 5
@@ -53,17 +54,17 @@ class Message:
     # TODO: Find the exact menaing of 'my' and 'their'
     def __init__(
         self,
-        type,
-        my_sid,
-        their_sid,
-        my_offset,
-        their_offset,
-        token,
-        text,
-        delivered,
-        read,
-        timestamp,
-        ack_offset,
+        type: str,
+        my_sid: str,
+        their_sid: str,
+        my_offset: int,
+        their_offset: int,
+        token: str,
+        text: str,
+        delivered: bool,
+        read: bool,
+        timestamp: int,
+        ack_offset: int,
     ):
         self.type = type
         self.my_sid = my_sid
@@ -77,10 +78,10 @@ class Message:
         self.timestamp = timestamp
         self.ack_offset = ack_offset
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__dict__)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.__dict__)
 
 
@@ -106,7 +107,15 @@ class Conversation:
 
     """
 
-    def __init__(self, _id, my_sid, their_sid, read, last_message, read_offset):
+    def __init__(
+        self,
+        _id: str,
+        my_sid: str,
+        their_sid: str,
+        read: bool,
+        last_message: str,
+        read_offset: int,
+    ):
         self._id = _id
         self.my_sid = my_sid
         self.their_sid = their_sid
@@ -114,33 +123,33 @@ class Conversation:
         self.last_message = last_message
         self.read_offset = read_offset
         self._meshms = None
-        self.messages = []
+        self.messages: List[Message] = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__dict__)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.__dict__)
 
-    def get_messages(self):
+    def get_messages(self) -> None:
         """Update the message list"""
         self.messages = self._meshms.message_list(
             sender=self.my_sid, recipient=self.their_sid
         )
 
-    def received_messages(self):
+    def received_messages(self) -> List[Message]:
         """Returns all messages received by this identity in this conversation"""
         self.get_messages()
         received = [message for message in self.messages if message.type == "<"]
         return received
 
-    def sent_messages(self):
+    def sent_messages(self) -> List[Message]:
         """Returns all messages sent by this identity in this conversation"""
         self.get_messages()
         sent = [message for message in self.messages if message.type == ">"]
         return sent
 
-    def unread(self):
+    def unread(self) -> List[Message]:
         """Returns all received messages which have not been read yet"""
         # FIXME: serval seems to never update the 'read' field,
         #        even if there exists an ACK and the messages have been queried...
@@ -148,7 +157,7 @@ class Conversation:
         unread = [message for message in received if not message.read]
         return unread
 
-    def send_message(self, message):
+    def send_message(self, message: str) -> None:
         """Sends a message to them
 
         Args:
@@ -166,10 +175,12 @@ class MeshMS:
         low_level (LowLevelMeshMS): Interface for low level operations
     """
 
-    def __init__(self, low_level):
+    def __init__(self, low_level: LowLevelMeshMS) -> None:
         self._low_level = low_level
 
-    def conversation_list(self, identity):
+    def conversation_list(
+        self, identity: Union[ServalIdentity, str]
+    ) -> List[Conversation]:
         """Gets the list of all conversations for a given Identity
 
         Args:
@@ -198,7 +209,11 @@ class MeshMS:
             conversation._meshms = self
         return conversations
 
-    def get_conversation(self, identity, other_identity):
+    def get_conversation(
+        self,
+        identity: Union[ServalIdentity, str],
+        other_identity: Union[ServalIdentity, str],
+    ) -> Conversation:
         """Gets the conversation between the two identities, if it exists
 
         Args:
@@ -230,7 +245,9 @@ class MeshMS:
 
         raise ConversationNotFoundError(sid=identity, other_sid=other_identity)
 
-    def message_list(self, sender, recipient):
+    def message_list(
+        self, sender: ServalIdentity, recipient: ServalIdentity
+    ) -> List[Message]:
         """Gets all the messages sent between two identities
 
         Args:
@@ -260,7 +277,9 @@ class MeshMS:
         messages = unmarshall(json_table=result_json, object_class=Message)
         return messages
 
-    def message_list_newsince(self, sender, recipient, token):
+    def message_list_newsince(
+        self, sender: ServalIdentity, recipient: ServalIdentity, token: str
+    ) -> List[Message]:
         """Gets all the messages sent between two identities since the token was generated
 
         Args:
@@ -311,7 +330,12 @@ class MeshMS:
             messages = unmarshall(json_table=reply_json, object_class=Message)
             return messages
 
-    def send_message(self, sender, recipient, message):
+    def send_message(
+        self,
+        sender: Union[ServalIdentity, str],
+        recipient: Union[ServalIdentity, str],
+        message: str,
+    ) -> None:
         """Sends a message
 
         Args:
@@ -342,7 +366,9 @@ class MeshMS:
         if result.status_code != 200 and result.status_code != 201:
             raise RhizomeHTTPStatusError(result)
 
-    def new_conversation(self, identity, other_identity, message):
+    def new_conversation(
+        self, identity: ServalIdentity, other_identity: ServalIdentity, message: str
+    ) -> Conversation:
         """Establishes a new conversation between two identities
 
         Args:
@@ -358,13 +384,6 @@ class MeshMS:
         assert isinstance(message, str)
         assert message, "message must be non-empty"
 
-        result = self.send_message(
-            sender=identity, recipient=other_identity, message=message
-        )
-
-        # I would like to make a better distinction here, but unfortunately the upstream docs
-        # do not specify any status codes for specific errors
-        if result.status_code != 200 and result.status_code != 201:
-            raise RhizomeHTTPStatusError(result)
+        self.send_message(sender=identity, recipient=other_identity, message=message)
 
         return self.get_conversation(identity=identity, other_identity=other_identity)

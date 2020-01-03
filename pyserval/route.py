@@ -7,6 +7,7 @@ This module contains the means to interact with servald's routing-interface
 
 from pyserval.lowlevel.route import LowLevelRoute
 from pyserval.lowlevel.util import unmarshall
+from typing import Union, List
 
 
 class Peer:
@@ -30,17 +31,17 @@ class Peer:
     def __init__(
         self,
         _route,
-        sid,
-        did,
-        name,
-        is_self,
-        reachable_broadcast,
-        reachable_unicast,
-        reachable_indirect,
-        interface,
-        hop_count,
-        first_hop,
-        penultimate_hop,
+        sid: str,
+        did: Union[str, None],
+        name: Union[str, None],
+        is_self: bool,
+        reachable_broadcast: bool,
+        reachable_unicast: bool,
+        reachable_indirect: bool,
+        interface: Union[str, None],
+        hop_count: int,
+        first_hop: Union[str, None],
+        penultimate_hop: Union[str, None],
     ):
         self._route = _route
         self.sid = sid
@@ -63,11 +64,11 @@ class Route:
         low_level_route (LowLevelRoute): Used to perform low level requests
     """
 
-    def __init__(self, low_level_route):
+    def __init__(self, low_level_route: LowLevelRoute):
         assert isinstance(low_level_route, LowLevelRoute)
         self._route = low_level_route
 
-    def get_all(self):
+    def get_all(self) -> List[Peer]:
         """Get all known peers
 
         Returns:

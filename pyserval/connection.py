@@ -5,6 +5,8 @@ pyserval.connection
 
 from pyserval.lowlevel.connection import RestfulConnection
 from pyserval.exceptions import UnauthorizedError
+from typing import Any
+from requests.models import Response
 
 
 class CheckedConnection(RestfulConnection):
@@ -17,15 +19,21 @@ class CheckedConnection(RestfulConnection):
         passwd (str): Password for HTTP basic auth
     """
 
-    def __init__(self, host="localhost", port=4110, user="pyserval", passwd="pyserval"):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 4110,
+        user: str = "pyserval",
+        passwd: str = "pyserval",
+    ) -> None:
         RestfulConnection.__init__(self, host, port, user, passwd)
 
-    def get(self, path, **params):
+    def get(self, path: str, **params: Any) -> Response:
         """Sends GET-request to REST-API
 
         Args:
             path (str): (relative) path to the REST-endpoint
-            params (dict[str, Any]): Additional parameters to be sent with the request
+            params (Any): Additional parameters to be sent with the request
 
         Returns:
             requests.models.Response: Response returned by the serval-server
@@ -41,7 +49,7 @@ class CheckedConnection(RestfulConnection):
 
         return response
 
-    def post(self, path, **params):
+    def post(self, path: str, **params: Any) -> Response:
         """Sends POST-request to REST-API
 
         Args:
@@ -61,7 +69,7 @@ class CheckedConnection(RestfulConnection):
 
         return response
 
-    def put(self, path, **params):
+    def put(self, path: str, **params: Any) -> Response:
         """Sends PUT-request to REST-API
 
         Args:
@@ -81,7 +89,7 @@ class CheckedConnection(RestfulConnection):
 
         return response
 
-    def delete(self, path, **params):
+    def delete(self, path: str, **params: Any) -> Response:
         """Sends DELETE-request to REST-API
 
         Args:
@@ -101,7 +109,7 @@ class CheckedConnection(RestfulConnection):
 
         return response
 
-    def patch(self, path, **params):
+    def patch(self, path: str, **params: Any) -> Response:
         """Sends PATCH-request to REST-API
 
         Args:

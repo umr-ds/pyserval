@@ -9,6 +9,7 @@ from pyserval.lowlevel.meshmb import LowLevelMeshMB
 from pyserval.keyring import ServalIdentity
 from pyserval.lowlevel.util import unmarshall, decode_json_table
 from pyserval.exceptions import RhizomeHTTPStatusError
+from typing import Union, List
 
 
 class BroadcastMessage:
@@ -37,15 +38,15 @@ class BroadcastMessage:
 
     def __init__(
         self,
-        id=None,
-        author=None,
-        name=None,
-        offset=None,
-        ack_offset=None,
-        token=None,
-        text=None,
-        timestamp=None,
-    ):
+        id: Union[str, None] = None,
+        author: Union[str, None] = None,
+        name: Union[str, None] = None,
+        offset: Union[int, None] = None,
+        ack_offset: Union[int, None] = None,
+        token: Union[str, None] = None,
+        text: Union[str, None] = None,
+        timestamp: Union[int, None] = None,
+    ) -> None:
         self.offset = offset
         self.token = token
         self.text = text
@@ -55,10 +56,10 @@ class BroadcastMessage:
         self.name = name
         self.ack_offset = ack_offset
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__dict__)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.__dict__)
 
 
@@ -84,7 +85,16 @@ class Feed:
 
     """
 
-    def __init__(self, meshmb, id, author, blocked, name, timestamp, last_message):
+    def __init__(
+        self,
+        meshmb,
+        id: str,
+        author: str,
+        blocked: bool,
+        name: str,
+        timestamp: int,
+        last_message: str,
+    ):
         self._meshmb = meshmb
         self.id = id
         self.author = author
@@ -93,13 +103,13 @@ class Feed:
         self.timestamp = timestamp
         self.last_message = last_message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__dict__)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.__dict__)
 
-    def follow(self, identity):
+    def follow(self, identity: str) -> None:
         """Follow this feed
 
         Args:
@@ -108,7 +118,7 @@ class Feed:
         """
         self._meshmb.follow_feed(identity=identity, feedid=self.id)
 
-    def unfollow(self, identity):
+    def unfollow(self, identity: str) -> None:
         """Unfollow this feed
 
         Args:
@@ -117,7 +127,7 @@ class Feed:
         """
         self._meshmb.unfollow_feed(identity=identity, feedid=self.id)
 
-    def get_messages(self):
+    def get_messages(self) -> None:
         """Gets all the messages from this feed"""
         self._meshmb.get_messages(self.id)
 
@@ -129,10 +139,12 @@ class MeshMB:
         low_level_meshmb (LowLevelMeshMB): Used to perform low level requests
     """
 
-    def __init__(self, low_level_meshmb):
+    def __init__(self, low_level_meshmb: LowLevelMeshMB):
         self._low_level_meshmb = low_level_meshmb
 
-    def send_message(self, identity, message):
+    def send_message(
+        self, identity: Union[ServalIdentity, str], message: Union[bytes, str]
+    ) -> None:
         """Sends a message to a feed
 
         Args:
@@ -167,7 +179,9 @@ class MeshMB:
         if result.status_code != 200 and result.status_code != 201:
             raise RhizomeHTTPStatusError(result)
 
-    def get_messages(self, feedid):
+    def get_messages(
+        self, feedid: Union[ServalIdentity, str]
+    ) -> List[BroadcastMessage]:
         """Get all the messages of a feed
 
         Args:
@@ -195,7 +209,7 @@ class MeshMB:
         messages = unmarshall(json_table=result_json, object_class=BroadcastMessage)
         return messages
 
-    def get_feedlist(self, identity):
+    def get_feedlist(self, identity: Union[ServalIdentity, str]) -> List[Feed]:
         """Get a list of all followed identities
 
         Args:
@@ -223,7 +237,9 @@ class MeshMB:
         feeds = unmarshall(json_table=result_json, object_class=Feed, meshmb=self)
         return feeds
 
-    def get_activity(self, identity):
+    def get_activity(
+        self, identity: Union[ServalIdentity, str]
+    ) -> List[BroadcastMessage]:
         """Get all the messages from followed feeds
 
         Args:
@@ -281,7 +297,7 @@ class MeshMB:
         if result.status_code != 200:
             raise RhizomeHTTPStatusError(result)
 
-    def unfollow_feed(self, identity, feedid):
+    def unfollow_feed(self, identity: str, feedid: str) -> None:
         """Unfollows a feed
 
         Endpoint:
